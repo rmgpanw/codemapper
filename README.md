@@ -1,5 +1,1 @@
-# codemapper
-
-A [workflowr][] project.
-
-[workflowr]: https://github.com/jdblischak/workflowr
+Please click [here](https://rmgpanw.gitlab.io/codemapper) for project website.
