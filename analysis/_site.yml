@@ -1,0 +1,21 @@
+name: codemapper
+output_dir: ../public
+navbar:
+  title: codemapper
+  left:
+  - text: Home
+    href: index.html
+  - text: About
+    href: about.html
+  - text: License
+    href: license.html
+  right:
+  - icon: fa-gitlab
+    text: Source code
+    href: https://gitlab.com/rmgpanw/codemapper
+output:
+  workflowr::wflow_html:
+    toc: yes
+    toc_float: yes
+    theme: cosmo
+    highlight: textmate
