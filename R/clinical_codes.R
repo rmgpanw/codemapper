@@ -2,13 +2,10 @@
 # OVERVIEW ----------------------------------------------------------------
 
 # Functions to map between different clinical codes e.g. between Read2 and
-# Read3, or Read3 and ICD-10. These rely on the code mapping file provided by
-# UK Biobank (resource 592: https://biobank.ndph.ox.ac.uk/ukb/refer.cgi?id=592)
-
-# TODO - make these work when `ukb_code_mappings` is supplied as a SQLite db
-# file containing resource 592(?)
-
-# TODO - validate `ukb_code_mappings` arg
+# Read3, or Read3 and ICD-10. These rely on the code mapping file provided by UK
+# Biobank (resource 592: https://biobank.ndph.ox.ac.uk/ukb/refer.cgi?id=592) and
+# the BNF to SNOMED mapping file from the NHSBSA website
+# (https://www.nhsbsa.nhs.uk/prescription-data/understanding-our-data/bnf-snomed-mapping)
 
 # EXPORTED FUNCTIONS ------------------------------------------------------
 
@@ -25,7 +22,7 @@
 #' @param code_type character. The type of clinical code system to be searched.
 #'   Must be one of \code{read2}, \code{read3}, \code{icd9}, \code{icd10},
 #'   \code{bnf}, \code{dmd}, \code{read2_drugs} or \code{opcs4}.
-#' @param ukb_code_mappings the \code{ukb_code_mappings} list returned by
+#' @param all_lkps_maps the \code{all_lkps_maps} list returned by
 #'   \code{\link{get_ukb_code_mappings}}.
 #' @param codes_only bool. If \code{TRUE}, return a character vector
 #'   of \emph{unique} codes. If \code{FALSE} (default), return a data frame of all results
@@ -40,14 +37,14 @@
 #' @family Clinical code lookups and mappings
 get_child_codes <- function(codes,
                             code_type,
-                            ukb_code_mappings = get_ukb_code_mappings(),
+                            all_lkps_maps = get_ukb_code_mappings(),
                             codes_only = FALSE,
                             preferred_description_only = TRUE,
                             standardise_output = TRUE,
                             quiet = FALSE) {
   # validate args
   match.arg(arg = code_type,
-            choices = ukbwranglr:::code_type_to_lkp_sheet_map_df$code)
+            choices = CODE_TYPE_TO_LKP_SHEET_MAP$code)
 
   assertthat::assert_that(
     is.character(codes),
@@ -61,9 +58,7 @@ get_child_codes <- function(codes,
                           msg = "Error! `codes_only` and `standardise_output` cannot both be `TRUE`")
 
   # check all sheets are present
-  assertthat::assert_that(
-    all(ukbwranglr:::ukb_code_mappings_sheet_names %in% names(ukb_code_mappings))
-  )
+  validate_all_lkps_maps()
 
   # determine relevant lookup sheet
   lkp_sheet <- get_lookup_sheet(code_type = code_type)
@@ -74,8 +69,9 @@ get_child_codes <- function(codes,
 
   # determine relevant column indicating whether code description is preferred
   # (for code types with synonymous code descriptions like read 2 and read 3)
-  preferred_description_col <- get_col_for_lookup_sheet(lookup_sheet = lkp_sheet,
-                                       column = "preferred_synonym_col")
+  preferred_description_col <-
+    get_col_for_lookup_sheet(lookup_sheet = lkp_sheet,
+                             column = "preferred_synonym_col")
 
   # get preferred code, if appropriate
   if (!is.na(preferred_description_col)) {
@@ -97,13 +93,13 @@ get_child_codes <- function(codes,
   # here: https://www.caliberresearch.org/portal/show/diabcomp_hes) Ask val, it
   # says 'unless explicitly noted otherwise' - examples of this?
   codes_raw <- codes
-  codes <- paste0("^", codes, ".*")
+  codes <- paste0("^\\", codes, ".*")
 
   # combine into single string, separated by "|"
   codes <- stringr::str_c(codes, sep = "", collapse = "|")
 
   # get children (filter for codes which match ANY of those in `codes` arg)
-  result <- ukb_code_mappings[[lkp_sheet]] %>%
+  result <- all_lkps_maps[[lkp_sheet]] %>%
     dplyr::collect() %>%
     dplyr::filter(stringr::str_detect(.data[[code_col]],
                                       pattern = stringr::regex(codes,
@@ -120,20 +116,11 @@ get_child_codes <- function(codes,
     message("No matching codes found. Returning `NULL`")
     return(NULL)
   } else {
-    # TODO remove this?
-    # warning if any `codes` not present in `from_col`
-    # TODO - warning if duplicates found in `codes`
-    # if (quiet == FALSE) {
-    #   warning_if_codes_not_found(codes = codes,
-    #                              code_type = code_type,
-    #                              search_col = ukb_code_mappings[[lkp_sheet]][[code_col]])
-    # }
-
     if (quiet == FALSE) {
       warning_if_codes_not_found(
         codes = codes_raw,
         code_type = code_type,
-        search_col = ukb_code_mappings[[lkp_sheet]] %>%
+        search_col = all_lkps_maps[[lkp_sheet]] %>%
           dplyr::collect() %>%
           .[[code_col]]
       )
@@ -152,7 +139,7 @@ get_child_codes <- function(codes,
         codes <-
           reformat_icd10_codes(
             icd10_codes = unique(result[[code_col]]),
-            ukb_code_mappings = ukb_code_mappings,
+            all_lkps_maps = all_lkps_maps,
             input_icd10_format = "ALT_CODE",
             output_icd10_format = "ICD10_CODE"
           )
@@ -163,7 +150,7 @@ get_child_codes <- function(codes,
         lookup_codes(
           codes = codes,
           code_type = code_type,
-          ukb_code_mappings = ukb_code_mappings,
+          all_lkps_maps = all_lkps_maps,
           preferred_description_only = preferred_description_only,
           quiet = quiet
         )
@@ -191,7 +178,7 @@ get_child_codes <- function(codes,
 #' @family Clinical code lookups and mappings
 lookup_codes <- function(codes,
                          code_type,
-                         ukb_code_mappings = get_ukb_code_mappings(),
+                         all_lkps_maps = get_ukb_code_mappings(),
                          preferred_description_only = TRUE,
                          standardise_output = TRUE,
                          quiet = FALSE) {
@@ -202,12 +189,9 @@ lookup_codes <- function(codes,
   )
 
   match.arg(arg = code_type,
-            choices = ukbwranglr:::code_type_to_lkp_sheet_map_df$code)
+            choices = CODE_TYPE_TO_LKP_SHEET_MAP$code)
 
-  # check all sheets are present
-  assertthat::assert_that(
-    all(ukbwranglr:::ukb_code_mappings_sheet_names %in% names(ukb_code_mappings))
-  )
+  validate_all_lkps_maps()
 
   # determine relevant lookup sheet
   lkp_sheet <- get_lookup_sheet(code_type = code_type)
@@ -231,7 +215,7 @@ lookup_codes <- function(codes,
   }
 
   # lookup - filter lookup sheet for codes
-  result <- ukb_code_mappings[[lkp_sheet]] %>%
+  result <- all_lkps_maps[[lkp_sheet]] %>%
     dplyr::filter(.data[[code_col]] %in% codes) %>%
     dplyr::collect()
 
@@ -279,7 +263,7 @@ lookup_codes <- function(codes,
     if (quiet == FALSE) {
       warning_if_codes_not_found(codes = codes,
                                  code_type = code_type,
-                                 search_col = ukb_code_mappings[[lkp_sheet]] %>%
+                                 search_col = all_lkps_maps[[lkp_sheet]] %>%
                                    dplyr::collect() %>%
                                    .[[code_col]])
     }
@@ -304,18 +288,15 @@ lookup_codes <- function(codes,
 #' @export
 search_codes_by_description <- function(reg_expr,
                                       code_type,
-                                      ukb_code_mappings = get_ukb_code_mappings(),
+                                      all_lkps_maps = get_ukb_code_mappings(),
                                       ignore_case = TRUE,
                                       codes_only = FALSE,
                                       preferred_description_only = TRUE) {
   # validate args
   match.arg(arg = code_type,
-            choices = ukbwranglr:::code_type_to_lkp_sheet_map_df$code)
+            choices = CODE_TYPE_TO_LKP_SHEET_MAP$code)
 
-  # check all sheets are present
-  assertthat::assert_that(
-    all(ukbwranglr:::ukb_code_mappings_sheet_names %in% names(ukb_code_mappings))
-  )
+  validate_all_lkps_maps()
 
   # determine relevant lookup sheet
   lkp_sheet <- get_lookup_sheet(code_type = code_type)
@@ -338,7 +319,7 @@ search_codes_by_description <- function(reg_expr,
   }
 
   # search for codes
-  result <- ukb_code_mappings[[lkp_sheet]] %>%
+  result <- all_lkps_maps[[lkp_sheet]] %>%
     dplyr::collect() %>%
     dplyr::filter(stringr::str_detect(
       string = .data[[description_col]],
@@ -397,23 +378,20 @@ search_codes_by_description <- function(reg_expr,
 map_codes <- function(codes,
                       from,
                       to,
-                      ukb_code_mappings = get_ukb_code_mappings(),
+                      all_lkps_maps = get_ukb_code_mappings(),
                       codes_only = FALSE,
                       standardise_output = TRUE,
                       quiet = FALSE,
                       preferred_description_only = NULL) {
   # validate args
-  # check all sheets are present
-  assertthat::assert_that(
-    all(ukbwranglr:::ukb_code_mappings_sheet_names %in% names(ukb_code_mappings))
-  )
+  validate_all_lkps_maps()
 
   match.arg(arg = from,
-            choices = ukbwranglr:::code_type_to_lkp_sheet_map_df$code)
+            choices = CODE_TYPE_TO_LKP_SHEET_MAP$code)
             # choices = ukbwranglr:::CLINICAL_CODE_MAPPINGS_MAP$from)
 
   match.arg(arg = to,
-            choices = ukbwranglr:::code_type_to_lkp_sheet_map_df$code)
+            choices = CODE_TYPE_TO_LKP_SHEET_MAP$code)
             # choices = ukbwranglr:::CLINICAL_CODE_MAPPINGS_MAP$to)
 
   assertthat::assert_that(
@@ -487,10 +465,10 @@ map_codes <- function(codes,
   # reformat codes if mapping from icd10 and swapping mapping cols is TRUE
   if (from == "icd10" & swap_mapping_cols) {
     codes <- reformat_icd10_codes(icd10_codes = codes,
-                                  ukb_code_mappings = ukb_code_mappings)
+                                  all_lkps_maps = all_lkps_maps)
   }
 
-  result <- ukb_code_mappings[[mapping_sheet]] %>%
+  result <- all_lkps_maps[[mapping_sheet]] %>%
     dplyr::filter(.data[[from_col]] %in% codes) %>%
     dplyr::collect()
 
@@ -505,7 +483,7 @@ map_codes <- function(codes,
       warning_if_codes_not_found(
         codes = codes,
         code_type = from,
-        search_col = ukb_code_mappings[[mapping_sheet]] %>%
+        search_col = all_lkps_maps[[mapping_sheet]] %>%
           dplyr::collect() %>%
           .[[from_col]]
       )
@@ -524,7 +502,7 @@ map_codes <- function(codes,
         codes <-
           reformat_icd10_codes(
             icd10_codes = unique(result[[to_col]]),
-            ukb_code_mappings = ukb_code_mappings,
+            all_lkps_maps = all_lkps_maps,
             input_icd10_format = "ALT_CODE",
             output_icd10_format = "ICD10_CODE"
           )
@@ -535,7 +513,7 @@ map_codes <- function(codes,
         lookup_codes(
           codes = codes,
           code_type = to,
-          ukb_code_mappings = ukb_code_mappings,
+          all_lkps_maps = all_lkps_maps,
           preferred_description_only = preferred_description_only,
           quiet = quiet
         )
@@ -570,7 +548,7 @@ map_codes <- function(codes,
 #' @export
 #' @family Clinical code lookups and mappings
 reformat_icd10_codes <- function(icd10_codes,
-                                 ukb_code_mappings,
+                                 all_lkps_maps,
                                  input_icd10_format = "ICD10_CODE",
                                  output_icd10_format = "ALT_CODE") {
   # validate args
@@ -585,11 +563,11 @@ reformat_icd10_codes <- function(icd10_codes,
                           msg = "Error for `reformat_icd10_codes()`! Input and output icd10 formats cannot be the same")
 
   # TO DELETE reformat icd10 codes
-  # result <- ukb_code_mappings$icd10_lkp %>%
+  # result <- all_lkps_maps$icd10_lkp %>%
   #   dplyr::filter(.data[[input_icd10_format]] %in% icd10_codes) %>%
   #   dplyr::collect()
 
-  icd10_lkp <- ukb_code_mappings$icd10_lkp %>%
+  icd10_lkp <- all_lkps_maps$icd10_lkp %>%
     dplyr::collect()
 
     # some ICD10_CODE values have multiple associated ALT_CODEs - the ALT_CODEs
@@ -702,10 +680,10 @@ get_value_for_mapping_sheet <- function(mapping_sheet,
 get_lookup_sheet <- function(code_type) {
   # validate args
   match.arg(code_type,
-            choices = ukbwranglr:::code_type_to_lkp_sheet_map_df$code)
+            choices = CODE_TYPE_TO_LKP_SHEET_MAP$code)
 
   # get lookup sheet
-  ukbwranglr:::code_type_to_lkp_sheet_map_df %>%
+  CODE_TYPE_TO_LKP_SHEET_MAP %>%
     dplyr::filter(.data[["code"]] == code_type) %>%
     .$lkp_sheet
 }
@@ -726,13 +704,13 @@ get_col_for_lookup_sheet <- function(lookup_sheet,
 
   # validate args
   match.arg(arg = lookup_sheet,
-            choices = ukbwranglr:::code_type_to_lkp_sheet_map_df$lkp_sheet)
+            choices = CODE_TYPE_TO_LKP_SHEET_MAP$lkp_sheet)
 
   match.arg(arg = column,
             choices = c("code_col", "description_col", "preferred_synonym_col"))
 
   # get column name for lookup sheet
-  ukbwranglr:::code_type_to_lkp_sheet_map_df %>%
+  CODE_TYPE_TO_LKP_SHEET_MAP %>%
     dplyr::filter(.data[["lkp_sheet"]] == lookup_sheet) %>%
     .[[column]]
 }
@@ -750,10 +728,10 @@ get_col_for_lookup_sheet <- function(lookup_sheet,
 get_preferred_description_code_for_lookup_sheet <- function(lookup_sheet) {
   # validate args
   match.arg(arg = lookup_sheet,
-            choices = ukbwranglr:::code_type_to_lkp_sheet_map_df$lkp_sheet)
+            choices = CODE_TYPE_TO_LKP_SHEET_MAP$lkp_sheet)
 
   # get preferred description code for lookup sheet
-  ukbwranglr:::code_type_to_lkp_sheet_map_df %>%
+  CODE_TYPE_TO_LKP_SHEET_MAP %>%
     dplyr::filter(.data[["lkp_sheet"]] == lookup_sheet) %>%
     .[["preferred_code"]]
 }
@@ -788,7 +766,7 @@ warning_if_codes_not_found <-
 
 # Helper function for exploring and mapping clinical codes
 return_results_clinical_codes <- function(result,
-                                          ukb_code_mappings,
+                                          all_lkps_maps,
                                           code_col,
                                           codes_only,
                                           standardise_output,
@@ -804,7 +782,7 @@ return_results_clinical_codes <- function(result,
       warning_if_codes_not_found(
         codes = codes,
         code_type = from,
-        search_col = ukb_code_mappings[[mapping_sheet]] %>%
+        search_col = all_lkps_maps[[mapping_sheet]] %>%
           dplyr::collect() %>%
           .[[from_col]]
       )
@@ -823,7 +801,7 @@ return_results_clinical_codes <- function(result,
         codes <-
           reformat_icd10_codes(
             icd10_codes = unique(result[[to_col]]),
-            ukb_code_mappings = ukb_code_mappings,
+            all_lkps_maps = all_lkps_maps,
             input_icd10_format = "ALT_CODE",
             output_icd10_format = "ICD10_CODE"
           )
@@ -834,7 +812,7 @@ return_results_clinical_codes <- function(result,
         lookup_codes(
           codes = codes,
           code_type = to,
-          ukb_code_mappings = ukb_code_mappings,
+          all_lkps_maps = all_lkps_maps,
           preferred_description_only = preferred_description_only,
           quiet = quiet
         )

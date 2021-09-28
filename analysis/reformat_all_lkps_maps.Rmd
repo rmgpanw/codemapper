@@ -1,0 +1,182 @@
+---
+title: "Reformatting UKB 'all_lkps_maps.xlsx'"
+author: "Alasdair Warwick"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output: 
+  workflowr::wflow_html:
+    toc: false
+editor_options:
+  chunk_output_type: console
+---
+
+```{r global-options, echo=FALSE}
+knitr::opts_chunk$set(warning=FALSE, message=FALSE, echo=FALSE)
+```
+
+```{r}
+library(tidyverse)
+library(reactable)
+library(readxl)
+library(crosstalk)
+library(targets)
+
+devtools::load_all()
+
+config <- configr::read.config("config.ini")
+
+all_lkps_maps_raw <- tar_read(all_lkps_maps_raw)
+all_lkps_maps <- tar_read(all_lkps_maps)
+bnf_dmd <- tar_read(bnf_dmd)
+```
+
+# Remove irrelevant rows 
+
+## Last few rows of each sheet {.tabset .tabset-pills}
+
+2 columns shown only
+
+```{r results='asis'}
+iwalk(all_lkps_maps_raw,
+     ~ {
+       cat("### ", .y, "\n\n")
+       
+       print(knitr::kable(tail(.x[, 1:2])))
+       
+       cat("\n\n")
+     })
+```
+
+## Cannot just remove `NA` in column 2
+
+```{r}
+# remove irrelavant rows
+all_lkps_maps_rm_na_col2 <- all_lkps_maps_raw %>% 
+  map(~ .x[!is.na(.x[[2]]), ])
+```
+
+```{r}
+# compare nrows before and after this step
+all_lkps_maps_rm_na_col2_nrows <- all_lkps_maps_rm_na_col2 %>% 
+  map(nrow) %>% 
+  as.data.frame() %>% 
+  t() %>% 
+  as.data.frame() %>% 
+  rownames_to_column("Sheet") %>% 
+  rename(`N rows rm NAs in col 2` = V1)
+
+all_lkps_maps_nrows <- all_lkps_maps_raw %>% 
+  map(nrow) %>% 
+  as.data.frame() %>% 
+  t() %>% 
+  as.data.frame() %>% 
+  rownames_to_column("Sheet") %>% 
+  rename(`N rows raw` = V1)
+
+# combine and compare
+all_lkps_maps_nrows %>% 
+  full_join(all_lkps_maps_rm_na_col2_nrows,
+            by = "Sheet") %>% 
+  mutate(Difference = `N rows raw` - `N rows rm NAs in col 2`) %>% 
+  knitr::kable()
+```
+
+## Instead, determine N rows to remove manually
+
+```{r}
+# remove last few rows from each sheet (n to remove determined manually)
+all_lkps_maps_reformatted <- remove_irrelevant_rows_all_lkps_maps(all_lkps_maps_raw)
+
+# compare row numbers
+all_lkps_maps_reformatted_nrows <- all_lkps_maps_reformatted %>% 
+  map(nrow) %>% 
+  as.data.frame() %>% 
+  t() %>% 
+  as.data.frame() %>% 
+  rownames_to_column("Sheet") %>% 
+  rename(`N rows reformatted` = V1)
+
+all_lkps_maps_nrows %>% 
+  full_join(all_lkps_maps_reformatted_nrows,
+            by = "Sheet") %>% 
+  mutate(Difference = `N rows raw` - `N rows reformatted`) %>% 
+  knitr::kable()
+```
+
+# `bnf_lkp`
+
+BNF codes in the UK Biobank linked primary care dataset are of variable length (see [UKB resource 591](https://biobank.ndph.ox.ac.uk/ukb/refer.cgi?id=591)).
+
+`extend_bnf_lkp()` creates all possible versions for BNF codes in `bnf_lkp`. This facilitates selecting all drugs under a certain chapter/section/etc e.g. to get all BNF codes for all medications in the 'Treatment Of Glaucoma' section (i.e. BNF codes starting with `1106`). This table shows the results for the first drug in this section:
+
+```{r}
+all_lkps_maps_raw$bnf_lkp %>% 
+  filter(BNF_Section == "Treatment Of Glaucoma") %>% 
+  extend_bnf_lkp() %>% 
+  head(n = 8) %>% 
+  reactable(filterable = TRUE,
+            resizable = TRUE,
+            defaultPageSize = 8)
+```
+
+# `bnf_read2`
+
+All BNF codes in the `bnf_code` col are 8 digits long. Digit 7 corresponds to BNF sub paragraph - this is expanded to 2 digits by prefixing with a `0` in `bnf_code`. 
+
+Note that there are a number of Read 2 codes that have not been mapped to BNF (`NA` in the table below):
+
+```{r}
+all_lkps_maps$read_v2_drugs_bnf %>%
+  mutate("Digits 7 and 8, bnf_code col" = str_sub(
+    str_remove_all(bnf_code, pattern = "\\."),
+    start = 7,
+    end = 8
+  )) %>%
+  count(`Digits 7 and 8, bnf_code col`) %>%
+  knitr::kable()
+```
+
+...in most cases, `BNF_Paragraph` = `BNF_Subparagraph`. For an example of where these can differ, see BNF paragraph `Renin-Angiotensin System Drugs`.
+
+`extend_read_v2_drugs_bnf()` appends Read 2 and BNF descriptions to the `read_v2_drugs_bnf` table, the first few rows are shown below:
+
+```{r}
+extend_read_v2_drugs_bnf(all_lkps_maps) %>% 
+  filter() %>% 
+  reactable(filterable = TRUE,
+            resizable = TRUE,
+            defaultPageSize = 8)
+```
+
+# `bnf_dmd`
+
+This is downloaded from the [NHSBSA website](https://www.nhsbsa.nhs.uk/prescription-data/understanding-our-data/bnf-snomed-mapping). There are no 'extra' rows that need removing at the bottom.
+
+To map BNF codes to DM+D:
+
+```{r}
+# get BNF codes for glaucoma meds
+glaucoma_bnf_codes <- all_lkps_maps_raw$bnf_lkp %>% 
+  filter(BNF_Section == "Treatment Of Glaucoma") %>% 
+  pull(BNF_Presentation_Code)
+
+# are all these codes present in `bnf_dmd`?
+glaucoma_bnf_codes_not_in_bnf_dmd <- subset(glaucoma_bnf_codes,!glaucoma_bnf_codes %in% bnf_dmd$bnf_codes)
+```
+
+```{r results='asis'}
+if (!rlang::is_empty(glaucoma_bnf_codes_not_in_bnf_dmd)) {
+  cat(paste0("> **Note:** There are ",
+             length(glaucoma_bnf_codes_not_in_bnf_dmd),
+             " out of ",
+             length(glaucoma_bnf_codes),
+             " glaucoma medication codes that are not present in `bnf_dmd`"))
+}
+```
+
+```{r}
+# map to DM+D
+bnf_dmd %>% 
+  filter(bnf_code %in% glaucoma_bnf_codes) %>% 
+  head()
+```
+

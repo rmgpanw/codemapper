@@ -21,6 +21,13 @@ Depends:
     ukbwranglr (>= 0.0.0.9000),
 Imports: 
     assertthat,
-    dplyr
-Remotes:  
+    dplyr,
+    magrittr,
+    purrr,
+    readxl,
+    stringr,
+    tidyr,
+    tidyselect,
+    utils
+Remotes: 
     github::rmgpanw/ukbwranglr@dev
