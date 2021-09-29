@@ -1,4 +1,5 @@
-all_lkps_maps <- get_all_lkps_maps()
+# TODO unhash this
+# all_lkps_maps <- get_all_lkps_maps()
 # all_lkps_maps_db <- get_all_lkps_maps_db()
 
 # UKB CODE MAPPINGS -------------------------------------------------------
@@ -33,10 +34,11 @@ ALL_LKPS_MAPS_TABLE_NAMES <- c(
   "bnf_dmd"
 )
 
-assertthat::assert_that(
-  all(sort(ALL_LKPS_MAPS_TABLE_NAMES) == sort(names(all_lkps_maps))),
-  msg = "`ALL_LKPS_MAPS_TABLE_NAMES` does not match the expected names"
-)
+# TODO - unhash this
+# assertthat::assert_that(
+#   all(sort(ALL_LKPS_MAPS_TABLE_NAMES) == sort(names(all_lkps_maps))),
+#   msg = "`ALL_LKPS_MAPS_TABLE_NAMES` does not match the expected names"
+# )
 
 # TO DELETE?
 # colnames for each excel spreadsheet in resource 592 ---------------------

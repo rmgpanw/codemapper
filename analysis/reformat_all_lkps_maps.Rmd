@@ -26,7 +26,6 @@ config <- configr::read.config("config.ini")
 
 all_lkps_maps_raw <- tar_read(all_lkps_maps_raw)
 all_lkps_maps <- tar_read(all_lkps_maps)
-bnf_dmd <- tar_read(bnf_dmd)
 ```
 
 # Remove irrelevant rows 
@@ -109,9 +108,9 @@ BNF codes in the UK Biobank linked primary care dataset are of variable length (
 `extend_bnf_lkp()` creates all possible versions for BNF codes in `bnf_lkp`. This facilitates selecting all drugs under a certain chapter/section/etc e.g. to get all BNF codes for all medications in the 'Treatment Of Glaucoma' section (i.e. BNF codes starting with `1106`). This table shows the results for the first drug in this section:
 
 ```{r}
-all_lkps_maps_raw$bnf_lkp %>% 
+all_lkps_maps_raw %>% 
+  extend_bnf_lkp() %>%
   filter(BNF_Section == "Treatment Of Glaucoma") %>% 
-  extend_bnf_lkp() %>% 
   head(n = 8) %>% 
   reactable(filterable = TRUE,
             resizable = TRUE,
@@ -140,8 +139,8 @@ all_lkps_maps$read_v2_drugs_bnf %>%
 `extend_read_v2_drugs_bnf()` appends Read 2 and BNF descriptions to the `read_v2_drugs_bnf` table, the first few rows are shown below:
 
 ```{r}
-extend_read_v2_drugs_bnf(all_lkps_maps) %>% 
-  filter() %>% 
+all_lkps_maps$read_v2_drugs_bnf %>% 
+  head(n = 8) %>% 
   reactable(filterable = TRUE,
             resizable = TRUE,
             defaultPageSize = 8)
@@ -155,12 +154,14 @@ To map BNF codes to DM+D:
 
 ```{r}
 # get BNF codes for glaucoma meds
-glaucoma_bnf_codes <- all_lkps_maps_raw$bnf_lkp %>% 
-  filter(BNF_Section == "Treatment Of Glaucoma") %>% 
+glaucoma_bnf_codes <- all_lkps_maps_raw$bnf_lkp %>%
+  filter(BNF_Section == "Treatment Of Glaucoma") %>%
   pull(BNF_Presentation_Code)
 
 # are all these codes present in `bnf_dmd`?
-glaucoma_bnf_codes_not_in_bnf_dmd <- subset(glaucoma_bnf_codes,!glaucoma_bnf_codes %in% bnf_dmd$bnf_codes)
+glaucoma_bnf_codes_not_in_bnf_dmd <-
+  subset(glaucoma_bnf_codes,
+         !glaucoma_bnf_codes %in% all_lkps_maps$bnf_dmd$bnf_code)
 ```
 
 ```{r results='asis'}
@@ -175,7 +176,7 @@ if (!rlang::is_empty(glaucoma_bnf_codes_not_in_bnf_dmd)) {
 
 ```{r}
 # map to DM+D
-bnf_dmd %>% 
+all_lkps_maps$bnf_dmd %>% 
   filter(bnf_code %in% glaucoma_bnf_codes) %>% 
   head()
 ```
