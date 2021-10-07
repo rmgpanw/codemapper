@@ -17,102 +17,124 @@ runCodeMapper <- function(all_lkps_maps,
     all_lkps_maps <- ukbwranglr::db_tables_to_list(con)
   }
 
-  ui <- fluidPage(
-    # Application title
+  ui <- fluidPage(# Application title
+    shinyFeedback::useShinyFeedback(),
     titlePanel("Build a clinical codes list"),
-
-    wellPanel(
-    fluidRow(
-      column(textInput("disease",
-                       "Disease",
-                       value = "Diabetes"),
-             width = 2),
-      column(textInput("category",
-                "Category",
-                value = ""),
-             width = 2),
-      column(textInput("author",
-                "Author",
-                value = "Anon"),
-             width = 2),
-      column(checkboxGroupInput(inputId = "code_type",
-                         label = "Code types",
-                         choices = CODE_TYPE_TO_LKP_TABLE_MAP$code,
-                         selected = c("read2", "read3", "icd9", "icd10", "opcs4"),
-                         inline = TRUE),
-             width = 6
-    ))),
 
     # Sidebar
     sidebarLayout(
       sidebarPanel(
         width = 2,
-        h4("Search strategy"),
-        textInput("description_search",
-                  "Code description like...",
-                  value = "diabetes"),
-        checkboxInput("description_search_ignore_case", label = "Ignore case", value = TRUE),
-        textInput("description_search_and",
-                  "and... ",
-                  value = "non-insulin|2|II"),
-        checkboxInput("description_search_and_ignore_case", label = "Ignore case", value = TRUE),
-        textInput("description_search_not",
-                  "but not...",
-                  value = "complications"),
-        checkboxInput("description_search_not_ignore_case", label = "Ignore case", value = TRUE),
-        h4("Codes start with..."),
-        textInput("bnf_starts",
-                  "BNF",
+        textInput("disease",
+                  "Disease",
+                  value = "Diabetes"),
+        textInput("category",
+                  "Category",
                   value = ""),
-        textInput("dmd_starts",
-                  "DMD",
-                  value = ""),
-        textInput("icd9_starts",
-                  "ICD-9",
-                  value = ""),
-        textInput("icd10_starts",
-                  "ICD-10",
-                  value = ""),
-        textInput("read2_starts",
-                  "Read 2",
-                  value = "C109"),
-        textInput("read2_drugs_starts",
-                  "Read 2 drugs",
-                  value = ""),
-        textInput("read3_starts",
-                  "Read 3",
-                  value = "C109"),
-        textInput("opcs4_starts",
-                  "OPCS4",
-                  value = ""),
-        h4("Run query"),
-        actionButton(inputId = "new_search", label = "Search"),
-        h4("Confirm code selection"),
-        actionButton(inputId = "confirm_selection", label = "Confirm selection"),
-        h4("Download code selection"),
-        downloadButton("download_confirmed_codes",
-                       label = "Download")
+        textInput("author",
+                  "Author",
+                  value = "Anon"),
+        checkboxGroupInput(
+          inputId = "code_type",
+          label = "Code types",
+          choices = CODE_TYPE_TO_LKP_TABLE_MAP$code,
+          selected = c("read2", "read3", "icd9", "icd10", "opcs4")
+        )
       ),
 
       # Show clinical codes matching input settings
-      mainPanel(tabsetPanel(
-        type = "pills",
-        tabPanel(
-          "Matching clinical codes",
-          reactable::reactableOutput("matching_codes")
+      mainPanel(
+        tabsetPanel(
+          type = "pills",
+          tabPanel(
+            "Search strategy",
+            fluidRow(
+              h4("Run query"),
+              actionButton(inputId = "new_search",
+                           label = "Search",
+                           class = "btn-lg btn-success"),
+            ),
+            column(
+              h4("Code descriptions like..."),
+              textInput("description_search",
+                        "",
+                        value = "diabetes"),
+              checkboxInput(
+                "description_search_ignore_case",
+                label = "Ignore case",
+                value = TRUE
+              ),
+              textInput("description_search_and",
+                        "and... ",
+                        value = "non-insulin|2|II"),
+              checkboxInput(
+                "description_search_and_ignore_case",
+                label = "Ignore case",
+                value = TRUE
+              ),
+              textInput("description_search_not",
+                        "but not...",
+                        value = "complications"),
+              checkboxInput(
+                "description_search_not_ignore_case",
+                label = "Ignore case",
+                value = TRUE
+              ),
+              width = 6
+            ),
+            column(
+              h4("Codes starting with..."),
+              textInput("bnf_starts",
+                        "BNF",
+                        value = ""),
+              textInput("dmd_starts",
+                        "DMD",
+                        value = ""),
+              textInput("icd9_starts",
+                        "ICD-9",
+                        value = ""),
+              textInput("icd10_starts",
+                        "ICD-10",
+                        value = ""),
+              textInput("read2_starts",
+                        "Read 2",
+                        value = "C109"),
+              textInput("read2_drugs_starts",
+                        "Read 2 drugs",
+                        value = ""),
+              textInput("read3_starts",
+                        "Read 3",
+                        value = "C109"),
+              textInput("opcs4_starts",
+                        "OPCS4",
+                        value = ""),
+              width = 6
+            ),
+          ),
+          tabPanel(
+            "Matching clinical codes",
+            h4("Select codes"),
+            reactable::reactableOutput("matching_codes")
+          ),
+          tabPanel(
+            "Preview selected codes",
+            h4("Confirm selection"),
+            actionButton(inputId = "confirm_selection",
+                         label = "Confirm",
+                         class = "btn-lg btn-success"),
+            reactable::reactableOutput("selected_matching_codes_preview")
+          ),
+          tabPanel(
+            "Confirmed codes",
+            h4("Download code selection"),
+            downloadButton("download_confirmed_codes",
+                           label = "Download"),
+            reactable::reactableOutput("confirmed_codes_reactable")
+          )
         ),
-        tabPanel(
-          "Preview selected codes",
-          reactable::reactableOutput("selected_matching_codes_preview")
-        ),
-        tabPanel(
-          "Confirmed codes",
-          reactable::reactableOutput("confirmed_codes_reactable")
-        )
-      ),
-      width = 9)
-    )
-  )
+        width = 9
+      )
+    ))
 
   server <- function(input, output, session) {
 
@@ -141,8 +163,19 @@ runCodeMapper <- function(all_lkps_maps,
             validate("A search value is required for at least one of 'Code description like...' or 'Codes starting with...' ")
       }
 
+      # set up notification
+      notify <- function(msg, id = NULL) {
+        showNotification(msg, id = id, duration = NULL, closeButton = FALSE)
+      }
+
+      message("Searching for matching codes")
+      id <- notify("Searching for matching codes...")
+      on.exit(removeNotification(id), add = TRUE)
+
       # match by description
       if (input$description_search != "") {
+        notify("Searching code descriptions...", id = id)
+
         matching_codes_description <- input$code_type %>%
           purrr::set_names() %>%
           purrr::map(
@@ -200,6 +233,8 @@ runCodeMapper <- function(all_lkps_maps,
 
       # match codes starting with
       if (nrow(code_starts_params) > 0) {
+        notify("Searching for codes starting with...", id = id)
+
         matching_codes_starts_with <- code_starts_params$code_type %>%
           purrr::set_names() %>%
           purrr::map(
@@ -220,6 +255,7 @@ runCodeMapper <- function(all_lkps_maps,
 
       # combine results, or UI message if not matching codes found
       if (is.null(matching_codes_description) & is.null(matching_codes_starts_with)) {
+        notify("No codes found matching search criteria!", id = id)
         validate("No codes found matching search criteria!")
       } else if (!is.null(matching_codes_description) & is.null(matching_codes_starts_with)) {
         matching_codes <- matching_codes_description
@@ -242,6 +278,7 @@ runCodeMapper <- function(all_lkps_maps,
         )
       }
 
+      notify("Final steps...", id = id)
       # add columns recording search strategy
       matching_codes$description_search_strategy <-
         description_search_strategy
@@ -260,6 +297,16 @@ runCodeMapper <- function(all_lkps_maps,
         }
       }
 
+      # reformat
+      matching_codes <- matching_codes %>%
+        dplyr::mutate("disease" = input$disease,
+                      "category" = input$category,
+                      "author" = input$author) %>%
+        dplyr::select(tidyselect::all_of(c(names(ukbwranglr::example_clinical_codes()),
+                                           "description_search_strategy",
+                                           "code_starts_search_strategy")))
+
+      notify("No codes found matching search criteria!", id = id)
       matching_codes
     })
 
@@ -293,15 +340,17 @@ runCodeMapper <- function(all_lkps_maps,
       req(selected())
 
       # reformat
-      selected_matching_codes_preview <- matching_codes() %>%
-        dplyr::mutate("disease" = input$disease,
-                      "category" = input$category,
-                      "author" = input$author) %>%
-        dplyr::select(tidyselect::all_of(c(names(ukbwranglr::example_clinical_codes()),
-                                           "description_search_strategy",
-                                           "code_starts_search_strategy")))
+      # selected_matching_codes_preview <- matching_codes() %>%
+      #   dplyr::mutate("disease" = input$disease,
+      #                 "category" = input$category,
+      #                 "author" = input$author) %>%
+      #   dplyr::select(tidyselect::all_of(c(names(ukbwranglr::example_clinical_codes()),
+      #                                      "description_search_strategy",
+      #                                      "code_starts_search_strategy")))
 
       # add column indicating whether code is selected
+      selected_matching_codes_preview <- matching_codes()
+
       selected_matching_codes_preview$selected <-
         ifelse(rownames(matching_codes()) %in% selected(),
                yes = "Yes",
@@ -314,7 +363,7 @@ runCodeMapper <- function(all_lkps_maps,
       req(selected_matching_codes_preview())
 
       reactable::reactable(
-        selected_matching_codes_preview(),
+        selected_matching_codes_preview()[(selected_matching_codes_preview()$selected) == "Yes", -9],
         filterable = TRUE,
         searchable = TRUE,
         resizable = TRUE,
@@ -350,12 +399,7 @@ runCodeMapper <- function(all_lkps_maps,
         resizable = TRUE,
         showPageSizeOptions = TRUE,
         pageSizeOptions = c(10, 25, 50, 100, 200),
-        # onClick = "select",
-        # groupBy = "Field",
-        # selection = "multiple",
-        # theme = reactable::reactableTheme(
-        #   rowSelectedStyle = list(backgroundColor = "#eee", boxShadow = "inset 2px 0 0 0 #ffa62d")
-        # )),
+        groupBy = c("disease", "code_type"),
         paginationType = "jump"
       )
     })

@@ -90,7 +90,7 @@ codes_starting_with <- function(codes,
   # here: https://www.caliberresearch.org/portal/show/diabcomp_hes) Ask val, it
   # says 'unless explicitly noted otherwise' - examples of this?
   codes_raw <- codes
-  codes <- paste0("^\\", codes, ".*")
+  codes <- paste0("^", codes, ".*")
 
   # combine into single string, separated by "|"
   codes <- stringr::str_c(codes, sep = "", collapse = "|")
