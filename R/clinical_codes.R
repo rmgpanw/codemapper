@@ -915,8 +915,8 @@ standardise_output_fn <- function(df, lkp_table, code_col, description_col, code
       TRUE ~ df$description
     )
 
-    df <- strip_x_from_alt_icd10(df = df,
-                           alt_icd10_code_col = "code")
+    df <- strip_dot_from_icd10(df = df,
+                           icd10_code_col = "code")
   }
 
   # return code, description and code_type cols only
@@ -931,6 +931,15 @@ strip_x_from_alt_icd10 <- function(df,
   df[[alt_icd10_code_col]] <-
     stringr::str_remove(df[[alt_icd10_code_col]],
                         "X$")
+
+  return(df)
+}
+
+strip_dot_from_icd10 <- function(df,
+                                   icd10_code_col) {
+  df[[icd10_code_col]] <-
+    stringr::str_remove(df[[icd10_code_col]],
+                        "\\.")
 
   return(df)
 }

@@ -17,6 +17,38 @@ runCodeMapper <- function(all_lkps_maps,
     all_lkps_maps <- ukbwranglr::db_tables_to_list(con)
   }
 
+
+# HIDDEN UI ---------------------------------------------------------------
+
+  display_matching_codes <- tabsetPanel(
+    id = "display_matching_codes",
+    type = "hidden",
+    tabPanel("empty"),
+    tabPanel(
+      "Matching clinical codes",
+      h4("Select codes"),
+      reactable::reactableOutput("matching_codes")
+    )
+  )
+
+  preview_selected_codes <- tabsetPanel(
+    id = "preview_selected_codes",
+    type = "hidden",
+    tabPanel("empty"),
+    tabPanel(
+      "Preview selected codes",
+      h4("Confirm selection"),
+      actionButton(inputId = "confirm_selection",
+                   label = "Confirm",
+                   class = "btn-lg btn-success"),
+      reactable::reactableOutput("selected_matching_codes_preview")
+    ),
+  )
+
+
+# UI ----------------------------------------------------------------------
+
+
   ui <- fluidPage(# Application title
     shinyFeedback::useShinyFeedback(),
     titlePanel("Build a clinical codes list"),
@@ -110,7 +142,14 @@ runCodeMapper <- function(all_lkps_maps,
                         value = ""),
               width = 6
             ),
+            fluidRow(
+              verbatimTextOutput("n_matching_codes")
+            )
           ),
+          # tabPanel(title = "Results",
+          # display_matching_codes,
+          # preview_selected_codes
+          # ),
           tabPanel(
             "Matching clinical codes",
             h4("Select codes"),
@@ -160,7 +199,7 @@ runCodeMapper <- function(all_lkps_maps,
       # error message if both description and code search boxes are empty
       if ((input$description_search == "") &
           (nrow(code_starts_params) == 0)) {
-            validate("A search value is required for at least one of 'Code description like...' or 'Codes starting with...' ")
+            validate("Invalid request: a search value is required for at least one of 'Code description like...' or 'Codes starting with...' ")
       }
 
       # set up notification
@@ -192,7 +231,13 @@ runCodeMapper <- function(all_lkps_maps,
 
         description_search_strategy <- input$description_search
 
-        if (input$description_search_and != "") {
+        if (nrow(matching_codes_description) == 0) {
+          matching_codes_description <- NULL
+        }
+
+        # AND statement
+        if ((input$description_search_and != "") &
+            !is.null(description_search_strategy)) {
           matching_codes_description <- matching_codes_description %>%
             dplyr::filter(stringr::str_detect(
               .data[["description"]],
@@ -207,9 +252,15 @@ runCodeMapper <- function(all_lkps_maps,
                                                 "' AND '",
                                                 input$description_search_and,
                                                 "'")
+
+          if (nrow(matching_codes_description) == 0) {
+            matching_codes_description <- NULL
+          }
         }
 
-        if (input$description_search_not != "") {
+        # NOT statement
+        if ((input$description_search_not != "") &
+               !is.null(description_search_strategy)) {
           matching_codes_description <- matching_codes_description %>%
             dplyr::filter(stringr::str_detect(
               .data[["description"]],
@@ -225,6 +276,9 @@ runCodeMapper <- function(all_lkps_maps,
                                                 "' NOT '",
                                                 input$description_search_not,
                                                 "'")
+          if (nrow(matching_codes_description) == 0) {
+            matching_codes_description <- NULL
+          }
         }
       } else {
         matching_codes_description <- NULL
@@ -248,6 +302,10 @@ runCodeMapper <- function(all_lkps_maps,
             )
           ) %>%
           dplyr::bind_rows()
+
+        if (nrow(matching_codes_starts_with) == 0) {
+          matching_codes_starts_with <- NULL
+        }
 
       } else {
         matching_codes_starts_with <- NULL
@@ -311,6 +369,19 @@ runCodeMapper <- function(all_lkps_maps,
     })
 
     # Display matching codes --------------------------------------------------
+
+    output$n_matching_codes <- renderText(
+      paste0("N matching codes: ", nrow(matching_codes()))
+    )
+
+    observeEvent(matching_codes(), {
+      if (!is.null(matching_codes())) {
+        updateTabsetPanel(inputId = "display_matching_codes", selected = "display_matching_codes")
+      } else {
+        updateTabsetPanel(inputId = "display_matching_codes", selected = "empty")
+      }
+    })
+
     output$matching_codes <- reactable::renderReactable({
 
       req(matching_codes())
@@ -336,17 +407,16 @@ runCodeMapper <- function(all_lkps_maps,
     # get selected codes (reactable state)
     selected <- reactive(reactable::getReactableState("matching_codes", "selected"))
 
+    observeEvent(selected(), {
+      if (!is.null(selected())) {
+        updateTabsetPanel(inputId = "preview_selected_codes", selected = "preview_selected_codes")
+      } else {
+        updateTabsetPanel(inputId = "preview_selected_codes", selected = "empty")
+      }
+    })
+
     selected_matching_codes_preview <- reactive({
       req(selected())
-
-      # reformat
-      # selected_matching_codes_preview <- matching_codes() %>%
-      #   dplyr::mutate("disease" = input$disease,
-      #                 "category" = input$category,
-      #                 "author" = input$author) %>%
-      #   dplyr::select(tidyselect::all_of(c(names(ukbwranglr::example_clinical_codes()),
-      #                                      "description_search_strategy",
-      #                                      "code_starts_search_strategy")))
 
       # add column indicating whether code is selected
       selected_matching_codes_preview <- matching_codes()
@@ -384,7 +454,14 @@ runCodeMapper <- function(all_lkps_maps,
     confirmed_codes <- reactiveValues(df = NULL)
 
     observeEvent(input$confirm_selection, {
+
+      # TODO - get this working
+      # shinyFeedback::feedbackWarning("confirm_selection",
+      #                                is.null(selected_matching_codes_preview()),
+      #                                "No codes are selected")
+
       req(selected_matching_codes_preview())
+
       confirmed_codes$df <- dplyr::bind_rows(confirmed_codes$df,
                                              selected_matching_codes_preview())
     })
