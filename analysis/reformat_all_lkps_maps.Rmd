@@ -181,3 +181,58 @@ all_lkps_maps$bnf_dmd %>%
   head()
 ```
 
+# `icd10_lkp`
+
+```{r}
+n_icd10_ends_x <- all_lkps_maps_raw$icd10_lkp %>% 
+  filter(str_detect(ALT_CODE,
+             ".X$")) %>% 
+  nrow()
+```
+
+For `r n_icd10_ends_x` codes where the 3 character category is undivided, 'X' is appended in the `ALT_CODE` column. These are listed below:
+
+```{r}
+all_lkps_maps_raw$icd10_lkp %>% 
+  filter(str_detect(ALT_CODE,
+             ".X$")) %>% 
+  reactable(filterable = TRUE,
+            resizable = TRUE,
+            searchable = TRUE,
+            showPageSizeOptions = TRUE,
+            pageSizeOptions = c(5, 10, 25, 50, 100, 200),
+            paginationType = "jump",
+            defaultPageSize = 5)
+```
+
+UK Biobank ICD-10 codes are recorded as per the `ALT_CODE` format, but does ***not*** append 'X' for these undivided 3 character category codes. 
+
+The 'X' is therefore removed when reformatting the `icd_10` lookup sheet.
+
+```{r}
+# make sure that only 3 character ICD10 codes have an ALT_CODE ending with X
+lengths_ICD10_CODE_ALT_ends_X <- all_lkps_maps_raw$icd10_lkp %>% 
+  filter(str_detect(ALT_CODE,
+             ".X$")) %>% 
+  mutate(length_ICD10_CODE = str_length(ICD10_CODE)) %>% 
+  pull(length_ICD10_CODE) %>% 
+  unique()
+
+assertthat::are_equal(lengths_ICD10_CODE_ALT_ends_X,
+                      3)
+```
+
+```{r}
+# check there are no icd10 codes with values in both the modifier 4 and 5 cols
+n_icd10_codes_with_both_modifier_4_and_5 <- all_lkps_maps_raw$icd10_lkp %>% 
+  filter(!is.na(MODIFIER_4) & !is.na(MODIFIER_5)) %>% 
+  nrow()
+
+assertthat::are_equal(n_icd10_codes_with_both_modifier_4_and_5, 0)
+```
+
+There are no ICD-10 codes with values for both `MODIFIER_4` AND `MODIFIER_5`.
+
+# `opcs4_lkp`
+
+There is no lookup sheet for OPCS4 codes in UK Biobank resource 592. This is therefore created instead from the UK Biobank codings file ([coding 240](https://biobank.ctsu.ox.ac.uk/crystal/coding.cgi?id=240)

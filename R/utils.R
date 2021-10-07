@@ -1,3 +1,222 @@
+
+# EXPORTED ----------------------------------------------------------------
+
+#' Build a SQLite database of clinical code look up and mapping tables
+#'
+#' Write the output from \code{\link{build_all_lkps_maps}} to a SQLite database.
+#'
+#' @param all_lkps_maps A named list of look up and mapping tables, as created
+#'   by \code{\link{build_all_lkps_maps}}.
+#' @param db_path Where the database will be created. If an SQLite database file
+#'   already exists here, then the lookup and mapping tables will be added to
+#'   this. If \code{NULL} (default), then no database will be created/modified.
+#' @param overwrite If \code{TRUE}, overwrite tables in the database if they
+#'   already exist. Default value is \code{FALSE}.
+#'
+#' @return Returns \code{db_path} invisibly
+#' @export
+all_lkps_maps_to_db <- function(all_lkps_maps,
+                                db_path,
+                                overwrite = FALSE) {
+
+  # If database already exists at db_path, check if tables to be written are
+  # already present
+    if (file.exists(db_path)) {
+      warning(
+        paste0(
+          "File found at ",
+          db_path
+        )
+      )
+
+      check_tables_do_not_already_exist <- TRUE
+    } else {
+      check_tables_do_not_already_exist <- FALSE
+    }
+
+    # connect to db
+    con <- DBI::dbConnect(RSQLite::SQLite(), db_path)
+    on.exit(DBI::dbDisconnect(con))
+
+    if (check_tables_do_not_already_exist) {
+      tables_to_be_written <- c(
+        CLINICAL_CODE_MAPPINGS_MAP$mapping_table,
+        CODE_TYPE_TO_LKP_TABLE_MAP$lkp_table
+      )
+
+      tables_already_in_db <- DBI::dbListTables(con)
+
+      tables_already_present_in_db <- subset(tables_to_be_written,
+                                             tables_to_be_written %in% tables_already_in_db)
+
+      if (!overwrite) {
+      assertthat::assert_that(
+        rlang::is_empty(tables_already_present_in_db),
+        msg = paste0(
+          "Error! The following tables are already present in the database at ",
+          db_path,
+          ": ",
+          stringr::str_c(
+            tables_already_present_in_db,
+            sep = "",
+            collapse = ", "
+          )
+        )
+      )
+      } else if (overwrite & !rlang::is_empty(tables_already_present_in_db)) {
+        warning(
+          "The following tables are already present in the database at ",
+          db_path,
+          " and will be overwritten: ",
+          stringr::str_c(
+            tables_already_present_in_db,
+            sep = "",
+            collapse = ", "
+          )
+        )
+      }
+  }
+
+  # write to db
+    message(paste0("Writing lookup and mapping tables to SQLite database at ", db_path))
+    for (table_name in names(all_lkps_maps)) {
+      message(table_name)
+      DBI::dbWriteTable(
+        conn = con,
+        name = table_name,
+        value = all_lkps_maps[[table_name]],
+        # ensure table is not inadvertently overwritten/appended to
+        overwrite = overwrite,
+        append = FALSE
+      )
+    }
+
+    message("Success!")
+    invisible(db_path)
+}
+
+#' Build named list of clinical code look up and mapping tables
+#'
+#' Downloads the lookup and mapping tables from
+#' \href{https://biobank.ndph.ox.ac.uk/ukb/refer.cgi?id=592}{UK Biobank resource
+#' 592} as well as the NHSBSA BNF-SNOMED mapping table (available
+#' \href{https://www.nhsbsa.nhs.uk/prescription-data/understanding-our-data/bnf-snomed-mapping}{here})
+#' and OPCS4 codes from the UK Biobank codings file (available
+#' \href{https://biobank.ctsu.ox.ac.uk/crystal/exinfo.cgi?src=accessing_data_guide}{here}).
+#'
+#' @return Returns a named list of data frames.
+#' @export
+build_all_lkps_maps <- function(db_path = NULL,
+                                all_lkps_maps = get_ukb_all_lkps_maps_raw_direct(),
+                                bnf_dmd = get_nhsbsa_snomed_bnf(),
+                                ukb_codings = ukbwranglr::get_ukb_codings_direct()) {
+
+  # ukb resource 592
+  all_lkps_maps <- all_lkps_maps
+  all_lkps_maps <- all_lkps_maps %>%
+    remove_irrelevant_rows_all_lkps_maps()
+
+  # extend tables
+  message("Extending tables in UKB resource 592")
+  all_lkps_maps$read_v2_drugs_bnf <-
+    extend_read_v2_drugs_bnf(all_lkps_maps)
+  all_lkps_maps$bnf_lkp <-
+    extend_bnf_lkp(all_lkps_maps)
+
+  # opcs4, from ukb codings file
+  opcs4_lkp <- ukb_codings %>%
+    dplyr::filter(.data[["Coding"]] == "240") %>%
+    dplyr::select(-.data[["Coding"]]) %>%
+    dplyr::rename("opcs4_code" = .data[["Value"]],
+                  "description" = .data[["Meaning"]])
+
+  # combine
+  all_lkps_maps <- c(all_lkps_maps, list(bnf_dmd = bnf_dmd,
+                                         opcs4_lkp = opcs4_lkp))
+
+  message("Success!")
+  return(all_lkps_maps)
+}
+
+#' Download and read the NHSBSA BNF_SNOMED mapping file
+#'
+#' Mapping table available from
+#' \href{https://www.nhsbsa.nhs.uk/prescription-data/understanding-our-data/bnf-snomed-mapping}{here}.
+#'
+#' @return A data frame.
+#' @export
+get_nhsbsa_snomed_bnf <- function() {
+  message("Getting NHSBSA BNF-SNOMED mapping table")
+  # file paths
+  bnf_dmd_map_zip_path <- file.path(tempdir(), "bnf_dmd.zip")
+  bnf_dmd_map_unzipped_dir <- file.path(tempdir(), "bnf_dmd")
+
+  # download file to tempdir, if not already there
+  if (!file.exists(bnf_dmd_map_zip_path)) {
+    utils::download.file(url = "https://www.nhsbsa.nhs.uk/sites/default/files/2021-08/BNF%20Snomed%20Mapping%20data%2020210819.zip",
+                         destfile = bnf_dmd_map_zip_path,
+                         mode = 'wb')
+  }
+
+  # read file and tidy names
+  utils::unzip(bnf_dmd_map_zip_path,
+               files = NULL,
+               exdir = file.path(tempdir(), "bnf_dmd"))
+
+  bnf_dmd_file <- list.files(bnf_dmd_map_unzipped_dir)
+  assertthat::assert_that(length(bnf_dmd_file) == 1,
+                          msg = "Error! Unexpected number of files after unzipping NHBSA BNF-SNOMED file")
+
+  bnf_dmd <- readxl::read_excel(file.path(bnf_dmd_map_unzipped_dir, bnf_dmd_file))
+  names(bnf_dmd) <- ukbwranglr:::remove_special_characters_and_make_lower_case(names(bnf_dmd)) %>%
+    stringr::str_remove_all("plus_")
+
+  return(bnf_dmd)
+}
+
+#' Get UK Biobank resource 592 directly from UKB
+#' website
+#'
+#' Downloads the UK Biobank code mappings file (\code{all_lkps_maps_v3.xlsx},
+#' \href{https://biobank.ndph.ox.ac.uk/ukb/refer.cgi?id=592}{resource 592})
+#' directly from the UKB website to a temporary directory at
+#' \code{\link[base]{tempdir}}. This is then read into R as a named list of data
+#' frames, one for each sheet in the original file.
+#'
+#' \strong{Note:} This is a large object (>450 MB)
+#'
+#' @return A named list.
+#' @export
+get_ukb_all_lkps_maps_raw_direct <- function() {
+  message("Getting UKB resource 592")
+  # name of resource 592 excel file
+  primarycare_codings <- "all_lkps_maps_v3.xlsx"
+
+  # filepaths in tempdir
+  primarycare_codings_zip_filepath <- file.path(tempdir(), "primarycare_codings.zip")
+  primarycare_codings_excel_filepath <- file.path(tempdir(), primarycare_codings)
+
+  # download primary care codings file to tempdir, if not already there
+  if(!file.exists(primarycare_codings_zip_filepath)) {
+    message("Downloading primarycare_codings.zip (UKB resource 592) to tempdir")
+    utils::download.file("https://biobank.ndph.ox.ac.uk/ukb/ukb/auxdata/primarycare_codings.zip",
+                         primarycare_codings_zip_filepath,
+                         mode = "wb")
+  }
+
+  # extract excel file only from zip
+  message("Extracting all_lkps_maps_v3.xlsx from zip file to tempdir")
+  utils::unzip(primarycare_codings_zip_filepath,
+               files = primarycare_codings,
+               exdir = tempdir())
+
+  # reading all sheets into named list
+  message("Reading sheets from all_lkps_maps_v3.xlsx to a named list")
+  read_all_lkps_maps_raw(primarycare_codings_excel_filepath)
+}
+
+# PRIVATE -----------------------------------------------------------------
+
 read_excel_to_named_list <- function(path,
                                      to_include = NULL,
                                      to_exclude = NULL,
@@ -31,7 +250,7 @@ read_excel_to_named_list <- function(path,
 }
 
 
-read_all_lkps_maps <- function(path) {
+read_all_lkps_maps_raw <- function(path) {
   read_excel_to_named_list(path = path,
                            to_include = NULL,
                            to_exclude = c("Description", "Contents"),
@@ -40,54 +259,52 @@ read_all_lkps_maps <- function(path) {
 
 remove_irrelevant_rows_all_lkps_maps <- function(all_lkps_maps_raw) {
   nrows_to_remove <- tibble::tribble(
-    ~ sheet, ~ n_to_remove,
-    'bnf_lkp', 2,
-  'dmd_lkp', 2,
-  'icd9_lkp', 2,
-  'icd10_lkp', 2,
-  'icd9_icd10', 3,
-  'read_v2_lkp', 2,
-  'read_v2_drugs_lkp', 2,
-  'read_v2_drugs_bnf', 3,
-  'read_v2_icd9', 3,
-  'read_v2_icd10', 3,
-  'read_v2_opcs4', 3,
-  'read_v2_read_ctv3', 2,
-  'read_ctv3_lkp', 2,
-  'read_ctv3_icd9', 3,
-  'read_ctv3_icd10', 3,
-  'read_ctv3_opcs4', 3,
-  'read_ctv3_read_v2', 2
+    ~ sheet, ~ n_to_remove, ~ nrow_before,
+    'bnf_lkp', 2, 79829,
+  'dmd_lkp', 2, 434951,
+  'icd9_lkp', 2, 7973,
+  'icd10_lkp', 2, 17936,
+  'icd9_icd10', 3, 16163,
+  'read_v2_lkp', 2, 101883,
+  'read_v2_drugs_lkp', 2, 67614,
+  'read_v2_drugs_bnf', 3, 67615,
+  'read_v2_icd9', 3, 35664,
+  'read_v2_icd10', 3, 36667,
+  'read_v2_opcs4', 3, 14927,
+  'read_v2_read_ctv3', 2, 108245,
+  'read_ctv3_lkp', 2, 419098,
+  'read_ctv3_icd9', 3, 67155,
+  'read_ctv3_icd10', 3, 116377,
+  'read_ctv3_opcs4', 3, 54321,
+  'read_ctv3_read_v2', 2, 777522
   )
 
+  # check expected number of rows are present
+  expected_nrows_all_tables <- all_lkps_maps_raw %>%
+    names() %>%
+    purrr::set_names() %>%
+    purrr::map_lgl( ~ nrow(all_lkps_maps_raw[[.x]]) == nrows_to_remove[nrows_to_remove$sheet == .x,][["nrow_before"]])
+
+  unexpected_nrows_tables <- subset(expected_nrows_all_tables,
+         !expected_nrows_all_tables)
+
+  assertthat::assert_that(rlang::is_empty(unexpected_nrows_tables),
+                          msg = paste0("Error! Unexpected number of rows for the following UKB resource 592 tables: ",
+                                       stringr::str_c(unexpected_nrows_tables,
+                                                      sep = "",
+                                                      collapse = ", ")))
+
+  # remove unnecessary rows
   result <- purrr::pmap(nrows_to_remove,
-                               function(sheet, n_to_remove) {
-                                 all_lkps_maps_raw[[sheet]][1:(nrow(all_lkps_maps_raw[[sheet]]) - n_to_remove), ]
-                               })
+                        function(sheet, n_to_remove, ...) {
+                          all_lkps_maps_raw[[sheet]][1:(nrow(all_lkps_maps_raw[[sheet]]) - n_to_remove),]
+                        })
 
   names(result) <- names(all_lkps_maps_raw)
 
   return(result)
 }
 
-read_nhsbsa_snomed_bnf <- function() {
-  # download file to tempdir, if not already there
-  bnf_dmd_map_zip_path <- file.path(tempdir(), "bnf_dmd.zip")
-
-  if (!file.exists(bnf_dmd_map_zip_path)) {
-    utils::download.file(url = "https://www.nhsbsa.nhs.uk/sites/default/files/2021-08/BNF%20Snomed%20Mapping%20data%2020210819.zip",
-                         destfile = bnf_dmd_map_zip_path,
-                         mode = 'wb')
-  }
-
-  # read file and tidy names
-  bnf_dmd_map_path <- utils::unzip(bnf_dmd_map_zip_path)
-  bnf_dmd <- readxl::read_excel(bnf_dmd_map_path)
-  names(bnf_dmd) <- ukbwranglr:::remove_special_characters_and_make_lower_case(names(bnf_dmd)) %>%
-    stringr::str_remove_all("plus_")
-
-  return(bnf_dmd)
-}
 
 # TODO --------------------------------------------------------------------
 
@@ -98,8 +315,4 @@ validate_all_lkps_maps <- function(all_lkps_maps) {
 get_all_lkps_maps <- function() {
   # download
   targets::tar_read(all_lkps_maps)
-}
-
-get_all_lkps_maps_db <- function() {
-  # download
 }

@@ -8,4 +8,5 @@ editor_options:
   chunk_output_type: console
 ---
 
-Welcome to my research website.
+- [Reformat `all_lkps_maps`](reformat_all_lkps_maps.html)
+- [Using `codemapper` functions](clinical_codes_lkps_and_mappings.html)

@@ -139,23 +139,23 @@ extend_read_v2_drugs_bnf <- function(all_lkps_maps) {
                      by = "read_code") %>%
     # extract bnf chapter, section etc from `bnf_code` col in `read_v2_drugs_bnf`
     dplyr::mutate(
-      "bnf_chapter" = stringr::str_sub(
+      "bnf_chapter_code" = stringr::str_sub(
         stringr::str_remove_all(.data[["bnf_code"]], pattern = "\\."),
         start = 1,
         end = 2
       ),
-      "bnf_section" = stringr::str_sub(
+      "bnf_section_code" = stringr::str_sub(
         stringr::str_remove_all(.data[["bnf_code"]], pattern = "\\."),
         start = 1,
         end = 4
       ),
-      "bnf_paragraph" = stringr::str_sub(
+      "bnf_paragraph_code" = stringr::str_sub(
         stringr::str_remove_all(.data[["bnf_code"]], pattern = "\\."),
         start = 1,
         end = 6
       ),
-      "bnf_subparagraph" = paste0(
-        .data[["bnf_paragraph"]],
+      "bnf_subparagraph_code" = paste0(
+        .data[["bnf_paragraph_code"]],
         stringr::str_sub(
           stringr::str_remove_all(.data[["bnf_code"]], pattern = "\\."),
           start = 8,
@@ -166,17 +166,24 @@ extend_read_v2_drugs_bnf <- function(all_lkps_maps) {
 
     # add BNF details
     dplyr::left_join(bnf_lkp_extended[, c("BNF_Code", "BNF_Chapter")],
-                     by = c("bnf_chapter" = "BNF_Code")) %>%
+                     by = c("bnf_chapter_code" = "BNF_Code")) %>%
     dplyr::left_join(bnf_lkp_extended[, c("BNF_Code", "BNF_Section")],
-                     by = c("bnf_section" = "BNF_Code")) %>%
+                     by = c("bnf_section_code" = "BNF_Code")) %>%
     dplyr::left_join(bnf_lkp_extended[, c("BNF_Code", "BNF_Paragraph")],
-                     by = c("bnf_paragraph" = "BNF_Code")) %>%
+                     by = c("bnf_paragraph_code" = "BNF_Code")) %>%
     dplyr::left_join(bnf_lkp_extended[, c("BNF_Code", "BNF_Subparagraph")],
-                     by = c("bnf_subparagraph" = "BNF_Code"))
+                     by = c("bnf_subparagraph_code" = "BNF_Code"))
 
   # check nrows remains the same
   assertthat::assert_that(expected_nrow == nrow(result),
                           msg = "Error! Unexpected number of rows when extending `read_v2_drugs_bnf`")
 
   return(result)
+}
+
+strip_icd10_alt_code_x <- function(df, icd10_col) {
+  df[[icd10_col]] <- stringr::str_remove(df[[icd10_col]],
+                                         "X$")
+
+  return(df)
 }

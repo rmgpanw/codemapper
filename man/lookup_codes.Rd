@@ -7,7 +7,7 @@
 lookup_codes(
   codes,
   code_type,
-  ukb_code_mappings = get_ukb_code_mappings(),
+  all_lkps_maps,
   preferred_description_only = TRUE,
   standardise_output = TRUE,
   quiet = FALSE
@@ -20,8 +20,7 @@ lookup_codes(
 Must be one of \code{read2}, \code{read3}, \code{icd9}, \code{icd10},
 \code{bnf}, \code{dmd}, \code{read2_drugs} or \code{opcs4}.}
 
-\item{ukb_code_mappings}{the \code{ukb_code_mappings} list returned by
-\code{\link{get_ukb_code_mappings}}.}
+\item{all_lkps_maps}{the \code{all_lkps_maps} list.}
 
 \item{preferred_description_only}{bool. Return only preferred descriptions
 for clinical codes with synonyms. Default value is \code{TRUE}.}
@@ -43,7 +42,7 @@ Returns a data frame including descriptions for the codes of interest
 }
 \seealso{
 Other Clinical code lookups and mappings: 
-\code{\link{get_child_codes}()},
+\code{\link{codes_starting_with}()},
 \code{\link{map_codes}()},
 \code{\link{reformat_icd10_codes}()}
 }

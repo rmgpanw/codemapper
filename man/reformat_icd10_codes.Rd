@@ -6,7 +6,7 @@
 \usage{
 reformat_icd10_codes(
   icd10_codes,
-  ukb_code_mappings,
+  all_lkps_maps,
   input_icd10_format = "ICD10_CODE",
   output_icd10_format = "ALT_CODE"
 )
@@ -14,8 +14,7 @@ reformat_icd10_codes(
 \arguments{
 \item{icd10_codes}{character vector of ICD-10 codes}
 
-\item{ukb_code_mappings}{the \code{ukb_code_mappings} list returned by
-\code{\link{get_ukb_code_mappings}}.}
+\item{all_lkps_maps}{the \code{all_lkps_maps} list.}
 
 \item{input_icd10_format}{character. Must be either "ICD10_CODE" or
 "ALT_CODE".}
@@ -38,7 +37,7 @@ This function converts from one format to the other.
 }
 \seealso{
 Other Clinical code lookups and mappings: 
-\code{\link{get_child_codes}()},
+\code{\link{codes_starting_with}()},
 \code{\link{lookup_codes}()},
 \code{\link{map_codes}()}
 }

@@ -31,7 +31,8 @@ ALL_LKPS_MAPS_TABLE_NAMES <- c(
   "read_ctv3_icd10",
   "read_ctv3_opcs4",
   "read_ctv3_read_v2",
-  "bnf_dmd"
+  "bnf_dmd",
+  "opcs4_lkp"
 )
 
 # TODO - unhash this
@@ -49,16 +50,20 @@ ALL_LKPS_MAPS_TABLE_NAMES <- c(
 # clinical code system to lookup table map --------------------------------
 # mappings note, BNF - 'description_col' is for chemical substances only (TODO
 # amend this?)
-CODE_TYPE_TO_LKP_SHEET_MAP <- tibble::tribble(
-  ~ code, ~ lkp_sheet, ~ code_col, ~ description_col, ~ preferred_synonym_col, ~ preferred_code,
-  "bnf", "bnf_lkp", "BNF_Presentation_Code", "BNF_Chemical_Substance", NA, NA,
+
+# TODO - category col for tables?
+
+CODE_TYPE_TO_LKP_TABLE_MAP <- tibble::tribble(
+  ~ code, ~ lkp_table, ~ code_col, ~ description_col, ~ preferred_synonym_col, ~ preferred_code, ~ grouping_col,
+  "bnf", "bnf_lkp", "BNF_Code", "Description", NA, NA, "BNF_Chemical_Substance",
   # "dmd", "dmd_lkp", "concept_id", "term", NA, NA,
-  "dmd", "bnf_dmd", "snomed_code", "dm_d_product_description", NA, NA,
-  "icd9", "icd9_lkp", "ICD9", "DESCRIPTION_ICD9", NA, NA,
-  "icd10", "icd10_lkp", "ICD10_CODE", "DESCRIPTION", NA, NA,
-  "read2", "read_v2_lkp", "read_code", "term_description", "term_code", "00",
-  "read2_drugs", "read_v2_drugs_lkp", "read_code", "term_description", NA, NA,
-  "read3", "read_ctv3_lkp", "read_code", "term_description", "description_type", "P"
+  "dmd", "bnf_dmd", "snomed_code", "dm_d_product_description", NA, NA, "dm_d_product_description",
+  "icd9", "icd9_lkp", "ICD9", "DESCRIPTION_ICD9", NA, NA, "category",
+  "icd10", "icd10_lkp", "ICD10_CODE", "DESCRIPTION", NA, NA, "category",
+  "read2", "read_v2_lkp", "read_code", "term_description", "term_code", "00", NA,
+  "read2_drugs", "read_v2_drugs_lkp", "read_code", "term_description", NA, NA, NA,
+  "read3", "read_ctv3_lkp", "read_code", "term_description", "description_type", "P", NA,
+  "opcs4", "opcs4_lkp", "opcs4_code", "description", NA, NA, "category"
 )
 
 # CLINICAL_CODE_MAPPINGS_MAP ----------------------------------------------

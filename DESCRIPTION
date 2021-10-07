@@ -7,7 +7,7 @@ Authors@R:
            role = c("aut", "cre"),
            email = "alasdair.warwick06@gmail.com",
            comment = c(ORCID = "https://orcid.org/0000-0002-0800-2890?lang=en"))
-Description: Functions for mapping between clinical coding systems
+Description: Functions for mapping between clinical coding systems.
 License: MIT + file LICENSE
 URL: https://gitlab.com/rmgpanw/codemapper
 Encoding: UTF-8
@@ -24,8 +24,13 @@ Imports:
     dplyr,
     magrittr,
     purrr,
+    reactable,
     readxl,
+    rlang,
+    shiny,
     stringr,
+    targets,
+    tibble,
     tidyr,
     tidyselect,
     utils

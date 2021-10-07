@@ -2,8 +2,13 @@ library(targets)
 library(tarchetypes)
 library(magrittr)
 
-source("R/utils.R")
-source("R/lookups_and_mappings.R")
+tar_option_set(
+  packages = c("codemapper"),
+  imports = c("codemapper")
+)
+
+# source("R/utils.R")
+# source("R/lookups_and_mappings.R")
 
 config <- configr::read.config("config.ini")
 
@@ -13,36 +18,40 @@ list(
   # raw UKB resource 592 - each sheet from the excel file is an item in the list
   tar_target(
     all_lkps_maps_raw,
-    read_all_lkps_maps(config$PATHS$UKB_ALL_LKPS_MAPS)
+    codemapper:::get_ukb_all_lkps_maps_raw_direct()
   ),
 
   # the NHSBSA BNF to SNOMED mapping table
   tar_target(bnf_dmd,
-             read_nhsbsa_snomed_bnf()),
+             codemapper:::get_nhsbsa_snomed_bnf()),
 
   # `all_lkps_maps_raw` with redundant bottom rows removed, some tables extended, NHSBSA BNF-SNOMED table appended
   tar_target(all_lkps_maps,
-             {
-               # remove redundant bottom rows
-               all_lkps_maps <-
-                 remove_irrelevant_rows_all_lkps_maps(all_lkps_maps_raw)
+             build_all_lkps_maps()),
 
-               # extend tables
-               all_lkps_maps$read_v2_drugs_bnf <-
-                 extend_read_v2_drugs_bnf(all_lkps_maps)
-               all_lkps_maps$bnf_lkp <-
-                 extend_bnf_lkp(all_lkps_maps)
-
-               # append NHSBSA BNF-SNOMED table
-               all_lkps_maps <- c(all_lkps_maps, list(bnf_dmd = bnf_dmd))
-
-               # final result
-               all_lkps_maps
-             }),
+  tar_target(ALL_LKPS_MAPS_DB,
+             codemapper::all_lkps_maps_to_db(all_lkps_maps,
+                                             "output/all_lkps_maps.db",
+                                             overwrite = TRUE),
+             format = "file"),
 
   # Workflowr Rmds ----------------------------------------------------------
   tar_target(
-    reformat_all_lkps_maps,
+    index_RMD,
+    command = {
+      !!tar_knitr_deps_expr("analysis/index.Rmd")
+      suppressMessages(workflowr::wflow_build("analysis/index.Rmd", verbose = FALSE))
+      c(
+        "analysis/index.Rmd",
+        "public/index.html"
+      )
+    },
+    format = "file"
+  ),
+
+
+  tar_target(
+    reformat_all_lkps_maps_RMD,
     command = {
       !!tar_knitr_deps_expr("analysis/reformat_all_lkps_maps.Rmd")
       suppressMessages(workflowr::wflow_build("analysis/reformat_all_lkps_maps.Rmd", verbose = FALSE))
@@ -55,7 +64,7 @@ list(
   ),
 
   tar_target(
-    clinical_codes_lkps_and_mappings,
+    clinical_codes_lkps_and_mappings_RMD,
     command = {
       !!tar_knitr_deps_expr("analysis/clinical_codes_lkps_and_mappings.Rmd")
       suppressMessages(workflowr::wflow_build("analysis/clinical_codes_lkps_and_mappings.Rmd", verbose = FALSE))

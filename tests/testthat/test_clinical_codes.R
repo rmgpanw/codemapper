@@ -21,12 +21,12 @@ test_that("`all_lkps_maps` table 'icd10_lkp' has no rows with values in both the
   )
 })
 
-# `get_child_codes()` -----------------------------------------------------
+# `codes_starting_with()` -----------------------------------------------------
 
-test_that("`get_child_codes()` returns the expected nuber of results", {
+test_that("`codes_starting_with()` returns the expected nuber of results", {
   # return - codes only
   expect_equal(length(
-    get_child_codes(
+    codes_starting_with(
       codes = c("C10E."),
       code_type = "read2",
       all_lkps_maps = all_lkps_maps,
@@ -38,7 +38,7 @@ test_that("`get_child_codes()` returns the expected nuber of results", {
 
   # return codes and descriptions as a data frame
   expect_equal(nrow(
-    get_child_codes(
+    codes_starting_with(
       codes = c("C10E."),
       code_type = "read2",
       all_lkps_maps = all_lkps_maps,
@@ -49,7 +49,7 @@ test_that("`get_child_codes()` returns the expected nuber of results", {
   expected = 73)
 
   expect_equal(nrow(
-    get_child_codes(
+    codes_starting_with(
       codes = c("C10E."),
       code_type = "read2",
       all_lkps_maps = all_lkps_maps,

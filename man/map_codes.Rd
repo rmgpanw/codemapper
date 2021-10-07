@@ -8,7 +8,7 @@ map_codes(
   codes,
   from,
   to,
-  ukb_code_mappings = get_ukb_code_mappings(),
+  all_lkps_maps,
   codes_only = FALSE,
   standardise_output = TRUE,
   quiet = FALSE,
@@ -22,12 +22,11 @@ map_codes(
 
 \item{to}{character (scalar). Coding system to map \code{codes} to.}
 
-\item{ukb_code_mappings}{the \code{ukb_code_mappings} list returned by
-\code{\link{get_ukb_code_mappings}}.}
+\item{all_lkps_maps}{the \code{all_lkps_maps} list.}
 
-\item{codes_only}{bool. If \code{TRUE}, return a character vector
-of \emph{unique} codes. If \code{FALSE} (default), return a data frame of all results
-including code descriptions (useful for manual validation).}
+\item{codes_only}{bool. If \code{TRUE}, return a character vector of
+\emph{unique} codes. If \code{FALSE} (default), return a data frame of all
+results including code descriptions (useful for manual validation).}
 
 \item{standardise_output}{bool. If \code{TRUE} (default), outputs a data
 frame with columns named 'code', 'description' and 'code_type'. Otherwise
@@ -54,7 +53,7 @@ The values for arguments \code{from} and \code{to} must be one of
 }
 \seealso{
 Other Clinical code lookups and mappings: 
-\code{\link{get_child_codes}()},
+\code{\link{codes_starting_with}()},
 \code{\link{lookup_codes}()},
 \code{\link{reformat_icd10_codes}()}
 }
