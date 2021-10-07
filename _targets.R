@@ -10,8 +10,6 @@ tar_option_set(
 # source("R/utils.R")
 # source("R/lookups_and_mappings.R")
 
-config <- configr::read.config("config.ini")
-
 # End this file with a list of target objects.
 list(
   # Look up and mapping tables-----------------------------------------------------------

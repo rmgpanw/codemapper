@@ -906,17 +906,31 @@ standardise_output_fn <- function(df, lkp_table, code_col, description_col, code
   # The returned "description" column from `standardise_output == TRUE`
   # therefore combines the 'DESCRIPTION' column with one of these 2 columns
   # (whichever is not NA).
+
+  # Also, remove "."
   if (lkp_table == "icd10_lkp") {
     df$description <- dplyr::case_when(
       !is.na(df$MODIFIER_4) ~ paste(df$description, df$MODIFIER_4),
       !is.na(df$MODIFIER_5) ~ paste(df$description, df$MODIFIER_5),
       TRUE ~ df$description
     )
+
+    df <- strip_x_from_alt_icd10(df = df,
+                           alt_icd10_code_col = "code")
   }
 
   # return code, description and code_type cols only
   df <- df[c("code", "description")]
   df[["code_type"]] <- code_type
+
+  return(df)
+}
+
+strip_x_from_alt_icd10 <- function(df,
+                                   alt_icd10_code_col) {
+  df[[alt_icd10_code_col]] <-
+    stringr::str_remove(df[[alt_icd10_code_col]],
+                        "X$")
 
   return(df)
 }
