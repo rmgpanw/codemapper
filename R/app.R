@@ -45,7 +45,6 @@ runCodeMapper <- function(all_lkps_maps,
     ),
   )
 
-
 # UI ----------------------------------------------------------------------
 
 
@@ -59,7 +58,7 @@ runCodeMapper <- function(all_lkps_maps,
         width = 2,
         textInput("disease",
                   "Disease",
-                  value = "Diabetes"),
+                  value = "DISEASE"),
         textInput("category",
                   "Category",
                   value = ""),
@@ -71,7 +70,13 @@ runCodeMapper <- function(all_lkps_maps,
           label = "Code types",
           choices = CODE_TYPE_TO_LKP_TABLE_MAP$code,
           selected = c("read2", "read3", "icd9", "icd10", "opcs4")
-        )
+        ),
+        h4("Download codes"),
+        downloadButton("download_confirmed_codes",
+                       label = "Download all"),
+        downloadButton("download_confirmed_codes_selected_only",
+                     label = "Download selected")
+
       ),
 
       # Show clinical codes matching input settings
@@ -90,7 +95,7 @@ runCodeMapper <- function(all_lkps_maps,
               h4("Code descriptions like..."),
               textInput("description_search",
                         "",
-                        value = "diabetes"),
+                        value = ""),
               checkboxInput(
                 "description_search_ignore_case",
                 label = "Ignore case",
@@ -98,7 +103,7 @@ runCodeMapper <- function(all_lkps_maps,
               ),
               textInput("description_search_and",
                         "and... ",
-                        value = "non-insulin|2|II"),
+                        value = ""),
               checkboxInput(
                 "description_search_and_ignore_case",
                 label = "Ignore case",
@@ -106,7 +111,7 @@ runCodeMapper <- function(all_lkps_maps,
               ),
               textInput("description_search_not",
                         "but not...",
-                        value = "complications"),
+                        value = ""),
               checkboxInput(
                 "description_search_not_ignore_case",
                 label = "Ignore case",
@@ -130,13 +135,13 @@ runCodeMapper <- function(all_lkps_maps,
                         value = ""),
               textInput("read2_starts",
                         "Read 2",
-                        value = "C109"),
+                        value = ""),
               textInput("read2_drugs_starts",
                         "Read 2 drugs",
                         value = ""),
               textInput("read3_starts",
                         "Read 3",
-                        value = "C109"),
+                        value = ""),
               textInput("opcs4_starts",
                         "OPCS4",
                         value = ""),
@@ -156,19 +161,8 @@ runCodeMapper <- function(all_lkps_maps,
             reactable::reactableOutput("matching_codes")
           ),
           tabPanel(
-            "Preview selected codes",
-            h4("Confirm selection"),
-            actionButton(inputId = "confirm_selection",
-                         label = "Confirm",
-                         class = "btn-lg btn-success"),
-            reactable::reactableOutput("selected_matching_codes_preview")
-          ),
-          tabPanel(
-            "Confirmed codes",
-            h4("Download code selection"),
-            downloadButton("download_confirmed_codes",
-                           label = "Download"),
-            reactable::reactableOutput("confirmed_codes_reactable")
+            "Preview selected codes only",
+            reactable::reactableOutput("selected_matching_codes_preview"),
           )
         ),
         width = 9
@@ -355,6 +349,11 @@ runCodeMapper <- function(all_lkps_maps,
         }
       }
 
+      # add column showing included code types
+      matching_codes$included_code_types <- stringr::str_c(input$code_type,
+                                                          sep = "",
+                                                          collapse = ", ")
+
       # reformat
       matching_codes <- matching_codes %>%
         dplyr::mutate("disease" = input$disease,
@@ -362,7 +361,8 @@ runCodeMapper <- function(all_lkps_maps,
                       "author" = input$author) %>%
         dplyr::select(tidyselect::all_of(c(names(ukbwranglr::example_clinical_codes()),
                                            "description_search_strategy",
-                                           "code_starts_search_strategy")))
+                                           "code_starts_search_strategy",
+                                           "included_code_types")))
 
       notify("No codes found matching search criteria!", id = id)
       matching_codes
@@ -433,7 +433,7 @@ runCodeMapper <- function(all_lkps_maps,
       req(selected_matching_codes_preview())
 
       reactable::reactable(
-        selected_matching_codes_preview()[(selected_matching_codes_preview()$selected) == "Yes", -9],
+        selected_matching_codes_preview()[(selected_matching_codes_preview()$selected) == "Yes", -10],
         filterable = TRUE,
         searchable = TRUE,
         resizable = TRUE,
@@ -449,38 +449,6 @@ runCodeMapper <- function(all_lkps_maps,
       )
     })
 
-
-    # Confirmed selected codes ------------------------------------------------
-    confirmed_codes <- reactiveValues(df = NULL)
-
-    observeEvent(input$confirm_selection, {
-
-      # TODO - get this working
-      # shinyFeedback::feedbackWarning("confirm_selection",
-      #                                is.null(selected_matching_codes_preview()),
-      #                                "No codes are selected")
-
-      req(selected_matching_codes_preview())
-
-      confirmed_codes$df <- dplyr::bind_rows(confirmed_codes$df,
-                                             selected_matching_codes_preview())
-    })
-
-    output$confirmed_codes_reactable <- reactable::renderReactable({
-      req(confirmed_codes$df)
-
-      reactable::reactable(
-        confirmed_codes$df,
-        filterable = TRUE,
-        searchable = TRUE,
-        resizable = TRUE,
-        showPageSizeOptions = TRUE,
-        pageSizeOptions = c(10, 25, 50, 100, 200),
-        groupBy = c("disease", "code_type"),
-        paginationType = "jump"
-      )
-    })
-
     # DOWNLOADS ---------------------------------------------------------------
 
     output$download_confirmed_codes <- downloadHandler(
@@ -488,7 +456,16 @@ runCodeMapper <- function(all_lkps_maps,
         paste0(input$disease, "_codes.csv")
       },
       content = function(file) {
-        readr::write_csv(confirmed_codes$df, file, na = "")
+        readr::write_csv(selected_matching_codes_preview(), file, na = "")
+      }
+    )
+
+    output$download_confirmed_codes_selected_only <- downloadHandler(
+      filename = function() {
+        paste0(input$disease, "_codes_selected_only.csv")
+      },
+      content = function(file) {
+        readr::write_csv(selected_matching_codes_preview()[(selected_matching_codes_preview()$selected) == "Yes", ], file, na = "")
       }
     )
 
