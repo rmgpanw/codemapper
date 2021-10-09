@@ -101,13 +101,20 @@ all_lkps_maps_to_db <- function(all_lkps_maps,
 #' \href{https://biobank.ndph.ox.ac.uk/ukb/refer.cgi?id=592}{UK Biobank resource
 #' 592} as well as the NHSBSA BNF-SNOMED mapping table (available
 #' \href{https://www.nhsbsa.nhs.uk/prescription-data/understanding-our-data/bnf-snomed-mapping}{here})
-#' and OPCS4 codes from the UK Biobank codings file (available
+#' and OPCS4, self-reported medical conditions/medications/operations from the
+#' UK Biobank codings file (available
 #' \href{https://biobank.ctsu.ox.ac.uk/crystal/exinfo.cgi?src=accessing_data_guide}{here}).
+#'
+#' @param all_lkps_maps UK Biobank resource 592, as returned by
+#'   \code{\link{get_ukb_all_lkps_maps_raw_direct}}.
+#' @param bnf_dmd The NHSBSA BNF-SNOMED mapping table, as returned by
+#'   \code{\link{get_nhsbsa_snomed_bnf}}.
+#' @param ukb_codings The UK Biobank codings file, as returned by
+#'   \code{\link[ukbwranglr]{get_ukb_codings_direct}}.
 #'
 #' @return Returns a named list of data frames.
 #' @export
-build_all_lkps_maps <- function(db_path = NULL,
-                                all_lkps_maps = get_ukb_all_lkps_maps_raw_direct(),
+build_all_lkps_maps <- function(all_lkps_maps = get_ukb_all_lkps_maps_raw_direct(),
                                 bnf_dmd = get_nhsbsa_snomed_bnf(),
                                 ukb_codings = ukbwranglr::get_ukb_codings_direct()) {
 
@@ -124,15 +131,38 @@ build_all_lkps_maps <- function(db_path = NULL,
     extend_bnf_lkp(all_lkps_maps)
 
   # opcs4, from ukb codings file
-  opcs4_lkp <- ukb_codings %>%
-    dplyr::filter(.data[["Coding"]] == "240") %>%
-    dplyr::select(-.data[["Coding"]]) %>%
-    dplyr::rename("opcs4_code" = .data[["Value"]],
-                  "description" = .data[["Meaning"]])
+  opcs4_lkp <- make_lkp_from_ukb_codings(ukb_codings = ukb_codings,
+                            Coding = "240",
+                            Value_col_new_name = "opcs4_code")
+
+  # UKB self-reported medical conditions/medications/operations from ukb codings file
+  self_report_cancer <- make_lkp_from_ukb_codings(ukb_codings = ukb_codings,
+                                                 Coding = "3",
+                                                 Value_col_new_name = "data_coding_3")
+
+  self_report_medication <- make_lkp_from_ukb_codings(ukb_codings = ukb_codings,
+                                                 Coding = "4",
+                                                 Value_col_new_name = "data_coding_4")
+
+  self_report_operation <- make_lkp_from_ukb_codings(ukb_codings = ukb_codings,
+                                                 Coding = "5",
+                                                 Value_col_new_name = "data_coding_5")
+
+  self_report_non_cancer <- make_lkp_from_ukb_codings(ukb_codings = ukb_codings,
+                                                 Coding = "6",
+                                                 Value_col_new_name = "data_coding_6")
+
+  # https://www.nature.com/articles/s41467-019-09572-5#additional-information
+  self_report_med_to_atc_map <- get_ukb_self_report_med_to_atc_map()
 
   # combine
   all_lkps_maps <- c(all_lkps_maps, list(bnf_dmd = bnf_dmd,
-                                         opcs4_lkp = opcs4_lkp))
+                                         opcs4_lkp = opcs4_lkp,
+                                         self_report_cancer = self_report_cancer,
+                                         self_report_medication = self_report_medication,
+                                         self_report_operation = self_report_operation,
+                                         self_report_non_cancer = self_report_non_cancer,
+                                         self_report_med_to_atc_map = self_report_med_to_atc_map))
 
   message("Success!")
   return(all_lkps_maps)
@@ -305,6 +335,41 @@ remove_irrelevant_rows_all_lkps_maps <- function(all_lkps_maps_raw) {
   return(result)
 }
 
+
+make_lkp_from_ukb_codings <- function(ukb_codings,
+                                      Coding,
+                                      Value_col_new_name,
+                                      Meaning_col_new_nae = "description") {
+  result <- ukb_codings[ukb_codings$Coding == Coding, -1]
+
+  result <- ukbwranglr:::rename_cols(df = result,
+                                     old_colnames = c("Value", "Meaning"),
+                                     new_colnames = c(Value_col_new_name, Meaning_col_new_nae))
+
+  return(result)
+}
+
+get_ukb_self_report_med_to_atc_map <- function() {
+  # download file
+  file_path <- file.path(tempdir(), "self_report_med_to_atc_map.xlsx")
+
+  if (!file.exists(file_path)) {
+    utils::download.file(
+      "https://static-content.springer.com/esm/art%3A10.1038%2Fs41467-019-09572-5/MediaObjects/41467_2019_9572_MOESM3_ESM.xlsx",
+      destfile = file.path(tempdir(), "self_report_med_to_atc_map.xlsx")
+    )
+  }
+
+  # read file
+  result <- readxl::read_excel(file_path,
+                               skip = 2,
+                               col_names = c("self_report_medication", "data_coding_4", "atc_code", "drug_name", "rm_1", "rm_2"))
+
+  # drop redundant cols
+  result <- result[, -c(5, 6)]
+
+  return(result)
+}
 
 # TODO --------------------------------------------------------------------
 

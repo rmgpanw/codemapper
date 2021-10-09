@@ -5,11 +5,20 @@
 \title{Build named list of clinical code look up and mapping tables}
 \usage{
 build_all_lkps_maps(
-  db_path = NULL,
   all_lkps_maps = get_ukb_all_lkps_maps_raw_direct(),
   bnf_dmd = get_nhsbsa_snomed_bnf(),
   ukb_codings = ukbwranglr::get_ukb_codings_direct()
 )
+}
+\arguments{
+\item{all_lkps_maps}{UK Biobank resource 592, as returned by
+\code{\link{get_ukb_all_lkps_maps_raw_direct}}.}
+
+\item{bnf_dmd}{The NHSBSA BNF-SNOMED mapping table, as returned by
+\code{\link{get_nhsbsa_snomed_bnf}}.}
+
+\item{ukb_codings}{The UK Biobank codings file, as returned by
+\code{\link[ukbwranglr]{get_ukb_codings_direct}}.}
 }
 \value{
 Returns a named list of data frames.
@@ -19,6 +28,7 @@ Downloads the lookup and mapping tables from
 \href{https://biobank.ndph.ox.ac.uk/ukb/refer.cgi?id=592}{UK Biobank resource
 592} as well as the NHSBSA BNF-SNOMED mapping table (available
 \href{https://www.nhsbsa.nhs.uk/prescription-data/understanding-our-data/bnf-snomed-mapping}{here})
-and OPCS4 codes from the UK Biobank codings file (available
+and OPCS4, self-reported medical conditions/medications/operations from the
+UK Biobank codings file (available
 \href{https://biobank.ctsu.ox.ac.uk/crystal/exinfo.cgi?src=accessing_data_guide}{here}).
 }

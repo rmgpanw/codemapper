@@ -117,36 +117,25 @@ codes_starting_with <- function(codes,
   # TO DELETE - no need for warning message when searching for codes starting with <x>
 
   else {
-  #   if (quiet == FALSE) {
-  #     warning_if_codes_not_found(
-  #       codes = codes_raw,
-  #       code_type = code_type,
-  #       search_col = all_lkps_maps[[lkp_table]] %>%
-  #         dplyr::collect() %>%
-  #         .[[code_col]]
-  #     )
-  #   }
+    #   if (quiet == FALSE) {
+    #     warning_if_codes_not_found(
+    #       codes = codes_raw,
+    #       code_type = code_type,
+    #       search_col = all_lkps_maps[[lkp_table]] %>%
+    #         dplyr::collect() %>%
+    #         .[[code_col]]
+    #     )
+    #   }
 
     # return either unique codes only, or df including code descriptions
     if (codes_only) {
-      return(
-        unique(result[[code_col]])
-      )
+      return(unique(result[[code_col]]))
     } else if (standardise_output) {
       # Note, not all mapping sheets in UKB resource 592 contain descriptions
       # (e.g. 'read_v2_icd9'). Therefore need to use `lookup_codes` if
       # `standardise_output` is `TRUE`
-      if (code_type == "icd10") {
-        codes <-
-          reformat_icd10_codes(
-            icd10_codes = unique(result[[code_col]]),
-            all_lkps_maps = all_lkps_maps,
-            input_icd10_format = "ALT_CODE",
-            output_icd10_format = "ICD10_CODE"
-          )
-      } else {
-        codes <- unique(result[[code_col]])
-      }
+      codes <- unique(result[[code_col]])
+
       return(
         lookup_codes(
           codes = codes,
@@ -329,6 +318,8 @@ code_descriptions_like <- function(reg_expr,
                                     code_col = code_col,
                                     description_col = description_col,
                                     code_type = code_type)
+
+    code_col <- "code"
   }
 
   # return result
@@ -457,11 +448,14 @@ map_codes <- function(codes,
   }
 
   # do mapping
-  # reformat codes if mapping from icd10 and swapping mapping cols is TRUE
-  if (from == "icd10" & swap_mapping_cols) {
-    codes <- reformat_icd10_codes(icd10_codes = codes,
-                                  all_lkps_maps = all_lkps_maps)
-  }
+
+  # TODO DELETE
+
+  # # reformat codes if mapping from icd10 and swapping mapping cols is TRUE
+  # if (from == "icd10" & swap_mapping_cols) {
+  #   codes <- reformat_icd10_codes(icd10_codes = codes,
+  #                                 all_lkps_maps = all_lkps_maps)
+  # }
 
   result <- all_lkps_maps[[mapping_table]] %>%
     dplyr::filter(.data[[from_col]] %in% codes) %>%
@@ -493,17 +487,9 @@ map_codes <- function(codes,
       # Note, not all mapping sheets in UKB resource 592 contain descriptions
       # (e.g. 'read_v2_icd9'). Therefore need to use `lookup_codes` if
       # `standardise_output` is `TRUE`
-      if (to == "icd10") {
-        codes <-
-          reformat_icd10_codes(
-            icd10_codes = unique(result[[to_col]]),
-            all_lkps_maps = all_lkps_maps,
-            input_icd10_format = "ALT_CODE",
-            output_icd10_format = "ICD10_CODE"
-          )
-      } else {
-        codes <- unique(result[[to_col]])
-      }
+
+      codes <- unique(result[[to_col]])
+
       return(
         lookup_codes(
           codes = codes,
@@ -915,8 +901,8 @@ standardise_output_fn <- function(df, lkp_table, code_col, description_col, code
       TRUE ~ df$description
     )
 
-    df <- strip_dot_from_icd10(df = df,
-                           icd10_code_col = "code")
+    df <- strip_x_from_alt_icd10(df = df,
+                                 alt_icd10_code_col = "code")
   }
 
   # return code, description and code_type cols only

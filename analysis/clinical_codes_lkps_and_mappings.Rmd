@@ -196,3 +196,9 @@ codes_starting_with(codes = t1dm_read2,
                 codes_only = FALSE) %>% 
   head()
 ```
+
+# ICD-10
+
+ICD-10 codes are presented in two different formats in the `icd10_lkp` table: `ICD_10` and `ALT_CODE`. The latter is how ICD-10 codes are recorded in UKB. However, an 'X' is appended to 3 character codes without any 4 character children (e.g. `A38X`, 'Scarlet fever'). 
+
+Another issue with the `ICD_10` format is that is contains some duplicated codes e.g. `I70.0` appears 3 times. This is because of `MODIFIER_5` - the `ALT_CODE` format records a different code for each of these.

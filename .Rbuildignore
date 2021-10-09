@@ -3,3 +3,9 @@
 ^codemapper\.Rproj$
 ^\.Rproj\.user$
 ^LICENSE\.md$
+^\.gitlab-ci\.yml$
+^public/\.nojekyll$
+^_targets$
+^_targets\.R$
+^_workflowr\.yml$
+^config\.ini$

@@ -4,6 +4,7 @@
 #'
 #' @param all_lkps_maps A named list or path to SQLite database
 #' @param ... Additional args passed on to \code{\link[shiny]{shinyApp}}
+#' @inheritParams shiny::options
 #'
 #' @return \code{NULL}
 #' @export
@@ -16,34 +17,6 @@ runCodeMapper <- function(all_lkps_maps,
     # on.exit(DBI::dbDisconnect(con))
     all_lkps_maps <- ukbwranglr::db_tables_to_list(con)
   }
-
-
-# HIDDEN UI ---------------------------------------------------------------
-
-  display_matching_codes <- tabsetPanel(
-    id = "display_matching_codes",
-    type = "hidden",
-    tabPanel("empty"),
-    tabPanel(
-      "Matching clinical codes",
-      h4("Select codes"),
-      reactable::reactableOutput("matching_codes")
-    )
-  )
-
-  preview_selected_codes <- tabsetPanel(
-    id = "preview_selected_codes",
-    type = "hidden",
-    tabPanel("empty"),
-    tabPanel(
-      "Preview selected codes",
-      h4("Confirm selection"),
-      actionButton(inputId = "confirm_selection",
-                   label = "Confirm",
-                   class = "btn-lg btn-success"),
-      reactable::reactableOutput("selected_matching_codes_preview")
-    ),
-  )
 
 # UI ----------------------------------------------------------------------
 
@@ -68,8 +41,22 @@ runCodeMapper <- function(all_lkps_maps,
         checkboxGroupInput(
           inputId = "code_type",
           label = "Code types",
-          choices = CODE_TYPE_TO_LKP_TABLE_MAP$code,
-          selected = c("read2", "read3", "icd9", "icd10", "opcs4")
+          choices = stats::setNames(object = CODE_TYPE_TO_LKP_TABLE_MAP$code,
+                                    nm = CODE_TYPE_TO_LKP_TABLE_MAP$code_label),
+          selected = c(
+            # 'bnf',
+            # 'dmd',
+            'icd9',
+            'icd10',
+            'read2',
+            # 'read2_drugs',
+            'read3',
+            'opcs4',
+            'data_coding_3',
+            'data_coding_4',
+            'data_coding_5',
+            'data_coding_6'
+          )
         ),
         h4("Download codes"),
         downloadButton("download_confirmed_codes",
@@ -151,10 +138,6 @@ runCodeMapper <- function(all_lkps_maps,
               verbatimTextOutput("n_matching_codes")
             )
           ),
-          # tabPanel(title = "Results",
-          # display_matching_codes,
-          # preview_selected_codes
-          # ),
           tabPanel(
             "Matching clinical codes",
             h4("Select codes"),
@@ -373,14 +356,6 @@ runCodeMapper <- function(all_lkps_maps,
     output$n_matching_codes <- renderText(
       paste0("N matching codes: ", nrow(matching_codes()))
     )
-
-    observeEvent(matching_codes(), {
-      if (!is.null(matching_codes())) {
-        updateTabsetPanel(inputId = "display_matching_codes", selected = "display_matching_codes")
-      } else {
-        updateTabsetPanel(inputId = "display_matching_codes", selected = "empty")
-      }
-    })
 
     output$matching_codes <- reactable::renderReactable({
 

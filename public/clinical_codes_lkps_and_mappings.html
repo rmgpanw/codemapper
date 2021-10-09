@@ -283,7 +283,7 @@ $(document).ready(function () {
 
 <h1 class="title toc-ignore">Clinical codes - lookups and mappings</h1>
 <h4 class="author">Alasdair Warwick</h4>
-<h4 class="date">05 October, 2021</h4>
+<h4 class="date">09 October, 2021</h4>
 
 </div>
 
@@ -308,7 +308,7 @@ $(document).ready(function () {
 <div class="tab-content">
 <div id="summary" class="tab-pane fade in active">
 <p>
-<strong>Last updated:</strong> 2021-10-05
+<strong>Last updated:</strong> 2021-10-09
 </p>
 <p>
 <strong>Checks:</strong> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> 6 <span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span> 1
@@ -399,16 +399,16 @@ This reproducible <a href="http://rmarkdown.rstudio.com">R Markdown</a> analysis
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgitlabcomrmgpanwcodemappertreed285b07e77f7390497bf5dd5546df6b725cb8663targetblankd285b07a"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Repository version:</strong> <a href="https://gitlab.com/rmgpanw/codemapper/tree/d285b07e77f7390497bf5dd5546df6b725cb8663" target="_blank">d285b07</a> </a>
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgitlabcomrmgpanwcodemappertree7f22a80a1db1d6eeea505f74a3e272b7bd7e3c25targetblank7f22a80a"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Repository version:</strong> <a href="https://gitlab.com/rmgpanw/codemapper/tree/7f22a80a1db1d6eeea505f74a3e272b7bd7e3c25" target="_blank">7f22a80</a> </a>
 </p>
 </div>
-<div id="strongRepositoryversionstrongahrefhttpsgitlabcomrmgpanwcodemappertreed285b07e77f7390497bf5dd5546df6b725cb8663targetblankd285b07a" class="panel-collapse collapse">
+<div id="strongRepositoryversionstrongahrefhttpsgitlabcomrmgpanwcodemappertree7f22a80a1db1d6eeea505f74a3e272b7bd7e3c25targetblank7f22a80a" class="panel-collapse collapse">
 <div class="panel-body">
 <p>
 Great! You are using Git for version control. Tracking code development and connecting the code version to the results is critical for reproducibility.
 </p>
 <p>
-The results in this page were generated with repository version <a href="https://gitlab.com/rmgpanw/codemapper/tree/d285b07e77f7390497bf5dd5546df6b725cb8663" target="_blank">d285b07</a>. See the <em>Past versions</em> tab to see a history of the changes made to the R Markdown and HTML files.
+The results in this page were generated with repository version <a href="https://gitlab.com/rmgpanw/codemapper/tree/7f22a80a1db1d6eeea505f74a3e272b7bd7e3c25" target="_blank">7f22a80</a>. See the <em>Past versions</em> tab to see a history of the changes made to the R Markdown and HTML files.
 </p>
 <p>
 Note that you need to be careful to ensure that all relevant files for the analysis have been committed to Git prior to generating the results (you can use <code>wflow_publish</code> or <code>wflow_git_commit</code>). workflowr only checks the R Markdown file, but you know if there are other scripts or data files that it depends on. Below is the status of the Git repository when the results were generated:
@@ -422,30 +422,24 @@ Ignored files:
     Ignored:    _targets/
     Ignored:    config.ini
     Ignored:    data/
+    Ignored:    inst/
     Ignored:    output/
     Ignored:    renv/library/
     Ignored:    renv/local/
     Ignored:    renv/staging/
     Ignored:    tests/.DS_Store
 
-Untracked files:
-    Untracked:  R/codemapper.R
-    Untracked:  man/codemapper.Rd
-
 Unstaged changes:
+    Modified:   .Rbuildignore
     Modified:   DESCRIPTION
+    Modified:   R/app.R
     Modified:   R/clinical_codes.R
     Modified:   R/constants.R
+    Modified:   R/lookups_and_mappings.R
     Modified:   R/utils.R
-    Modified:   _targets.R
     Modified:   analysis/clinical_codes_lkps_and_mappings.Rmd
-    Modified:   analysis/index.Rmd
-    Modified:   man/get_child_codes.Rd
-    Modified:   man/lookup_codes.Rd
-    Modified:   man/map_codes.Rd
-    Modified:   man/reformat_icd10_codes.Rd
-    Modified:   man/search_codes_by_description.Rd
-    Modified:   tests/testthat/test_constants.R
+    Modified:   man/build_all_lkps_maps.Rd
+    Modified:   tests/testthat/test_clinical_codes.R
 
 </code></pre>
 <p>
@@ -484,6 +478,40 @@ Message
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://gitlab.com/rmgpanw/codemapper/blob/919be0d1fc0ffa07982a423d382bd1a1eb8f5265/analysis/clinical_codes_lkps_and_mappings.Rmd" target="_blank">919be0d</a>
+</td>
+<td>
+rmgpanw
+</td>
+<td>
+2021-10-07
+</td>
+<td>
+renamed functions and made shiny app for selecting codes
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://glcdn.githack.com/rmgpanw/codemapper/raw/919be0d1fc0ffa07982a423d382bd1a1eb8f5265/public/clinical_codes_lkps_and_mappings.html" target="_blank">919be0d</a>
+</td>
+<td>
+rmgpanw
+</td>
+<td>
+2021-10-07
+</td>
+<td>
+renamed functions and made shiny app for selecting codes
+</td>
+</tr>
 <tr>
 <td>
 Rmd
@@ -533,12 +561,18 @@ all_lkps_maps &lt;- codemapper:::get_all_lkps_maps()
 
 # each item in the list is a sheet in the UKB Excel workbook (resource 592)
 names(all_lkps_maps)
-#&gt;  [1] &quot;bnf_lkp&quot;           &quot;dmd_lkp&quot;           &quot;icd9_lkp&quot;         
-#&gt;  [4] &quot;icd10_lkp&quot;         &quot;icd9_icd10&quot;        &quot;read_v2_lkp&quot;      
-#&gt;  [7] &quot;read_v2_drugs_lkp&quot; &quot;read_v2_drugs_bnf&quot; &quot;read_v2_icd9&quot;     
-#&gt; [10] &quot;read_v2_icd10&quot;     &quot;read_v2_opcs4&quot;     &quot;read_v2_read_ctv3&quot;
-#&gt; [13] &quot;read_ctv3_lkp&quot;     &quot;read_ctv3_icd9&quot;    &quot;read_ctv3_icd10&quot;  
-#&gt; [16] &quot;read_ctv3_opcs4&quot;   &quot;read_ctv3_read_v2&quot; &quot;bnf_dmd&quot;</code></pre>
+#&gt;  [1] &quot;bnf_lkp&quot;                    &quot;dmd_lkp&quot;                   
+#&gt;  [3] &quot;icd9_lkp&quot;                   &quot;icd10_lkp&quot;                 
+#&gt;  [5] &quot;icd9_icd10&quot;                 &quot;read_v2_lkp&quot;               
+#&gt;  [7] &quot;read_v2_drugs_lkp&quot;          &quot;read_v2_drugs_bnf&quot;         
+#&gt;  [9] &quot;read_v2_icd9&quot;               &quot;read_v2_icd10&quot;             
+#&gt; [11] &quot;read_v2_opcs4&quot;              &quot;read_v2_read_ctv3&quot;         
+#&gt; [13] &quot;read_ctv3_lkp&quot;              &quot;read_ctv3_icd9&quot;            
+#&gt; [15] &quot;read_ctv3_icd10&quot;            &quot;read_ctv3_opcs4&quot;           
+#&gt; [17] &quot;read_ctv3_read_v2&quot;          &quot;bnf_dmd&quot;                   
+#&gt; [19] &quot;opcs4_lkp&quot;                  &quot;self_report_cancer&quot;        
+#&gt; [21] &quot;self_report_medication&quot;     &quot;self_report_operation&quot;     
+#&gt; [23] &quot;self_report_non_cancer&quot;     &quot;self_report_med_to_atc_map&quot;</code></pre>
 </div>
 <div id="code-lookups" class="section level1">
 <h1>Code lookups</h1>
@@ -629,7 +663,7 @@ map_codes(codes = c(&quot;D4103&quot;, &quot;D4104&quot;),
 <p>The available mappings do not cover all possible mapping directions. For example, while there are mappings for Read2 to ICD-10, there is no mapping for ICD-10 to Read2. For cases like this, <code>map_codes()</code> will attempt to map anyway by using the same mapping sheet in reverse (e.g. for mapping ICD-10 to Read2, <code>map_codes</code> uses the <code>read_v2_icd10</code> mapping sheet). However, this returns no results when attempting to map the ICD-10 code, <code>H36.0</code> for diabetic retinopathy:</p>
 <pre class="r"><code># find ICD-10 code matching &quot;diabetic retinopathy&quot;
 icd10_diabetic_retinopathy &lt;-
-  search_codes_by_description(
+  code_descriptions_like(
     reg_expr = &quot;diabetic retinopathy&quot;,
     code_type = &quot;icd10&quot;,
     all_lkps_maps = all_lkps_maps,
@@ -681,8 +715,8 @@ map_codes(
 </div>
 <div id="find-codes-that-match-a-description" class="section level1">
 <h1>Find codes that match a description</h1>
-<p>Use <code>search_codes_by_description()</code>. For example, to find Read2 codes that match the description ‘diabetic retinopathy’:</p>
-<pre class="r"><code>search_codes_by_description(reg_expr = &quot;diabetic retinopathy&quot;, 
+<p>Use <code>code_descriptions_like()</code>. For example, to find Read2 codes that match the description ‘diabetic retinopathy’:</p>
+<pre class="r"><code>code_descriptions_like(reg_expr = &quot;diabetic retinopathy&quot;, 
                           code_type = &quot;read2&quot;, 
                           all_lkps_maps = all_lkps_maps, 
                           ignore_case = TRUE, 
@@ -690,23 +724,23 @@ map_codes(
                           preferred_description_only = TRUE) %&gt;% 
   head()
 #&gt; # A tibble: 6 × 3
-#&gt;   read_code term_code term_description                                          
-#&gt;   &lt;chr&gt;     &lt;chr&gt;     &lt;chr&gt;                                                     
-#&gt; 1 2BBJ.     00        O/E - no right diabetic retinopathy                       
-#&gt; 2 2BBk.     00        O/E - right eye stable treated proliferative diabetic ret…
-#&gt; 3 2BBK.     00        O/E - no left diabetic retinopathy                        
-#&gt; 4 2BBl.     00        O/E - left eye stable treated proliferative diabetic reti…
-#&gt; 5 2BBo.     00        O/E - sight threatening diabetic retinopathy              
-#&gt; 6 2BBP.     00        O/E - right eye background diabetic retinopathy</code></pre>
+#&gt;   code  description                                                    code_type
+#&gt;   &lt;chr&gt; &lt;chr&gt;                                                          &lt;chr&gt;    
+#&gt; 1 2BBJ. O/E - no right diabetic retinopathy                            read2    
+#&gt; 2 2BBk. O/E - right eye stable treated proliferative diabetic retinop… read2    
+#&gt; 3 2BBK. O/E - no left diabetic retinopathy                             read2    
+#&gt; 4 2BBl. O/E - left eye stable treated proliferative diabetic retinopa… read2    
+#&gt; 5 2BBo. O/E - sight threatening diabetic retinopathy                   read2    
+#&gt; 6 2BBP. O/E - right eye background diabetic retinopathy                read2</code></pre>
 </div>
 <div id="children-codes" class="section level1">
 <h1>Children codes</h1>
-<p>To get the children codes, use <code>get_child_codes()</code>. This will return all unique clinical codes that start with the codes of interest:</p>
+<p>To get the children codes, use <code>codes_starting_with()</code>. This will return all unique clinical codes that start with the codes of interest:</p>
 <pre class="r"><code># Some Read2 codes for T1DM
 t1dm_read2 &lt;- c(&quot;C10E.&quot;, &quot;C108.&quot;)
 
 # lookup details
-get_child_codes(codes = t1dm_read2, 
+codes_starting_with(codes = t1dm_read2, 
                 code_type = &quot;read2&quot;, 
                 all_lkps_maps = all_lkps_maps, 
                 codes_only = TRUE,
@@ -718,14 +752,14 @@ get_child_codes(codes = t1dm_read2,
 #&gt; [37] &quot;C10ED&quot; &quot;C10EE&quot; &quot;C10EF&quot; &quot;C10EG&quot; &quot;C10EH&quot; &quot;C10EJ&quot; &quot;C10EK&quot; &quot;C10EL&quot; &quot;C10EM&quot;
 #&gt; [46] &quot;C10EN&quot; &quot;C10EP&quot; &quot;C10EQ&quot; &quot;C10ER&quot;</code></pre>
 <blockquote>
-<p><strong>Note:</strong> Some coding systems include a ‘.’ (e.g. ICD-10) - this may return unexpected results with <code>get_child_codes()</code>, as this function searches using regexs and ‘.’ is interpreted as a wildcard.</p>
+<p><strong>Note:</strong> Some coding systems include a ‘.’ (e.g. ICD-10) - this may return unexpected results with <code>codes_starting_with()</code>, as this function searches using regexs and ‘.’ is interpreted as a wildcard.</p>
 </blockquote>
 <p>By default, a character vector of codes is returned. To return a data frame including code descriptions, set the argument <code>codes_only</code> to <code>FALSE</code>:</p>
 <pre class="r"><code># Some Read2 codes for T1DM
 t1dm_read2 &lt;- c(&quot;C10E.&quot;, &quot;C108.&quot;)
 
 # lookup details
-get_child_codes(codes = t1dm_read2, 
+codes_starting_with(codes = t1dm_read2, 
                 code_type = &quot;read2&quot;, 
                 all_lkps_maps = all_lkps_maps, 
                 codes_only = FALSE) %&gt;% 
@@ -739,6 +773,11 @@ get_child_codes(codes = t1dm_read2,
 #&gt; 4 C1082 Insulin-dependent diabetes mellitus with neurological complic… read2    
 #&gt; 5 C1083 Insulin dependent diabetes mellitus with multiple complicatio… read2    
 #&gt; 6 C1084 Unstable insulin dependent diabetes mellitus                   read2</code></pre>
+</div>
+<div id="icd-10" class="section level1">
+<h1>ICD-10</h1>
+<p>ICD-10 codes are presented in two different formats in the <code>icd10_lkp</code> table: <code>ICD_10</code> and <code>ALT_CODE</code>. The latter is how ICD-10 codes are recorded in UKB. However, an ‘X’ is appended to 3 character codes without any 4 character children (e.g. <code>A38X</code>, ‘Scarlet fever’).</p>
+<p>Another issue with the <code>ICD_10</code> format is that is contains some duplicated codes e.g. <code>I70.0</code> appears 3 times. This is because of <code>MODIFIER_5</code> - the <code>ALT_CODE</code> format records a different code for each of these.</p>
 <br>
 <p>
 <button type="button" class="btn btn-default btn-workflowr btn-workflowr-sessioninfo" data-toggle="collapse" data-target="#workflowr-sessioninfo" style="display: block;">
@@ -769,23 +808,23 @@ get_child_codes(codes = t1dm_read2,
 #&gt; 
 #&gt; loaded via a namespace (and not attached):
 #&gt;  [1] Rcpp_1.0.7        lubridate_1.7.10  ps_1.6.0          assertthat_0.2.1 
-#&gt;  [5] rprojroot_2.0.2   digest_0.6.28     utf8_1.2.2        R6_2.5.1         
-#&gt;  [9] cellranger_1.1.0  backports_1.2.1   reprex_2.0.1      evaluate_0.14    
-#&gt; [13] httr_1.4.2        pillar_1.6.3      rlang_0.4.11      readxl_1.3.1     
-#&gt; [17] rstudioapi_0.13   data.table_1.14.2 callr_3.7.0       whisker_0.4      
-#&gt; [21] jquerylib_0.1.4   rmarkdown_2.9     igraph_1.2.6      munsell_0.5.0    
-#&gt; [25] broom_0.7.9       compiler_4.1.0    httpuv_1.6.3      modelr_0.1.8     
-#&gt; [29] xfun_0.24         pkgconfig_2.0.3   htmltools_0.5.2   tidyselect_1.1.1 
-#&gt; [33] codetools_0.2-18  fansi_0.5.0       crayon_1.4.1      tzdb_0.1.2       
-#&gt; [37] dbplyr_2.1.1      withr_2.4.2       later_1.3.0       grid_4.1.0       
-#&gt; [41] jsonlite_1.7.2    gtable_0.3.0      lifecycle_1.0.1   DBI_1.1.1        
-#&gt; [45] git2r_0.28.0      magrittr_2.0.1    scales_1.1.1      cli_3.0.1        
-#&gt; [49] stringi_1.7.4     renv_0.13.2       fs_1.5.0          promises_1.2.0.1 
-#&gt; [53] xml2_1.3.2        bslib_0.3.0       targets_0.8.0     ellipsis_0.3.2   
-#&gt; [57] generics_0.1.0    vctrs_0.3.8       tools_4.1.0       glue_1.4.2       
-#&gt; [61] hms_1.1.1         processx_3.5.2    fastmap_1.1.0     yaml_2.2.1       
-#&gt; [65] colorspace_2.0-2  rvest_1.0.1       knitr_1.34        haven_2.4.3      
-#&gt; [69] sass_0.4.0</code></pre>
+#&gt;  [5] rprojroot_2.0.2   digest_0.6.28     utf8_1.2.2        mime_0.12        
+#&gt;  [9] R6_2.5.1          cellranger_1.1.0  backports_1.2.1   reprex_2.0.1     
+#&gt; [13] evaluate_0.14     httr_1.4.2        pillar_1.6.3      rlang_0.4.11     
+#&gt; [17] readxl_1.3.1      rstudioapi_0.13   data.table_1.14.2 callr_3.7.0      
+#&gt; [21] whisker_0.4       jquerylib_0.1.4   rmarkdown_2.9     igraph_1.2.6     
+#&gt; [25] munsell_0.5.0     shiny_1.7.0       broom_0.7.9       compiler_4.1.0   
+#&gt; [29] httpuv_1.6.3      modelr_0.1.8      xfun_0.24         pkgconfig_2.0.3  
+#&gt; [33] htmltools_0.5.2   tidyselect_1.1.1  codetools_0.2-18  fansi_0.5.0      
+#&gt; [37] withr_2.4.2       crayon_1.4.1      tzdb_0.1.2        dbplyr_2.1.1     
+#&gt; [41] later_1.3.0       grid_4.1.0        jsonlite_1.7.2    xtable_1.8-4     
+#&gt; [45] gtable_0.3.0      lifecycle_1.0.1   DBI_1.1.1         git2r_0.28.0     
+#&gt; [49] magrittr_2.0.1    scales_1.1.1      cli_3.0.1         stringi_1.7.4    
+#&gt; [53] renv_0.13.2       fs_1.5.0          promises_1.2.0.1  xml2_1.3.2       
+#&gt; [57] bslib_0.3.0       targets_0.8.0     ellipsis_0.3.2    generics_0.1.0   
+#&gt; [61] vctrs_0.3.8       tools_4.1.0       glue_1.4.2        hms_1.1.1        
+#&gt; [65] processx_3.5.2    fastmap_1.1.0     yaml_2.2.1        colorspace_2.0-2 
+#&gt; [69] rvest_1.0.1       knitr_1.34        haven_2.4.3       sass_0.4.0</code></pre>
 </div>
 </div>
 

@@ -181,9 +181,3 @@ extend_read_v2_drugs_bnf <- function(all_lkps_maps) {
   return(result)
 }
 
-strip_icd10_alt_code_x <- function(df, icd10_col) {
-  df[[icd10_col]] <- stringr::str_remove(df[[icd10_col]],
-                                         "X$")
-
-  return(df)
-}

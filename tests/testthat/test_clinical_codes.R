@@ -3,6 +3,7 @@
 
 all_lkps_maps <- get_ukb_code_mappings()
 
+# TODO - add tests for ICD10 (A38X, I70)
 
 # TESTS -------------------------------------------------------------------
 
@@ -88,7 +89,7 @@ test_that(
   "`lookup_codes()` returns the expected columns when `standardise_output` is `TRUE`",
   {
     result <- lookup_codes(
-      codes = c("E10", "E10.0"),
+      codes = c("E10", "E100"),
       code_type = "icd10",
       all_lkps_maps = all_lkps_maps,
       preferred_description_only = TRUE,
@@ -102,6 +103,21 @@ test_that(
                    "Type 1 diabetes mellitus With coma"))
   }
   )
+
+# `code_descriptions_like()` ----------------------------------------------
+
+test_that("`code_descriptions_like()` returns expected results", {
+  expect_equal(
+    code_descriptions_like(
+      reg_expr = "diabetic retinopathy",
+      code_type = "icd10",
+      all_lkps_maps = all_lkps_maps,
+      ignore_case = TRUE,
+      codes_only = TRUE
+    ),
+    "H360"
+  )
+})
 
 # `map_codes()` -----------------------------------------------------------
 
@@ -187,7 +203,7 @@ test_that(
 test_that("`map_codes()` works as expected for mapping icd10 to icd9 codes (these need reformatting first)", {
   expect_equal(
     suppressWarnings(map_codes(
-    codes = "D75.1",
+    codes = "D751",
     from = "icd10",
     to = "icd9",
     all_lkps_maps = all_lkps_maps,
@@ -211,7 +227,7 @@ test_that("`map_codes()` works when mapping icd9 to icd10", {
       preferred_description_only = TRUE,
       standardise_output = TRUE
     )$code,
-    expected = "A01.0"
+    expected = "A010"
   )
 })
 
