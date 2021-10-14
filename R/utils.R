@@ -368,7 +368,48 @@ get_ukb_self_report_med_to_atc_map <- function() {
   # drop redundant cols
   result <- result[, -c(5, 6)]
 
+  # append drug_name in brackets
+  result$self_report_medication <- paste0(result$self_report_medication,
+                                          " (",
+                                          result$drug_name,
+                                          ")")
+
   return(result)
+}
+
+#' Pre-populate a list of codes with category labels from an existing codelist
+#'
+#' To be used with \code{\link{runCodeMapper}}. The data frame returned by this
+#' app is for a single disease and should have an empty 'category' column. If
+#' the user uploads a (valid) clinical code list then the 'categories' will be
+#' lifted over, matching on 'disease', 'description, 'code_type' and 'code'.
+#'
+#' @param current_selection A data frame, as returned by
+#'   \code{\link{runCodeMapper}}.
+#' @param previous_codelist A data frame of clinical codes. Must meet the
+#'   requirements of \code{\link}
+#'
+#' @return A data frame.
+#' @noRd
+update_code_selection <- function(current_selection,
+                                  previous_codelist) {
+  # validate previous_codelist
+  ukbwranglr::validate_clinical_codes(previous_codelist)
+
+  # copy over previous categories and mark these codes as selected
+  current_selection %>%
+    dplyr::left_join(
+      previous_codelist,
+      # match on these columns (NB, does not include 'author')
+      by = c("disease", "description", "code_type", "code"),
+      suffix = c("", "_TOREMOVE")
+    ) %>%
+    dplyr::mutate(
+      "category" = .data[["category_TOREMOVE"]],
+      "selected" = dplyr::case_when(!is.na(.data[["category"]]) ~ "Yes",
+                                    TRUE ~ as.character(.data[["selected"]]))
+    ) %>%
+    dplyr::select(-tidyselect::ends_with("_TOREMOVE"))
 }
 
 # TODO --------------------------------------------------------------------
