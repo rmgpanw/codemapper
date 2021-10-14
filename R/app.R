@@ -358,7 +358,7 @@ runCodeMapper <- function(all_lkps_maps,
                                            "code_starts_search_strategy",
                                            "included_code_types")))
 
-      notify("No codes found matching search criteria!", id = id)
+      notify("Search complete!", id = id)
       matching_codes
     })
 
