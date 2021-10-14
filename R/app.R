@@ -540,7 +540,9 @@ runCodeMapper <- function(all_lkps_maps,
         paste0(input$disease, "_codes.csv")
       },
       content = function(file) {
-        readr::write_csv(selected_matching_codes_preview(), file, na = "")
+        result <- update_code_selection(current_selection = selected_matching_codes_preview(),
+                              previous_codelist = uploaded_codelist())
+        readr::write_csv(result, file, na = "")
       }
     )
 
@@ -549,7 +551,9 @@ runCodeMapper <- function(all_lkps_maps,
         paste0(input$disease, "_codes_selected_only.csv")
       },
       content = function(file) {
-        readr::write_csv(selected_matching_codes_preview()[(selected_matching_codes_preview()$selected) == "Yes", ], file, na = "")
+        result <- update_code_selection(current_selection = selected_matching_codes_preview()[(selected_matching_codes_preview()$selected) == "Yes", ],
+                                        previous_codelist = uploaded_codelist())
+        readr::write_csv(result, file, na = "")
       }
     )
 
