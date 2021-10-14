@@ -1,4 +1,5 @@
 
+
 # EXPORTED ----------------------------------------------------------------
 
 #' Build a SQLite database of clinical code look up and mapping tables
@@ -18,38 +19,33 @@
 all_lkps_maps_to_db <- function(all_lkps_maps,
                                 db_path,
                                 overwrite = FALSE) {
-
   # If database already exists at db_path, check if tables to be written are
   # already present
-    if (file.exists(db_path)) {
-      warning(
-        paste0(
-          "File found at ",
-          db_path
-        )
-      )
+  if (file.exists(db_path)) {
+    warning(paste0("File found at ",
+                   db_path))
 
-      check_tables_do_not_already_exist <- TRUE
-    } else {
-      check_tables_do_not_already_exist <- FALSE
-    }
+    check_tables_do_not_already_exist <- TRUE
+  } else {
+    check_tables_do_not_already_exist <- FALSE
+  }
 
-    # connect to db
-    con <- DBI::dbConnect(RSQLite::SQLite(), db_path)
-    on.exit(DBI::dbDisconnect(con))
+  # connect to db
+  con <- DBI::dbConnect(RSQLite::SQLite(), db_path)
+  on.exit(DBI::dbDisconnect(con))
 
-    if (check_tables_do_not_already_exist) {
-      tables_to_be_written <- c(
-        CLINICAL_CODE_MAPPINGS_MAP$mapping_table,
-        CODE_TYPE_TO_LKP_TABLE_MAP$lkp_table
-      )
+  if (check_tables_do_not_already_exist) {
+    tables_to_be_written <- c(
+      CLINICAL_CODE_MAPPINGS_MAP$mapping_table,
+      CODE_TYPE_TO_LKP_TABLE_MAP$lkp_table
+    )
 
-      tables_already_in_db <- DBI::dbListTables(con)
+    tables_already_in_db <- DBI::dbListTables(con)
 
-      tables_already_present_in_db <- subset(tables_to_be_written,
-                                             tables_to_be_written %in% tables_already_in_db)
+    tables_already_present_in_db <- subset(tables_to_be_written,
+                                           tables_to_be_written %in% tables_already_in_db)
 
-      if (!overwrite) {
+    if (!overwrite) {
       assertthat::assert_that(
         rlang::is_empty(tables_already_present_in_db),
         msg = paste0(
@@ -63,36 +59,40 @@ all_lkps_maps_to_db <- function(all_lkps_maps,
           )
         )
       )
-      } else if (overwrite & !rlang::is_empty(tables_already_present_in_db)) {
-        warning(
-          "The following tables are already present in the database at ",
-          db_path,
-          " and will be overwritten: ",
-          stringr::str_c(
-            tables_already_present_in_db,
-            sep = "",
-            collapse = ", "
-          )
+    } else if (overwrite &
+               !rlang::is_empty(tables_already_present_in_db)) {
+      warning(
+        "The following tables are already present in the database at ",
+        db_path,
+        " and will be overwritten: ",
+        stringr::str_c(
+          tables_already_present_in_db,
+          sep = "",
+          collapse = ", "
         )
-      }
+      )
+    }
   }
 
   # write to db
-    message(paste0("Writing lookup and mapping tables to SQLite database at ", db_path))
-    for (table_name in names(all_lkps_maps)) {
-      message(table_name)
-      DBI::dbWriteTable(
-        conn = con,
-        name = table_name,
-        value = all_lkps_maps[[table_name]],
-        # ensure table is not inadvertently overwritten/appended to
-        overwrite = overwrite,
-        append = FALSE
-      )
-    }
+  message(paste0(
+    "Writing lookup and mapping tables to SQLite database at ",
+    db_path
+  ))
+  for (table_name in names(all_lkps_maps)) {
+    message(table_name)
+    DBI::dbWriteTable(
+      conn = con,
+      name = table_name,
+      value = all_lkps_maps[[table_name]],
+      # ensure table is not inadvertently overwritten/appended to
+      overwrite = overwrite,
+      append = FALSE
+    )
+  }
 
-    message("Success!")
-    invisible(db_path)
+  message("Success!")
+  invisible(db_path)
 }
 
 #' Build named list of clinical code look up and mapping tables
@@ -114,59 +114,78 @@ all_lkps_maps_to_db <- function(all_lkps_maps,
 #'
 #' @return Returns a named list of data frames.
 #' @export
-build_all_lkps_maps <- function(all_lkps_maps = get_ukb_all_lkps_maps_raw_direct(),
-                                bnf_dmd = get_nhsbsa_snomed_bnf(),
-                                ukb_codings = ukbwranglr::get_ukb_codings_direct()) {
+build_all_lkps_maps <-
+  function(all_lkps_maps = get_ukb_all_lkps_maps_raw_direct(),
+           bnf_dmd = get_nhsbsa_snomed_bnf(),
+           ukb_codings = ukbwranglr::get_ukb_codings_direct()) {
+    # ukb resource 592
+    all_lkps_maps <- all_lkps_maps
+    all_lkps_maps <- all_lkps_maps %>%
+      remove_irrelevant_rows_all_lkps_maps()
 
-  # ukb resource 592
-  all_lkps_maps <- all_lkps_maps
-  all_lkps_maps <- all_lkps_maps %>%
-    remove_irrelevant_rows_all_lkps_maps()
+    # extend tables
+    message("Extending tables in UKB resource 592")
+    all_lkps_maps$read_v2_drugs_bnf <-
+      extend_read_v2_drugs_bnf(all_lkps_maps)
+    all_lkps_maps$bnf_lkp <-
+      extend_bnf_lkp(all_lkps_maps)
 
-  # extend tables
-  message("Extending tables in UKB resource 592")
-  all_lkps_maps$read_v2_drugs_bnf <-
-    extend_read_v2_drugs_bnf(all_lkps_maps)
-  all_lkps_maps$bnf_lkp <-
-    extend_bnf_lkp(all_lkps_maps)
+    # opcs4, from ukb codings file
+    opcs4_lkp <- make_lkp_from_ukb_codings(
+      ukb_codings = ukb_codings,
+      Coding = "240",
+      Value_col_new_name = "opcs4_code"
+    )
 
-  # opcs4, from ukb codings file
-  opcs4_lkp <- make_lkp_from_ukb_codings(ukb_codings = ukb_codings,
-                            Coding = "240",
-                            Value_col_new_name = "opcs4_code")
+    # UKB self-reported medical conditions/medications/operations from ukb codings file
+    self_report_cancer <-
+      make_lkp_from_ukb_codings(
+        ukb_codings = ukb_codings,
+        Coding = "3",
+        Value_col_new_name = "data_coding_3"
+      )
 
-  # UKB self-reported medical conditions/medications/operations from ukb codings file
-  self_report_cancer <- make_lkp_from_ukb_codings(ukb_codings = ukb_codings,
-                                                 Coding = "3",
-                                                 Value_col_new_name = "data_coding_3")
+    self_report_medication <-
+      make_lkp_from_ukb_codings(
+        ukb_codings = ukb_codings,
+        Coding = "4",
+        Value_col_new_name = "data_coding_4"
+      )
 
-  self_report_medication <- make_lkp_from_ukb_codings(ukb_codings = ukb_codings,
-                                                 Coding = "4",
-                                                 Value_col_new_name = "data_coding_4")
+    self_report_operation <-
+      make_lkp_from_ukb_codings(
+        ukb_codings = ukb_codings,
+        Coding = "5",
+        Value_col_new_name = "data_coding_5"
+      )
 
-  self_report_operation <- make_lkp_from_ukb_codings(ukb_codings = ukb_codings,
-                                                 Coding = "5",
-                                                 Value_col_new_name = "data_coding_5")
+    self_report_non_cancer <-
+      make_lkp_from_ukb_codings(
+        ukb_codings = ukb_codings,
+        Coding = "6",
+        Value_col_new_name = "data_coding_6"
+      )
 
-  self_report_non_cancer <- make_lkp_from_ukb_codings(ukb_codings = ukb_codings,
-                                                 Coding = "6",
-                                                 Value_col_new_name = "data_coding_6")
+    # https://www.nature.com/articles/s41467-019-09572-5#additional-information
+    self_report_med_to_atc_map <- get_ukb_self_report_med_to_atc_map()
 
-  # https://www.nature.com/articles/s41467-019-09572-5#additional-information
-  self_report_med_to_atc_map <- get_ukb_self_report_med_to_atc_map()
+    # combine
+    all_lkps_maps <- c(
+      all_lkps_maps,
+      list(
+        bnf_dmd = bnf_dmd,
+        opcs4_lkp = opcs4_lkp,
+        self_report_cancer = self_report_cancer,
+        self_report_medication = self_report_medication,
+        self_report_operation = self_report_operation,
+        self_report_non_cancer = self_report_non_cancer,
+        self_report_med_to_atc_map = self_report_med_to_atc_map
+      )
+    )
 
-  # combine
-  all_lkps_maps <- c(all_lkps_maps, list(bnf_dmd = bnf_dmd,
-                                         opcs4_lkp = opcs4_lkp,
-                                         self_report_cancer = self_report_cancer,
-                                         self_report_medication = self_report_medication,
-                                         self_report_operation = self_report_operation,
-                                         self_report_non_cancer = self_report_non_cancer,
-                                         self_report_med_to_atc_map = self_report_med_to_atc_map))
-
-  message("Success!")
-  return(all_lkps_maps)
-}
+    message("Success!")
+    return(all_lkps_maps)
+  }
 
 #' Download and read the NHSBSA BNF_SNOMED mapping file
 #'
@@ -197,8 +216,10 @@ get_nhsbsa_snomed_bnf <- function() {
   assertthat::assert_that(length(bnf_dmd_file) == 1,
                           msg = "Error! Unexpected number of files after unzipping NHBSA BNF-SNOMED file")
 
-  bnf_dmd <- readxl::read_excel(file.path(bnf_dmd_map_unzipped_dir, bnf_dmd_file))
-  names(bnf_dmd) <- ukbwranglr:::remove_special_characters_and_make_lower_case(names(bnf_dmd)) %>%
+  bnf_dmd <-
+    readxl::read_excel(file.path(bnf_dmd_map_unzipped_dir, bnf_dmd_file))
+  names(bnf_dmd) <-
+    ukbwranglr:::remove_special_characters_and_make_lower_case(names(bnf_dmd)) %>%
     stringr::str_remove_all("plus_")
 
   return(bnf_dmd)
@@ -223,15 +244,19 @@ get_ukb_all_lkps_maps_raw_direct <- function() {
   primarycare_codings <- "all_lkps_maps_v3.xlsx"
 
   # filepaths in tempdir
-  primarycare_codings_zip_filepath <- file.path(tempdir(), "primarycare_codings.zip")
-  primarycare_codings_excel_filepath <- file.path(tempdir(), primarycare_codings)
+  primarycare_codings_zip_filepath <-
+    file.path(tempdir(), "primarycare_codings.zip")
+  primarycare_codings_excel_filepath <-
+    file.path(tempdir(), primarycare_codings)
 
   # download primary care codings file to tempdir, if not already there
-  if(!file.exists(primarycare_codings_zip_filepath)) {
+  if (!file.exists(primarycare_codings_zip_filepath)) {
     message("Downloading primarycare_codings.zip (UKB resource 592) to tempdir")
-    utils::download.file("https://biobank.ndph.ox.ac.uk/ukb/ukb/auxdata/primarycare_codings.zip",
-                         primarycare_codings_zip_filepath,
-                         mode = "wb")
+    utils::download.file(
+      "https://biobank.ndph.ox.ac.uk/ukb/ukb/auxdata/primarycare_codings.zip",
+      primarycare_codings_zip_filepath,
+      mode = "wb"
+    )
   }
 
   # extract excel file only from zip
@@ -266,8 +291,7 @@ read_excel_to_named_list <- function(path,
     sheet_names <- subset(sheet_names,
                           sheet_names %in% to_include)
   } else if (!is.null(to_exclude)) {
-    sheet_names <- subset(sheet_names,
-                          !(sheet_names %in% to_exclude))
+    sheet_names <- subset(sheet_names,!(sheet_names %in% to_exclude))
   }
 
   # read sheets into named list
@@ -281,77 +305,124 @@ read_excel_to_named_list <- function(path,
 
 
 read_all_lkps_maps_raw <- function(path) {
-  read_excel_to_named_list(path = path,
-                           to_include = NULL,
-                           to_exclude = c("Description", "Contents"),
-                           col_types = "text")
-}
-
-remove_irrelevant_rows_all_lkps_maps <- function(all_lkps_maps_raw) {
-  nrows_to_remove <- tibble::tribble(
-    ~ sheet, ~ n_to_remove, ~ nrow_before,
-    'bnf_lkp', 2, 79829,
-  'dmd_lkp', 2, 434951,
-  'icd9_lkp', 2, 7973,
-  'icd10_lkp', 2, 17936,
-  'icd9_icd10', 3, 16163,
-  'read_v2_lkp', 2, 101883,
-  'read_v2_drugs_lkp', 2, 67614,
-  'read_v2_drugs_bnf', 3, 67615,
-  'read_v2_icd9', 3, 35664,
-  'read_v2_icd10', 3, 36667,
-  'read_v2_opcs4', 3, 14927,
-  'read_v2_read_ctv3', 2, 108245,
-  'read_ctv3_lkp', 2, 419098,
-  'read_ctv3_icd9', 3, 67155,
-  'read_ctv3_icd10', 3, 116377,
-  'read_ctv3_opcs4', 3, 54321,
-  'read_ctv3_read_v2', 2, 777522
+  read_excel_to_named_list(
+    path = path,
+    to_include = NULL,
+    to_exclude = c("Description", "Contents"),
+    col_types = "text"
   )
-
-  # check expected number of rows are present
-  expected_nrows_all_tables <- all_lkps_maps_raw %>%
-    names() %>%
-    purrr::set_names() %>%
-    purrr::map_lgl( ~ nrow(all_lkps_maps_raw[[.x]]) == nrows_to_remove[nrows_to_remove$sheet == .x,][["nrow_before"]])
-
-  unexpected_nrows_tables <- subset(expected_nrows_all_tables,
-         !expected_nrows_all_tables)
-
-  assertthat::assert_that(rlang::is_empty(unexpected_nrows_tables),
-                          msg = paste0("Error! Unexpected number of rows for the following UKB resource 592 tables: ",
-                                       stringr::str_c(unexpected_nrows_tables,
-                                                      sep = "",
-                                                      collapse = ", ")))
-
-  # remove unnecessary rows
-  result <- purrr::pmap(nrows_to_remove,
-                        function(sheet, n_to_remove, ...) {
-                          all_lkps_maps_raw[[sheet]][1:(nrow(all_lkps_maps_raw[[sheet]]) - n_to_remove),]
-                        })
-
-  names(result) <- names(all_lkps_maps_raw)
-
-  return(result)
 }
+
+remove_irrelevant_rows_all_lkps_maps <-
+  function(all_lkps_maps_raw) {
+    nrows_to_remove <- tibble::tribble(
+      ~ sheet,
+      ~ n_to_remove,
+      ~ nrow_before,
+      'bnf_lkp',
+      2,
+      79829,
+      'dmd_lkp',
+      2,
+      434951,
+      'icd9_lkp',
+      2,
+      7973,
+      'icd10_lkp',
+      2,
+      17936,
+      'icd9_icd10',
+      3,
+      16163,
+      'read_v2_lkp',
+      2,
+      101883,
+      'read_v2_drugs_lkp',
+      2,
+      67614,
+      'read_v2_drugs_bnf',
+      3,
+      67615,
+      'read_v2_icd9',
+      3,
+      35664,
+      'read_v2_icd10',
+      3,
+      36667,
+      'read_v2_opcs4',
+      3,
+      14927,
+      'read_v2_read_ctv3',
+      2,
+      108245,
+      'read_ctv3_lkp',
+      2,
+      419098,
+      'read_ctv3_icd9',
+      3,
+      67155,
+      'read_ctv3_icd10',
+      3,
+      116377,
+      'read_ctv3_opcs4',
+      3,
+      54321,
+      'read_ctv3_read_v2',
+      2,
+      777522
+    )
+
+    # check expected number of rows are present
+    expected_nrows_all_tables <- all_lkps_maps_raw %>%
+      names() %>%
+      purrr::set_names() %>%
+      purrr::map_lgl(~ nrow(all_lkps_maps_raw[[.x]]) == nrows_to_remove[nrows_to_remove$sheet == .x, ][["nrow_before"]])
+
+    unexpected_nrows_tables <- subset(expected_nrows_all_tables,!expected_nrows_all_tables)
+
+    assertthat::assert_that(
+      rlang::is_empty(unexpected_nrows_tables),
+      msg = paste0(
+        "Error! Unexpected number of rows for the following UKB resource 592 tables: ",
+        stringr::str_c(
+          unexpected_nrows_tables,
+          sep = "",
+          collapse = ", "
+        )
+      )
+    )
+
+    # remove unnecessary rows
+    result <- purrr::pmap(nrows_to_remove,
+                          function(sheet, n_to_remove, ...) {
+                            all_lkps_maps_raw[[sheet]][1:(nrow(all_lkps_maps_raw[[sheet]]) - n_to_remove), ]
+                          })
+
+    names(result) <- names(all_lkps_maps_raw)
+
+    return(result)
+  }
 
 
 make_lkp_from_ukb_codings <- function(ukb_codings,
                                       Coding,
                                       Value_col_new_name,
                                       Meaning_col_new_nae = "description") {
-  result <- ukb_codings[ukb_codings$Coding == Coding, -1]
+  result <- ukb_codings[ukb_codings$Coding == Coding,-1]
 
-  result <- ukbwranglr:::rename_cols(df = result,
-                                     old_colnames = c("Value", "Meaning"),
-                                     new_colnames = c(Value_col_new_name, Meaning_col_new_nae))
+  result <- ukbwranglr:::rename_cols(
+    df = result,
+    old_colnames = c("Value", "Meaning"),
+    new_colnames = c(Value_col_new_name, Meaning_col_new_nae)
+  )
 
   return(result)
 }
 
 get_ukb_self_report_med_to_atc_map <- function() {
   # download file
-  file_path <- file.path(tempdir(), "self_report_med_to_atc_map.xlsx")
+  file_path <-
+    file.path(tempdir(), "self_report_med_to_atc_map.xlsx")
 
   if (!file.exists(file_path)) {
     utils::download.file(
@@ -361,18 +432,28 @@ get_ukb_self_report_med_to_atc_map <- function() {
   }
 
   # read file
-  result <- readxl::read_excel(file_path,
-                               skip = 2,
-                               col_names = c("self_report_medication", "data_coding_4", "atc_code", "drug_name", "rm_1", "rm_2"))
+  result <- readxl::read_excel(
+    file_path,
+    skip = 2,
+    col_names = c(
+      "self_report_medication",
+      "data_coding_4",
+      "atc_code",
+      "drug_name",
+      "rm_1",
+      "rm_2"
+    )
+  )
 
   # drop redundant cols
-  result <- result[, -c(5, 6)]
+  result <- result[,-c(5, 6)]
 
   # append drug_name in brackets
-  result$self_report_medication <- paste0(result$self_report_medication,
-                                          " (",
-                                          result$drug_name,
-                                          ")")
+  result$self_report_medication <-
+    paste0(result$self_report_medication,
+           " (",
+           result$drug_name,
+           ")")
 
   return(result)
 }
@@ -404,11 +485,10 @@ update_code_selection <- function(current_selection,
       by = c("disease", "description", "code_type", "code"),
       suffix = c("", "_TOREMOVE")
     ) %>%
-    dplyr::mutate(
-      "category" = .data[["category_TOREMOVE"]],
-      "selected" = dplyr::case_when(!is.na(.data[["category"]]) ~ "Yes",
-                                    TRUE ~ as.character(.data[["selected"]]))
-    ) %>%
+    dplyr::mutate("category" = .data[["category_TOREMOVE"]],
+                  "selected" = dplyr::case_when((!is.na(.data[["category"]])) |
+                                                  (.data[["category"]] != "") ~ "Yes",
+                                                TRUE ~ "No")) %>%
     dplyr::select(-tidyselect::ends_with("_TOREMOVE"))
 }
 

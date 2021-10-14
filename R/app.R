@@ -58,6 +58,10 @@ runCodeMapper <- function(all_lkps_maps,
             'data_coding_6'
           )
         ),
+        h4("Upload codelist"),
+        fileInput("upload",
+                  label = NULL,
+                  buttonLabel = "Upload"),
         h4("Download codes"),
         downloadButton("download_confirmed_codes",
                        label = "Download all"),
@@ -146,6 +150,11 @@ runCodeMapper <- function(all_lkps_maps,
           tabPanel(
             "Preview selected codes only",
             reactable::reactableOutput("selected_matching_codes_preview"),
+          ),
+          tabPanel(
+            "Uploaded codelist",
+            tableOutput("uploaded_file"),
+            reactable::reactableOutput("uploaded_codelist")
           )
         ),
         width = 9
@@ -155,6 +164,8 @@ runCodeMapper <- function(all_lkps_maps,
   server <- function(input, output, session) {
 
     # Search for codes --------------------------------------------------------
+
+
     matching_codes <- eventReactive(input$new_search, {
 
       # prepare to match codes starting with...
@@ -422,6 +433,104 @@ runCodeMapper <- function(all_lkps_maps,
         # )),
         paginationType = "jump"
       )
+    })
+
+
+    # Uploaded codelist -------------------------------------------------------
+    # file details
+    output$uploaded_file <- renderTable(input$upload)
+
+    # codelist
+    uploaded_codelist <- reactive({
+      req(input$upload)
+
+      ext <- ukbwranglr:::extract_file_ext(input$upload$name)
+      switch(ext,
+             csv = readr::read_csv(input$upload$datapath),
+             xlsx = readxl::read_excel(input$upload$datapath),
+             validate("Invalid file; Please upload a .csv file")
+      )
+    })
+
+    # codelist - only shows matching disease; includes indicator for overlap
+    # with codes matching serach criteria
+    output$uploaded_codelist <- reactable::renderReactable({
+      req(matching_codes())
+
+      # validate uploaded codelist
+      ukbwranglr::validate_clinical_codes(uploaded_codelist())
+
+      # filter for matching disease
+      uploaded_codelist_overlap <- uploaded_codelist() %>%
+        dplyr::filter(
+          .data[["disease"]] == input$disease
+        )
+
+      # validate - are there any matching diseases?
+      if (nrow(uploaded_codelist_overlap) == 0) {
+        validate("No matching diseases in uploaded codelist file")
+      }
+
+      # validate - multiple authors per disease?
+      disease_author_combos <- paste0(unique(uploaded_codelist_overlap$disease),
+                                      unique(uploaded_codelist_overlap$author))
+
+      if (length(disease_author_combos) != 1) {
+        validate(paste0("Multiple authors detected for ", input$disease,
+                        ". Please supply a file with only one author per disease"))
+      }
+
+      # add column indicating whether code is included in current list of
+      # matching codes
+      uploaded_codelist_overlap_included <- uploaded_codelist_overlap %>%
+        dplyr::semi_join(matching_codes(),
+                         by = c("disease", "description", "code_type", "code")) %>%
+        dplyr::mutate("included_in_matching" = "Yes")
+
+      uploaded_codelist_overlap_notincluded <- uploaded_codelist_overlap %>%
+        dplyr::anti_join(matching_codes(),
+                         by = c("disease", "description", "code_type", "code")) %>%
+        dplyr::mutate("included_in_matching" = "No")
+
+      result <- dplyr::bind_rows(uploaded_codelist_overlap_included,
+                                 uploaded_codelist_overlap_notincluded)
+
+      reactable::reactable(
+        result,
+        filterable = TRUE,
+        searchable = TRUE,
+        resizable = TRUE,
+        showPageSizeOptions = TRUE,
+        pageSizeOptions = c(10, 25, 50, 100, 200),
+        # onClick = "select",
+        # groupBy = "Field",
+        # selection = "multiple",
+        # theme = reactable::reactableTheme(
+        #   rowSelectedStyle = list(backgroundColor = "#eee", boxShadow = "inset 2px 0 0 0 #ffa62d")
+        # )),
+        paginationType = "jump"
+      )
+    })
+
+    # update selected rows to include those in data_dict_preselected
+    observeEvent(uploaded_codelist(), {
+      # currently selected
+      currently_selected_rowids <-
+        reactable::getReactableState("matching_codes", "selected")
+
+      # get row indices to update
+      new_selected <- update_code_selection(current_selection = matching_codes(),
+                            previous_codelist = uploaded_codelist()) %>%
+        tibble::rowid_to_column() %>%
+        dplyr::filter(.data[["selected"]] == "Yes") %>%
+        dplyr::pull(.data[["rowid"]])
+
+      # union
+      updated_selection_rowids <-
+        unique(c(currently_selected_rowids, new_selected))
+
+      # update
+      reactable::updateReactable("matching_codes", selected = updated_selection_rowids)
     })
 
     # DOWNLOADS ---------------------------------------------------------------
