@@ -38,6 +38,7 @@ Imports:
     tibble,
     tidyr,
     tidyselect,
+    ukbwranglr,
     utils
 Remotes: 
-    github::rmgpanw/ukbwranglr@dev
+    github::rmgpanw/ukbwranglr
