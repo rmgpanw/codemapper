@@ -1,4 +1,7 @@
 
+# CONSTANTS ---------------------------------------------------------------
+
+UPDATE_CODE_SELECTION_MATCHING_VARS <- c("disease", "code_type", "code")
 
 # EXPORTED ----------------------------------------------------------------
 
@@ -463,7 +466,7 @@ get_ukb_self_report_med_to_atc_map <- function() {
 #' To be used with \code{\link{runCodeMapper}}. The data frame returned by this
 #' app is for a single disease and should have an empty 'category' column. If
 #' the user uploads a (valid) clinical code list then the 'categories' will be
-#' lifted over, matching on 'disease', 'description, 'code_type' and 'code'.
+#' lifted over, matching on 'disease', 'code_type' and 'code'.
 #'
 #' @param current_selection A data frame, as returned by
 #'   \code{\link{runCodeMapper}}.
@@ -481,14 +484,14 @@ update_code_selection <- function(current_selection,
   current_selection %>%
     dplyr::left_join(
       previous_codelist,
-      # match on these columns (NB, does not include 'author')
-      by = c("disease", "description", "code_type", "code"),
+      # match on these columns (NB, does not include 'description' or author')
+      by = UPDATE_CODE_SELECTION_MATCHING_VARS,
       suffix = c("", "_TOREMOVE")
     ) %>%
     dplyr::mutate("category" = .data[["category_TOREMOVE"]],
                   "selected" = dplyr::case_when((!is.na(.data[["category"]])) |
                                                   (.data[["category"]] != "") ~ "Yes",
-                                                TRUE ~ "No")) %>%
+                                                TRUE ~ "")) %>%
     dplyr::select(-tidyselect::ends_with("_TOREMOVE"))
 }
 

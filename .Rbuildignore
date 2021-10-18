@@ -9,3 +9,7 @@
 ^_targets\.R$
 ^_workflowr\.yml$
 ^config\.ini$
+^analysis/*
+^code/*
+^public/*
+^output/*

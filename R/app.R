@@ -1,15 +1,45 @@
-#' Launch a shiny app to select clinical codes
+#' Create a clinical codelist.
 #'
-#' TODO
+#' Launches a shiny app to select clinical codes (see also 'User notes' section
+#' below). In general: \enumerate{\item Complete details for essential search
+#' fields (leaving 'category' box blank and leaving the 'Ignore case' boxes
+#' ticked - if un-ticked, this will not be recorded under
+#' 'description_search_strategy'). \item Optionally upload a previous codelist.
+#' \item Click 'Download selected'.}
 #'
-#' @param all_lkps_maps A named list or path to SQLite database
+#' @section User notes:
+#'
+#'   \itemize{ \item Essential fields: 'Disease', either 'Code descriptions
+#'   like...' or at least one of 'Codes starting with...'. \item 'Download all':
+#'   downloads all codes under the 'Matching clinical codes' tab,
+#'   \emph{disregarding} any selections (i.e. the 'selected' column will appear
+#'   blank). \item 'Download selected': downloads all codes under the 'Preview
+#'   selected codes only' tab. \item If uploading a previous codelist selection,
+#'   this must be formatted as required by
+#'   \code{\link[ukbwranglr]{validate_clinical_codes}} (see
+#'   \code{\link[ukbwranglr]{example_clinical_codes}} for a valid example).
+#'   \item ...this will automatically select any codes matching on 'disease',
+#'   'code_type' and 'code' (see \code{update_code_selection} function in
+#'   \code{utils.R}), and on clicking 'Download selected', will copy over any
+#'   values in the 'category' column and set the 'selected' column to 'Yes' only
+#'   for these rows. \item ...the full list of uploaded codes can be viewed
+#'   under the 'Uploaded codelist' tab, which includes a column called
+#'   'included_in_matching', indicating whether each uploaded code is present
+#'   ('Yes') or \emph{not} present ('No') in the list under 'Matching clinical
+#'   codes'. \item Also, click through the tabs after each step before moving on
+#'   to the next. \item The final list of matching codes is codes matching 'Code
+#'   descriptions like...' \strong{OR} 'Codes starting with...'.}
+#'
+#' @param all_lkps_maps A named list or path to SQLite database of clinical
+#'   codes created by \code{\link{build_all_lkps_maps}} and
+#'   \code{\link{all_lkps_maps_to_db}}.
 #' @param ... Additional args passed on to \code{\link[shiny]{shinyApp}}
-#' @inheritParams shiny::options
+#' @inheritParams shiny::shinyApp
 #'
 #' @return \code{NULL}
 #' @export
 #' @import shiny
-runCodeMapper <- function(all_lkps_maps,
+runCodelistBuilder <- function(all_lkps_maps,
                           options = list(launch.browser = TRUE),
                           ...) {
   if (is.character(all_lkps_maps)) {
@@ -18,10 +48,11 @@ runCodeMapper <- function(all_lkps_maps,
     all_lkps_maps <- ukbwranglr::db_tables_to_list(con)
   }
 
-# UI ----------------------------------------------------------------------
+  # UI ----------------------------------------------------------------------
 
 
-  ui <- fluidPage(# Application title
+  ui <- fluidPage(
+    # Application title
     shinyFeedback::useShinyFeedback(),
     titlePanel("Build a clinical codes list"),
 
@@ -66,7 +97,7 @@ runCodeMapper <- function(all_lkps_maps,
         downloadButton("download_confirmed_codes",
                        label = "Download all"),
         downloadButton("download_confirmed_codes_selected_only",
-                     label = "Download selected")
+                       label = "Download selected")
 
       ),
 
@@ -78,9 +109,11 @@ runCodeMapper <- function(all_lkps_maps,
             "Search strategy",
             fluidRow(
               h4("Run query"),
-              actionButton(inputId = "new_search",
-                           label = "Search",
-                           class = "btn-lg btn-success"),
+              actionButton(
+                inputId = "new_search",
+                label = "Search",
+                class = "btn-lg btn-success"
+              ),
             ),
             column(
               h4("Code descriptions like..."),
@@ -138,9 +171,7 @@ runCodeMapper <- function(all_lkps_maps,
                         value = ""),
               width = 6
             ),
-            fluidRow(
-              verbatimTextOutput("n_matching_codes")
-            )
+            fluidRow(verbatimTextOutput("n_matching_codes"))
           ),
           tabPanel(
             "Matching clinical codes",
@@ -159,26 +190,34 @@ runCodeMapper <- function(all_lkps_maps,
         ),
         width = 9
       )
-    ))
+    )
+  )
 
   server <- function(input, output, session) {
-
     # Search for codes --------------------------------------------------------
 
 
     matching_codes <- eventReactive(input$new_search, {
-
       # prepare to match codes starting with...
       code_starts_params <- tibble::tribble(
-        ~ code_type, ~ starts_with,
-        "bnf", input$bnf_starts,
-        "dmd", input$dmd_starts,
-        "icd9", input$icd9_starts,
-        "icd10", input$icd10_starts,
-        "read2", input$read2_starts,
-        "read2_drugs", input$read2_drugs_starts,
-        "read3", input$read3_starts,
-        "opcs4", input$opcs4_starts
+        ~ code_type,
+        ~ starts_with,
+        "bnf",
+        input$bnf_starts,
+        "dmd",
+        input$dmd_starts,
+        "icd9",
+        input$icd9_starts,
+        "icd10",
+        input$icd10_starts,
+        "read2",
+        input$read2_starts,
+        "read2_drugs",
+        input$read2_drugs_starts,
+        "read3",
+        input$read3_starts,
+        "opcs4",
+        input$opcs4_starts
       )
 
       code_starts_params <- code_starts_params %>%
@@ -187,12 +226,17 @@ runCodeMapper <- function(all_lkps_maps,
       # error message if both description and code search boxes are empty
       if ((input$description_search == "") &
           (nrow(code_starts_params) == 0)) {
-            validate("Invalid request: a search value is required for at least one of 'Code description like...' or 'Codes starting with...' ")
+        validate(
+          "Invalid request: a search value is required for at least one of 'Code description like...' or 'Codes starting with...' "
+        )
       }
 
       # set up notification
       notify <- function(msg, id = NULL) {
-        showNotification(msg, id = id, duration = NULL, closeButton = FALSE)
+        showNotification(msg,
+                         id = id,
+                         duration = NULL,
+                         closeButton = FALSE)
       }
 
       message("Searching for matching codes")
@@ -235,11 +279,13 @@ runCodeMapper <- function(all_lkps_maps,
               )
             ))
 
-          description_search_strategy <- paste0("'",
-                                                input$description_search,
-                                                "' AND '",
-                                                input$description_search_and,
-                                                "'")
+          description_search_strategy <- paste0(
+            "'",
+            input$description_search,
+            "' AND '",
+            input$description_search_and,
+            "'"
+          )
 
           if (nrow(matching_codes_description) == 0) {
             matching_codes_description <- NULL
@@ -248,7 +294,7 @@ runCodeMapper <- function(all_lkps_maps,
 
         # NOT statement
         if ((input$description_search_not != "") &
-               !is.null(description_search_strategy)) {
+            !is.null(description_search_strategy)) {
           matching_codes_description <- matching_codes_description %>%
             dplyr::filter(stringr::str_detect(
               .data[["description"]],
@@ -259,11 +305,13 @@ runCodeMapper <- function(all_lkps_maps,
               negate = TRUE
             ))
 
-          description_search_strategy <- paste0("'",
-                                                input$description_search,
-                                                "' NOT '",
-                                                input$description_search_not,
-                                                "'")
+          description_search_strategy <- paste0(
+            "'",
+            input$description_search,
+            "' NOT '",
+            input$description_search_not,
+            "'"
+          )
           if (nrow(matching_codes_description) == 0) {
             matching_codes_description <- NULL
           }
@@ -277,11 +325,12 @@ runCodeMapper <- function(all_lkps_maps,
       if (nrow(code_starts_params) > 0) {
         notify("Searching for codes starting with...", id = id)
 
-        matching_codes_starts_with <- code_starts_params$code_type %>%
+        matching_codes_starts_with <-
+          code_starts_params$code_type %>%
           purrr::set_names() %>%
           purrr::map(
             ~ codes_starting_with(
-              codes = code_starts_params[code_starts_params$code_type == .x, ]$starts_with,
+              codes = code_starts_params[code_starts_params$code_type == .x,]$starts_with,
               code_type = .x,
               all_lkps_maps = all_lkps_maps,
               codes_only = FALSE,
@@ -299,29 +348,25 @@ runCodeMapper <- function(all_lkps_maps,
         matching_codes_starts_with <- NULL
       }
 
-      # combine results, or UI message if not matching codes found
-      if (is.null(matching_codes_description) & is.null(matching_codes_starts_with)) {
+      # combine results (codes matching EITHER search criteria), or UI message if not matching codes found
+      if (is.null(matching_codes_description) &
+          is.null(matching_codes_starts_with)) {
         notify("No codes found matching search criteria!", id = id)
         validate("No codes found matching search criteria!")
-      } else if (!is.null(matching_codes_description) & is.null(matching_codes_starts_with)) {
+      } else if (!is.null(matching_codes_description) &
+                 is.null(matching_codes_starts_with)) {
         matching_codes <- matching_codes_description
-      } else if (is.null(matching_codes_description) & !is.null(matching_codes_starts_with)) {
+      } else if (is.null(matching_codes_description) &
+                 !is.null(matching_codes_starts_with)) {
         matching_codes <- matching_codes_starts_with
       } else {
-        matching_codes_overalapping_code_types <-
-          dplyr::inner_join(
+        # combine
+        matching_codes <-
+          dplyr::full_join(
             matching_codes_description,
             matching_codes_starts_with,
             by = c("code", "description", "code_type")
           )
-
-        matching_codes_description <- matching_codes_description %>%
-          dplyr::filter(!.data[["code_type"]] %in% code_starts_params$code_type)
-
-        matching_codes <- dplyr::bind_rows(
-          matching_codes_overalapping_code_types,
-          matching_codes_description
-        )
       }
 
       notify("Final steps...", id = id)
@@ -332,31 +377,38 @@ runCodeMapper <- function(all_lkps_maps,
       matching_codes$code_starts_search_strategy <- NA
 
       if (!is.null(matching_codes_starts_with)) {
-        for (code_type in code_starts_params$code_type) {
-          matching_codes$code_starts_search_strategy <- ifelse(
-            matching_codes$code_type == code_type,
-            yes = paste0("'",
-                         code_starts_params[code_starts_params$code_type == code_type, ]$starts_with,
-                         "'"),
-            no = matching_codes$code_starts_search_strategy
-          )
-        }
+        code_starts_search_strategy <- paste0(code_starts_params$code_type,
+                                              ": '",
+                                              code_starts_params$starts_with, "'") %>%
+          stringr::str_c(sep = "", collapse = "; ")
+
+        code_starts_search_strategy <- paste0("STARTS WITH - ",
+                                              code_starts_search_strategy)
+
+        matching_codes$code_starts_search_strategy <- code_starts_search_strategy
       }
 
       # add column showing included code types
-      matching_codes$included_code_types <- stringr::str_c(input$code_type,
-                                                          sep = "",
-                                                          collapse = ", ")
+      matching_codes$included_code_types <-
+        stringr::str_c(input$code_type,
+                       sep = "",
+                       collapse = ", ")
 
       # reformat
       matching_codes <- matching_codes %>%
-        dplyr::mutate("disease" = input$disease,
-                      "category" = input$category,
-                      "author" = input$author) %>%
-        dplyr::select(tidyselect::all_of(c(names(ukbwranglr::example_clinical_codes()),
-                                           "description_search_strategy",
-                                           "code_starts_search_strategy",
-                                           "included_code_types")))
+        dplyr::mutate(
+          "disease" = input$disease,
+          "category" = input$category,
+          "author" = input$author
+        ) %>%
+        dplyr::select(tidyselect::all_of(
+          c(
+            names(ukbwranglr::example_clinical_codes()),
+            "description_search_strategy",
+            "code_starts_search_strategy",
+            "included_code_types"
+          )
+        ))
 
       notify("Search complete!", id = id)
       matching_codes
@@ -364,12 +416,9 @@ runCodeMapper <- function(all_lkps_maps,
 
     # Display matching codes --------------------------------------------------
 
-    output$n_matching_codes <- renderText(
-      paste0("N matching codes: ", nrow(matching_codes()))
-    )
+    output$n_matching_codes <- renderText(paste0("N matching codes: ", nrow(matching_codes())))
 
     output$matching_codes <- reactable::renderReactable({
-
       req(matching_codes())
 
       reactable::reactable(
@@ -386,12 +435,14 @@ runCodeMapper <- function(all_lkps_maps,
         selection = "multiple",
         theme = reactable::reactableTheme(
           rowSelectedStyle = list(backgroundColor = "#eee", boxShadow = "inset 2px 0 0 0 #ffa62d")
-        ))
+        )
+      )
     })
 
     # Preview selected codes -----------------------------------------------------
     # get selected codes (reactable state)
-    selected <- reactive(reactable::getReactableState("matching_codes", "selected"))
+    selected <-
+      reactive(reactable::getReactableState("matching_codes", "selected"))
 
     observeEvent(selected(), {
       if (!is.null(selected())) {
@@ -415,25 +466,26 @@ runCodeMapper <- function(all_lkps_maps,
       selected_matching_codes_preview
     })
 
-    output$selected_matching_codes_preview <- reactable::renderReactable({
-      req(selected_matching_codes_preview())
+    output$selected_matching_codes_preview <-
+      reactable::renderReactable({
+        req(selected_matching_codes_preview())
 
-      reactable::reactable(
-        selected_matching_codes_preview()[(selected_matching_codes_preview()$selected) == "Yes", -10],
-        filterable = TRUE,
-        searchable = TRUE,
-        resizable = TRUE,
-        showPageSizeOptions = TRUE,
-        pageSizeOptions = c(10, 25, 50, 100, 200),
-        # onClick = "select",
-        # groupBy = "Field",
-        # selection = "multiple",
-        # theme = reactable::reactableTheme(
-        #   rowSelectedStyle = list(backgroundColor = "#eee", boxShadow = "inset 2px 0 0 0 #ffa62d")
-        # )),
-        paginationType = "jump"
-      )
-    })
+        reactable::reactable(
+          selected_matching_codes_preview()[(selected_matching_codes_preview()$selected) == "Yes",-10],
+          filterable = TRUE,
+          searchable = TRUE,
+          resizable = TRUE,
+          showPageSizeOptions = TRUE,
+          pageSizeOptions = c(10, 25, 50, 100, 200),
+          # onClick = "select",
+          # groupBy = "Field",
+          # selection = "multiple",
+          # theme = reactable::reactableTheme(
+          #   rowSelectedStyle = list(backgroundColor = "#eee", boxShadow = "inset 2px 0 0 0 #ffa62d")
+          # )),
+          paginationType = "jump"
+        )
+      })
 
 
     # Uploaded codelist -------------------------------------------------------
@@ -445,10 +497,11 @@ runCodeMapper <- function(all_lkps_maps,
       req(input$upload)
 
       ext <- ukbwranglr:::extract_file_ext(input$upload$name)
-      switch(ext,
-             csv = readr::read_csv(input$upload$datapath),
-             xlsx = readxl::read_excel(input$upload$datapath),
-             validate("Invalid file; Please upload a .csv file")
+      switch(
+        ext,
+        csv = readr::read_csv(input$upload$datapath),
+        xlsx = readxl::read_excel(input$upload$datapath),
+        validate("Invalid file; Please upload a .csv file")
       )
     })
 
@@ -462,9 +515,7 @@ runCodeMapper <- function(all_lkps_maps,
 
       # filter for matching disease
       uploaded_codelist_overlap <- uploaded_codelist() %>%
-        dplyr::filter(
-          .data[["disease"]] == input$disease
-        )
+        dplyr::filter(.data[["disease"]] == input$disease)
 
       # validate - are there any matching diseases?
       if (nrow(uploaded_codelist_overlap) == 0) {
@@ -472,24 +523,34 @@ runCodeMapper <- function(all_lkps_maps,
       }
 
       # validate - multiple authors per disease?
-      disease_author_combos <- paste0(unique(uploaded_codelist_overlap$disease),
-                                      unique(uploaded_codelist_overlap$author))
+      disease_author_combos <-
+        paste0(
+          unique(uploaded_codelist_overlap$disease),
+          unique(uploaded_codelist_overlap$author)
+        )
 
       if (length(disease_author_combos) != 1) {
-        validate(paste0("Multiple authors detected for ", input$disease,
-                        ". Please supply a file with only one author per disease"))
+        validate(
+          paste0(
+            "Multiple authors detected for ",
+            input$disease,
+            ". Please supply a file with only one author per disease"
+          )
+        )
       }
 
       # add column indicating whether code is included in current list of
       # matching codes
-      uploaded_codelist_overlap_included <- uploaded_codelist_overlap %>%
+      uploaded_codelist_overlap_included <-
+        uploaded_codelist_overlap %>%
         dplyr::semi_join(matching_codes(),
-                         by = c("disease", "description", "code_type", "code")) %>%
+                         by = UPDATE_CODE_SELECTION_MATCHING_VARS) %>%
         dplyr::mutate("included_in_matching" = "Yes")
 
-      uploaded_codelist_overlap_notincluded <- uploaded_codelist_overlap %>%
+      uploaded_codelist_overlap_notincluded <-
+        uploaded_codelist_overlap %>%
         dplyr::anti_join(matching_codes(),
-                         by = c("disease", "description", "code_type", "code")) %>%
+                         by = UPDATE_CODE_SELECTION_MATCHING_VARS) %>%
         dplyr::mutate("included_in_matching" = "No")
 
       result <- dplyr::bind_rows(uploaded_codelist_overlap_included,
@@ -519,8 +580,9 @@ runCodeMapper <- function(all_lkps_maps,
         reactable::getReactableState("matching_codes", "selected")
 
       # get row indices to update
-      new_selected <- update_code_selection(current_selection = matching_codes(),
-                            previous_codelist = uploaded_codelist()) %>%
+      new_selected <-
+        update_code_selection(current_selection = matching_codes(),
+                              previous_codelist = uploaded_codelist()) %>%
         tibble::rowid_to_column() %>%
         dplyr::filter(.data[["selected"]] == "Yes") %>%
         dplyr::pull(.data[["rowid"]])
@@ -535,27 +597,51 @@ runCodeMapper <- function(all_lkps_maps,
 
     # DOWNLOADS ---------------------------------------------------------------
 
+
+    # All codes ---------------------------------------------------------------
     output$download_confirmed_codes <- downloadHandler(
       filename = function() {
         paste0(input$disease, "_codes.csv")
       },
       content = function(file) {
-        result <- update_code_selection(current_selection = selected_matching_codes_preview(),
-                              previous_codelist = uploaded_codelist())
+        result <- matching_codes()
+        result$selected <- NA
+
+        # include search strategy and included codes in first row only
+        result$description_search_strategy[2:nrow(result)] <- NA
+        result$code_starts_search_strategy[2:nrow(result)] <- NA
+        result$included_code_types[2:nrow(result)] <- NA
+
         readr::write_csv(result, file, na = "")
       }
     )
 
-    output$download_confirmed_codes_selected_only <- downloadHandler(
-      filename = function() {
-        paste0(input$disease, "_codes_selected_only.csv")
-      },
-      content = function(file) {
-        result <- update_code_selection(current_selection = selected_matching_codes_preview()[(selected_matching_codes_preview()$selected) == "Yes", ],
-                                        previous_codelist = uploaded_codelist())
-        readr::write_csv(result, file, na = "")
-      }
-    )
+
+    # Selected codes ----------------------------------------------------------
+    output$download_confirmed_codes_selected_only <-
+      downloadHandler(
+        filename = function() {
+          paste0(input$disease, "_codes_selected_only.csv")
+        },
+        content = function(file) {
+          if (is.null(input$upload)) {
+            result <-
+              selected_matching_codes_preview()[(selected_matching_codes_preview()$selected) == "Yes", ]
+          } else {
+            result <-
+              update_code_selection(current_selection = selected_matching_codes_preview()[(selected_matching_codes_preview()$selected) == "Yes", ],
+                                    previous_codelist = uploaded_codelist())
+          }
+
+
+          # include search strategy and included codes in first row only
+          result$description_search_strategy[2:nrow(result)] <- NA
+          result$code_starts_search_strategy[2:nrow(result)] <- NA
+          result$included_code_types[2:nrow(result)] <- NA
+
+          readr::write_csv(result, file, na = "")
+        }
+      )
 
   }
 
