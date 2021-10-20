@@ -52,6 +52,8 @@ under the 'Uploaded codelist' tab, which includes a column called
 ('Yes') or \emph{not} present ('No') in the list under 'Matching clinical
 codes'. \item Also, click through the tabs after each step before moving on
 to the next. \item The final list of matching codes is codes matching 'Code
-descriptions like...' \strong{OR} 'Codes starting with...'.}
+descriptions like...' \strong{OR} 'Codes starting with...'. \item
+\strong{CAUTION:} make sure there are no inadvertent white spaces (e.g.
+'search term', not 'search term  ').}
 }
 

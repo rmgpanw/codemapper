@@ -28,7 +28,9 @@
 #'   ('Yes') or \emph{not} present ('No') in the list under 'Matching clinical
 #'   codes'. \item Also, click through the tabs after each step before moving on
 #'   to the next. \item The final list of matching codes is codes matching 'Code
-#'   descriptions like...' \strong{OR} 'Codes starting with...'.}
+#'   descriptions like...' \strong{OR} 'Codes starting with...'. \item
+#'   \strong{CAUTION:} make sure there are no inadvertent white spaces (e.g.
+#'   'search term', not 'search term  ').}
 #'
 #' @param all_lkps_maps A named list or path to SQLite database of clinical
 #'   codes created by \code{\link{build_all_lkps_maps}} and
