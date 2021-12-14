@@ -207,7 +207,7 @@ all_lkps_maps_raw$icd10_lkp %>%
 
 UK Biobank ICD-10 codes are recorded as per the `ALT_CODE` format, but does ***not*** append 'X' for these undivided 3 character category codes. 
 
-The 'X' is therefore removed when looking up codes from the `icd_10` lookup sheet with argument `standardise_output = TRUE`.
+The 'X' is therefore removed when looking up codes from the `icd_10` lookup sheet with argument `standardise_output = TRUE`. However, the 'X' is retained in the `icd10_lkp` sheet `ALT_CODE` column.
 
 ```{r}
 # make sure that only 3 character ICD10 codes have an ALT_CODE ending with X
@@ -232,6 +232,8 @@ assertthat::are_equal(n_icd10_codes_with_both_modifier_4_and_5, 0)
 ```
 
 There are no ICD-10 codes with values for both `MODIFIER_4` AND `MODIFIER_5`.
+
+Examples of codes with modifiers: `E10` and `I70.0`. For the latter, note that `I70.0` in `ICD10_CODE` format can have (i) no modifier (ii) 'without gangrene' modifier, or (iii) 'with gangrene' modifier. In `ALT_CODE` format, these appear as `I700`, `I7000` and `I7001` respectively.
 
 # `opcs4_lkp`
 
