@@ -920,12 +920,3 @@ strip_x_from_alt_icd10 <- function(df,
 
   return(df)
 }
-
-strip_dot_from_icd10 <- function(df,
-                                   icd10_code_col) {
-  df[[icd10_code_col]] <-
-    stringr::str_remove(df[[icd10_code_col]],
-                        "\\.")
-
-  return(df)
-}
