@@ -207,7 +207,7 @@ all_lkps_maps_raw$icd10_lkp %>%
 
 UK Biobank ICD-10 codes are recorded as per the `ALT_CODE` format, but does ***not*** append 'X' for these undivided 3 character category codes. 
 
-The 'X' is therefore removed when reformatting the `icd_10` lookup sheet.
+The 'X' is therefore removed when looking up codes from the `icd_10` lookup sheet with argument `standardise_output = TRUE`.
 
 ```{r}
 # make sure that only 3 character ICD10 codes have an ALT_CODE ending with X
