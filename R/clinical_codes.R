@@ -522,6 +522,9 @@ map_codes <- function(codes,
 #'   "ALT_CODE".
 #' @param output_icd10_format character. Must be either "ICD10_CODE" or
 #'   "ALT_CODE".
+#' @param strip_x logical. If \code{TRUE}, any 3 character ICD10 codes in
+#'   'ALT_CODE' format with no children (e.g. 'A38X', Scarlet fever) will have
+#'   the last 'X' removed. Default value is \code{FALSE}.
 #' @inheritParams codes_starting_with
 #'
 #' @return character vector of ICD-10 codes, reformatted as specified by
@@ -531,7 +534,8 @@ map_codes <- function(codes,
 reformat_icd10_codes <- function(icd10_codes,
                                  all_lkps_maps,
                                  input_icd10_format = "ICD10_CODE",
-                                 output_icd10_format = "ALT_CODE") {
+                                 output_icd10_format = "ALT_CODE",
+                                 strip_x = FALSE) {
   # validate args
   match.arg(arg = input_icd10_format,
             choices = c("ICD10_CODE", "ALT_CODE"))
@@ -567,6 +571,11 @@ reformat_icd10_codes <- function(icd10_codes,
       dplyr::group_by(.data[[input_icd10_format]]) %>%
       dplyr::slice(1L) %>%
       dplyr::ungroup()
+
+  if (strip_x) {
+    icd10_lkp <- strip_x_from_alt_icd10(df = icd10_lkp,
+                           alt_icd10_code_col = "ALT_CODE")
+  }
 
   dict <- icd10_lkp[[output_icd10_format]]
   names(dict) <- icd10_lkp[[input_icd10_format]]
@@ -914,6 +923,7 @@ standardise_output_fn <- function(df, lkp_table, code_col, description_col, code
 
 strip_x_from_alt_icd10 <- function(df,
                                    alt_icd10_code_col) {
+  # used for 3 character ICD10 codes in 'AlT_CODE' format, which end with 'X' if there are no children codes
   df[[alt_icd10_code_col]] <-
     stringr::str_remove(df[[alt_icd10_code_col]],
                         "X$")

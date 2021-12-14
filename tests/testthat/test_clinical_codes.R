@@ -367,3 +367,30 @@ test_that("`reformat_icd10_codes()` returns the expected values for ALT_CODE to 
   )
 })
 
+test_that(
+  "`reformat_icd10_codes()` returns the expected values for ICD10_CODE to ALT_CODE for a 3 character code with no children",
+  {
+    expect_equal(
+      reformat_icd10_codes(
+        icd10_codes = c("A38"),
+        all_lkps_maps = all_lkps_maps,
+        input_icd10_format = "ICD10_CODE",
+        output_icd10_format = "ALT_CODE",
+        strip_x = TRUE
+      ),
+      "A38"
+    )
+
+    expect_equal(
+      reformat_icd10_codes(
+        icd10_codes = c("A38"),
+        all_lkps_maps = all_lkps_maps,
+        input_icd10_format = "ICD10_CODE",
+        output_icd10_format = "ALT_CODE",
+        strip_x = FALSE
+      ),
+      "A38X"
+    )
+  }
+)
+
