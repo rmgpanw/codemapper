@@ -413,10 +413,32 @@ test_that(
   "`check_icd10_codes_are_alt_code_format()` detects icd-10 codes containing '.' character",
   {
     expect_error(
-      check_icd10_codes_are_alt_code_format(c("E10.1", "E11")),
-      regexp = "Codes to review: E10.1"
+      check_icd10_codes_are_alt_code_format(c("E10.1", "E11"), all_lkps_maps),
+      regexp = "contain a '.'"
     )
 
-    expect_true(check_icd10_codes_are_alt_code_format(c("E11")))
+    expect_true(check_icd10_codes_are_alt_code_format(c("E11"), all_lkps_maps))
+  }
+)
+
+test_that(
+  "`check_icd10_codes_are_alt_code_format()` detects 3 character only icd-10 codes (e.g. Scarlet fever)",
+  {
+    expect_error(
+      check_icd10_codes_are_alt_code_format(c("A38"), all_lkps_maps),
+      regexp = "should end with 'X'"
+    )
+
+    expect_true(check_icd10_codes_are_alt_code_format(c("A38X"), all_lkps_maps))
+  }
+)
+
+test_that(
+  "`check_icd10_codes_are_alt_code_format()` detects non-icd-10 codes",
+  {
+    expect_error(
+      check_icd10_codes_are_alt_code_format(c("C1080"), all_lkps_maps),
+      regexp = "not recognised as ICD-10"
+    )
   }
 )

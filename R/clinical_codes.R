@@ -585,22 +585,70 @@ reformat_icd10_codes <- function(icd10_codes,
   )
 }
 
-check_icd10_codes_are_alt_code_format <- function(icd10_codes) {
-  # basic test - if `icd10_codes` contains '.', then it may be an ICD10 code,
-  # but not in ALT_CODE format
-  codes_with_dot <- subset(icd10_codes,
-                           stringr::str_detect(icd10_codes,
-                                               pattern = "\\."))
+check_icd10_codes_are_alt_code_format <- function(icd10_codes,
+                                                  all_lkps_maps,
+                                                  check_3_char_codes_ending_X = TRUE) {
+  icd10_lkp <- all_lkps_maps$icd10_lkp %>%
+    dplyr::collect()
 
-  pass <- assertthat::assert_that(length(codes_with_dot) == 0,
-                          msg = paste0("The following ",
-                                       length(codes_with_dot),
-                                       " codes contain a '.' character. If these are ICD-10 codes, try converting to 'ALT_CODE' format with `reformat_icd10_codes`. Codes to review: ",
-                                       stringr::str_c(codes_with_dot,
-                                                      sep = "",
-                                                      collapse = ", ")))
+  # check if there are any codes that should end with 'X' in ALT_CODE format (e.g. Scarlet fever, "A38X")
+  if (check_3_char_codes_ending_X) {
+    icd10_format_3_char_codes <- icd10_lkp %>%
+      dplyr::filter(stringr::str_detect(.data[["ALT_CODE"]],
+                                        pattern = "X$")) %>%
+      dplyr::pull(ICD10_CODE)
 
-  invisible(pass)
+    icd10_codes_3_char_codes <- subset(icd10_codes,
+                                       icd10_codes %in% icd10_format_3_char_codes)
+
+    assertthat::assert_that(
+      length(icd10_codes_3_char_codes) == 0,
+      msg = paste0(
+        "The following ",
+        length(icd10_codes_3_char_codes),
+        " 3 character ICD-10 codes should end with 'X'. Try converting to 'ALT_CODE' format with `reformat_icd10_codes` and `strip_x = FALSE`. Codes to review: ",
+        stringr::str_c(icd10_codes_3_char_codes,
+                       sep = "",
+                       collapse = ", ")
+      )
+    )
+  }
+
+  # by this point, all ICD10 codes should be ALT_CODE format. Check all codes exist
+  unrecognised_icd10_codes <- subset(icd10_codes,
+                                     !icd10_codes %in% icd10_lkp$ALT_CODE)
+
+  if (length(unrecognised_icd10_codes) > 0) {
+    error_message <- paste0("Error! ",
+                            length(unrecognised_icd10_codes),
+                            " codes are not recognised as ICD-10 in ALT_CODE format: ",
+                            stringr::str_c(unrecognised_icd10_codes,
+                                           sep = "",
+                                           collapse = ", "))
+
+    # basic test - if `icd10_codes` contains '.', then it may be an ICD10 code,
+    # but not in ALT_CODE format
+    codes_with_dot <- subset(
+      unrecognised_icd10_codes,
+      stringr::str_detect(unrecognised_icd10_codes,
+                          pattern = "\\.")
+    )
+
+    if (length(codes_with_dot) > 0) {
+      error_message <- paste0(error_message,
+                              " .\n",
+                              length(codes_with_dot),
+                              " codes contain a '.'. If definitely ICD-10, try converting these to 'ALT_CODE' format with `reformat_icd10_codes`: ",
+                              stringr::str_c(codes_with_dot,
+                                             sep = "",
+                                             collapse = ", "))
+    }
+
+    stop(error_message)
+  }
+
+  # ...if all checks pass
+  invisible(TRUE)
 }
 
 # PRIVATE FUNCTIONS -------------------------------------------------------
