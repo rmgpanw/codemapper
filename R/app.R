@@ -425,7 +425,12 @@ runCodelistBuilder <- function(all_lkps_maps,
 
       reactable::reactable(
         # data,
-        matching_codes(),
+        matching_codes()[, c("disease",
+                             "description",
+                             "category",
+                             "code_type",
+                             "code",
+                             "author")],
         filterable = TRUE,
         searchable = TRUE,
         resizable = TRUE,
@@ -473,7 +478,12 @@ runCodelistBuilder <- function(all_lkps_maps,
         req(selected_matching_codes_preview())
 
         reactable::reactable(
-          selected_matching_codes_preview()[(selected_matching_codes_preview()$selected) == "Yes",-10],
+          selected_matching_codes_preview()[(selected_matching_codes_preview()$selected) == "Yes", c("disease",
+                                                                                                     "description",
+                                                                                                     "category",
+                                                                                                     "code_type",
+                                                                                                     "code",
+                                                                                                     "author")],
           filterable = TRUE,
           searchable = TRUE,
           resizable = TRUE,
