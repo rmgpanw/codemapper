@@ -24,9 +24,11 @@ test_that("`all_lkps_maps` table 'icd10_lkp' has no rows with values in both the
 
 # `codes_starting_with()` -----------------------------------------------------
 
-test_that("`codes_starting_with()` returns the expected nuber of results", {
+test_that("`codes_starting_with()` returns the expected nuber of results, escaping '.'", {
   # return - codes only
-  expect_equal(length(
+
+  # escaping '.'
+  expect_equal(
     codes_starting_with(
       codes = c("C10E."),
       code_type = "read2",
@@ -34,13 +36,24 @@ test_that("`codes_starting_with()` returns the expected nuber of results", {
       codes_only = TRUE,
       standardise_output = FALSE
     )
-  ),
-  expected = 27)
+  ,
+  expected = "C10E.")
+
+  # no '.'
+  expect_equal(
+    length(codes_starting_with(
+      codes = c("C10E"),
+      code_type = "read2",
+      all_lkps_maps = all_lkps_maps,
+      codes_only = TRUE,
+      standardise_output = FALSE
+    )),
+    expected = 27)
 
   # return codes and descriptions as a data frame
   expect_equal(nrow(
     codes_starting_with(
-      codes = c("C10E."),
+      codes = c("C10E"),
       code_type = "read2",
       all_lkps_maps = all_lkps_maps,
       codes_only = FALSE,
@@ -51,7 +64,7 @@ test_that("`codes_starting_with()` returns the expected nuber of results", {
 
   expect_equal(nrow(
     codes_starting_with(
-      codes = c("C10E."),
+      codes = c("C10E"),
       code_type = "read2",
       all_lkps_maps = all_lkps_maps,
       codes_only = FALSE,

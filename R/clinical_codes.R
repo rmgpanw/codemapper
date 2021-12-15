@@ -75,22 +75,9 @@ codes_starting_with <- function(codes,
     preferred_description_code <- get_preferred_description_code_for_lookup_sheet(lookup_sheet = lkp_table)
   }
 
-  # add "^" at start and ".*" at end
-
-  # TODO - change "^" to "^\\", which will
-  # escape '.' at the start of any codes. Add tests - shouldn't affect strings
-  # that don't start with a wildcard (e.g. "E11", but should protect against
-  # e.g. ".11"). Update vignettes on clinical codes: also check if any coding
-  # systems actually start with '.' (couldn't see this in icd10)
-
-  # TODO - add option to return standardised code list. Maybe use lookup_codes to achieve this(?)
-
-  # TODO - ukbwranglr_resources, for opcs4 and icd10 codes, use get_child codes
-  # to append these for 3 character icd10/opcs4 codes (see caliber wraning note
-  # here: https://www.caliberresearch.org/portal/show/diabcomp_hes) Ask val, it
-  # says 'unless explicitly noted otherwise' - examples of this?
-  codes_raw <- codes
-  codes <- paste0("^", codes, ".*")
+  # reformat codes - escape '.', prefix with anchor and append '.*'
+  codes <- stringr::str_replace_all(codes, pattern = "\\.", replacement = "\\\\.")
+  codes <-  paste0("^", codes, ".*")
 
   # combine into single string, separated by "|"
   codes <- stringr::str_c(codes, sep = "", collapse = "|")
