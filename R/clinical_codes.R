@@ -585,6 +585,24 @@ reformat_icd10_codes <- function(icd10_codes,
   )
 }
 
+check_icd10_codes_are_alt_code_format <- function(icd10_codes) {
+  # basic test - if `icd10_codes` contains '.', then it may be an ICD10 code,
+  # but not in ALT_CODE format
+  codes_with_dot <- subset(icd10_codes,
+                           stringr::str_detect(icd10_codes,
+                                               pattern = "\\."))
+
+  pass <- assertthat::assert_that(length(codes_with_dot) == 0,
+                          msg = paste0("The following ",
+                                       length(codes_with_dot),
+                                       " codes contain a '.' character. If these are ICD-10 codes, try converting to 'ALT_CODE' format with `reformat_icd10_codes`. Codes to review: ",
+                                       stringr::str_c(codes_with_dot,
+                                                      sep = "",
+                                                      collapse = ", ")))
+
+  invisible(pass)
+}
+
 # PRIVATE FUNCTIONS -------------------------------------------------------
 
 

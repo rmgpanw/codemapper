@@ -407,3 +407,16 @@ test_that(
   }
 )
 
+# `check_icd10_codes_are_alt_code_format()` -------------------------------
+
+test_that(
+  "`check_icd10_codes_are_alt_code_format()` detects icd-10 codes containing '.' character",
+  {
+    expect_error(
+      check_icd10_codes_are_alt_code_format(c("E10.1", "E11")),
+      regexp = "Codes to review: E10.1"
+    )
+
+    expect_true(check_icd10_codes_are_alt_code_format(c("E11")))
+  }
+)
