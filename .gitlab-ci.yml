@@ -23,9 +23,6 @@ before_script:
 building:
   stage: build
   script:
-    - R -e "install.packages('remotes')"
-    - R -e "install.packages('devtools')"
-    - R -e "remotes::install_deps(dependencies = TRUE)"
     - R -e 'devtools::check(error_on = "error")'
 
 # To have the coverage percentage appear as a gitlab badge follow these
