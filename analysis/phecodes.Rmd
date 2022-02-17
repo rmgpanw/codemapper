@@ -1,0 +1,33 @@
+---
+title: "Reformatting UKB 'all_lkps_maps.xlsx'"
+author: "Alasdair Warwick"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output: 
+  workflowr::wflow_html:
+    toc: false
+editor_options:
+  chunk_output_type: console
+---
+
+```{r global-options, echo=FALSE}
+knitr::opts_chunk$set(warning=FALSE, message=FALSE, echo=FALSE)
+```
+
+```{r}
+library(tidyverse)
+library(reactable)
+library(readxl)
+library(crosstalk)
+library(targets)
+
+devtools::load_all()
+
+config <- configr::read.config("config.ini")
+
+all_lkps_maps_raw <- tar_read(all_lkps_maps_raw)
+all_lkps_maps <- tar_read(all_lkps_maps)
+```
+
+# Overview
+
+**Aim:** to explore the phecode lookup and mapping files.

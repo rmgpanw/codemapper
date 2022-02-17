@@ -1,1 +1,2 @@
-targets::tar_make()
+targets::tar_make(names = NULL,
+                  reporter = "timestamp")

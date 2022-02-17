@@ -72,6 +72,19 @@ list(
       )
     },
     format = "file"
+  ),
+
+  tar_target(
+    PHECODES_RMD,
+    command = {
+      !!tar_knitr_deps_expr(file.path("analysis", "phecodes.Rmd"))
+      suppressMessages(workflowr::wflow_build(file.path("analysis", "phecodes.Rmd"), verbose = FALSE))
+      c(
+        file.path("analysis", "phecodes.Rmd"),
+        file.path("public", "phecodes.html")
+      )
+    },
+    format = "file"
   )
 
 )
