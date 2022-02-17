@@ -7,7 +7,7 @@
 code_descriptions_like(
   reg_expr,
   code_type,
-  all_lkps_maps,
+  all_lkps_maps = "all_lkps_maps.db",
   ignore_case = TRUE,
   codes_only = FALSE,
   preferred_description_only = TRUE,
@@ -21,7 +21,11 @@ code_descriptions_like(
 Must be one of \code{read2}, \code{read3}, \code{icd9}, \code{icd10},
 \code{bnf}, \code{dmd}, \code{read2_drugs} or \code{opcs4}.}
 
-\item{all_lkps_maps}{the \code{all_lkps_maps} list.}
+\item{all_lkps_maps}{Either a named list of lookup and mapping tables (either
+data frames or \code{tbl_dbi} objects), or the path to a SQLite database
+containing these tables (see also \code{\link[=build_all_lkps_maps]{build_all_lkps_maps()}} and
+\code{\link[=all_lkps_maps_to_db]{all_lkps_maps_to_db()}}). By default, will look for a SQLite datbase called
+\code{all_lkps_maps.db} in the current working directory.}
 
 \item{ignore_case}{Should case differences be ignored in the match?}
 

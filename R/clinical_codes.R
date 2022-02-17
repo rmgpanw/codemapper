@@ -20,7 +20,11 @@
 #' @param code_type character. The type of clinical code system to be searched.
 #'   Must be one of \code{read2}, \code{read3}, \code{icd9}, \code{icd10},
 #'   \code{bnf}, \code{dmd}, \code{read2_drugs} or \code{opcs4}.
-#' @param all_lkps_maps the \code{all_lkps_maps} list.
+#' @param all_lkps_maps Either a named list of lookup and mapping tables (either
+#'   data frames or `tbl_dbi` objects), or the path to a SQLite database
+#'   containing these tables (see also [build_all_lkps_maps()] and
+#'   [all_lkps_maps_to_db()]). By default, will look for a SQLite datbase called
+#'   `all_lkps_maps.db` in the current working directory.
 #' @param codes_only bool. If \code{TRUE}, return a character vector of
 #'   \emph{unique} codes. If \code{FALSE} (default), return a data frame of all
 #'   results including code descriptions (useful for manual validation).
@@ -34,7 +38,7 @@
 #' @family Clinical code lookups and mappings
 codes_starting_with <- function(codes,
                             code_type,
-                            all_lkps_maps,
+                            all_lkps_maps = "all_lkps_maps.db",
                             codes_only = FALSE,
                             preferred_description_only = TRUE,
                             standardise_output = TRUE,
@@ -42,6 +46,13 @@ codes_starting_with <- function(codes,
   # validate args
   match.arg(arg = code_type,
             choices = CODE_TYPE_TO_LKP_TABLE_MAP$code)
+
+  # connect to database file path
+  if (is.character(all_lkps_maps)) {
+    con <- check_all_lkps_maps_path(all_lkps_maps)
+    all_lkps_maps <- ukbwranglr::db_tables_to_list(con)
+    on.exit(DBI::dbDisconnect(con))
+  }
 
   assertthat::assert_that(
     is.character(codes),
@@ -155,7 +166,7 @@ codes_starting_with <- function(codes,
 #' @family Clinical code lookups and mappings
 lookup_codes <- function(codes,
                          code_type,
-                         all_lkps_maps,
+                         all_lkps_maps = "all_lkps_maps.db",
                          preferred_description_only = TRUE,
                          standardise_output = TRUE,
                          quiet = FALSE) {
@@ -167,6 +178,13 @@ lookup_codes <- function(codes,
 
   match.arg(arg = code_type,
             choices = CODE_TYPE_TO_LKP_TABLE_MAP$code)
+
+  # connect to database file path
+  if (is.character(all_lkps_maps)) {
+    con <- check_all_lkps_maps_path(all_lkps_maps)
+    all_lkps_maps <- ukbwranglr::db_tables_to_list(con)
+    on.exit(DBI::dbDisconnect(con))
+  }
 
   validate_all_lkps_maps()
 
@@ -249,7 +267,7 @@ lookup_codes <- function(codes,
 #' @export
 code_descriptions_like <- function(reg_expr,
                                       code_type,
-                                      all_lkps_maps,
+                                      all_lkps_maps = "all_lkps_maps.db",
                                       ignore_case = TRUE,
                                       codes_only = FALSE,
                                       preferred_description_only = TRUE,
@@ -257,6 +275,13 @@ code_descriptions_like <- function(reg_expr,
   # validate args
   match.arg(arg = code_type,
             choices = CODE_TYPE_TO_LKP_TABLE_MAP$code)
+
+  # connect to database file path
+  if (is.character(all_lkps_maps)) {
+    con <- check_all_lkps_maps_path(all_lkps_maps)
+    all_lkps_maps <- ukbwranglr::db_tables_to_list(con)
+    on.exit(DBI::dbDisconnect(con))
+  }
 
   validate_all_lkps_maps()
 
@@ -334,9 +359,9 @@ code_descriptions_like <- function(reg_expr,
 #' \code{read2}, \code{read3}, \code{icd9}, \code{icd10}, \code{bnf},
 #' \code{dmd}, \code{read2_drugs} or \code{opcs4}.
 #'
-#' @param codes character. A character vector of codes to be mapped.
-#' @param from character (scalar). Coding system that \code{codes} belong to.
-#' @param to character (scalar). Coding system to map \code{codes} to.
+#' @param codes A character vector of codes to be mapped.
+#' @param from Coding system that \code{codes} belong to.
+#' @param to Coding system to map \code{codes} to.
 #' @param quiet bool. Warning message if any of \code{codes} are not found for
 #'   the code type being mapped from.
 #' @param preferred_description_only bool. Return only preferred descriptions
@@ -351,29 +376,25 @@ code_descriptions_like <- function(reg_expr,
 map_codes <- function(codes,
                       from,
                       to,
-                      all_lkps_maps,
+                      all_lkps_maps = "all_lkps_maps.db",
                       codes_only = FALSE,
                       standardise_output = TRUE,
                       quiet = FALSE,
                       preferred_description_only = NULL) {
   # validate args
+  ## connect to database file path
+  if (is.character(all_lkps_maps)) {
+    con <- check_all_lkps_maps_path(all_lkps_maps)
+    all_lkps_maps <- ukbwranglr::db_tables_to_list(con)
+    on.exit(DBI::dbDisconnect(con))
+  }
+
   validate_all_lkps_maps()
-
-  match.arg(arg = from,
-            choices = CODE_TYPE_TO_LKP_TABLE_MAP$code)
-            # choices = CLINICAL_CODE_MAPPINGS_MAP$from)
-
-  match.arg(arg = to,
-            choices = CODE_TYPE_TO_LKP_TABLE_MAP$code)
-            # choices = CLINICAL_CODE_MAPPINGS_MAP$to)
 
   assertthat::assert_that(
     is.character(codes),
     msg = "Error! `codes` must be a character vector"
   )
-
-  assertthat::assert_that(!from == to,
-                          msg = "Error! `from` and `to` args cannot be the same")
 
   assertthat::assert_that(is.logical(codes_only),
                           msg = "`code_only` must be either 'TRUE' or 'FALSE'")
@@ -388,40 +409,14 @@ map_codes <- function(codes,
     msg = "Error! `preferred_description_only` cannot be `TRUE` unless `standardise_output` is also `TRUE`")
   }
 
-  # get appropriate mapping sheet
-  swap_mapping_cols <- FALSE
-  mapping_table <- get_from_to_mapping_sheet(from = from, to = to)
+  # check mapping args and get required details - mapping_table, from_col and
+  # to_col
+  mapping_params <- check_mapping_args(from = from,
+                                       to = to)
 
-  # if above returns `character(0)`, try to map the other way
-  if (rlang::is_empty(mapping_table)) {
-    swap_mapping_cols <- TRUE
-    mapping_table <- get_from_to_mapping_sheet(from = to, to = from)
-  }
-
-  # if still returns `character(0)`, error
-  if (rlang::is_empty(mapping_table)) {
-    stop("Error! Invalid (or unavailable) code mapping request")
-  } else if (swap_mapping_cols) {
-    warning("Warning! No mapping sheet available for this request. Attempting to map anyway using: ", mapping_table)
-  }
-
-  # get from_col and to_col column names for mapping sheet
-  # swap if appropriate
-  if (swap_mapping_cols) {
-    from_col <-
-      get_value_for_mapping_sheet(mapping_table = mapping_table,
-                                  value = "to_col")
-    to_col <-
-      get_value_for_mapping_sheet(mapping_table = mapping_table,
-                                  value = "from_col")
-  } else {
-    from_col <-
-      get_value_for_mapping_sheet(mapping_table = mapping_table,
-                                  value = "from_col")
-    to_col <-
-      get_value_for_mapping_sheet(mapping_table = mapping_table,
-                                  value = "to_col")
-  }
+  from_col <- mapping_params$from_col
+  to_col <- mapping_params$to_col
+  mapping_table <- mapping_params$mapping_table
 
   # determine relevant column indicating whether code description is preferred
   # (for code types with synonymous code descriptions like read 2 and read 3)
@@ -436,13 +431,6 @@ map_codes <- function(codes,
 
   # do mapping
 
-  # TODO DELETE
-
-  # # reformat codes if mapping from icd10 and swapping mapping cols is TRUE
-  # if (from == "icd10" & swap_mapping_cols) {
-  #   codes <- reformat_icd10_codes(icd10_codes = codes,
-  #                                 all_lkps_maps = all_lkps_maps)
-  # }
 
   result <- all_lkps_maps[[mapping_table]] %>%
     dplyr::filter(.data[[from_col]] %in% codes) %>%
@@ -490,6 +478,61 @@ map_codes <- function(codes,
       return(result)
     }
   }
+}
+
+#' Get a 'from-to' mapping data frame
+#'
+#' Returns a data frame with 'from' and 'to' columns for a specified pair of
+#' coding systems.
+#'
+#' @param from A clinical coding system to map from.
+#' @param to A clinical coding system to map to.
+#' @inheritParams codes_starting_with
+#'
+#' @return A data frame with column names 'from' and 'to'.
+#' @export
+#'
+#' @family Clinical code lookups and mappings
+get_mapping_df <- function(from,
+                        to,
+                        all_lkps_maps = "all_lkps_maps.db") {
+  # validate args
+  check_mapping_args(from = from,
+                     to = to)
+
+  # connect to database file path
+  if (is.character(all_lkps_maps)) {
+    con <- check_all_lkps_maps_path(all_lkps_maps)
+    all_lkps_maps <- ukbwranglr::db_tables_to_list(con)
+    on.exit(DBI::dbDisconnect(con))
+  }
+
+  # get mapping sheet, from and to cols
+  # check mapping args and get required details - mapping_table, from_col and
+  # to_col
+  mapping_params <- check_mapping_args(from = from,
+                                       to = to)
+
+  from_col <- mapping_params$from_col
+  to_col <- mapping_params$to_col
+  mapping_table <- mapping_params$mapping_table
+
+  # get just distinct combinations of from_col and to_col for mapping_table
+  from_to_cols <- c(
+    from_col,
+    to_col
+  )
+
+  result <- all_lkps_maps[[mapping_table]] %>%
+    dplyr::select(tidyselect::all_of(from_to_cols)) %>%
+    dplyr::distinct() %>%
+    dplyr::collect() %>%
+    ukbwranglr:::rename_cols(
+      old_colnames = from_to_cols,
+      new_colnames = c("from", "to")
+    )
+
+  return(result)
 }
 
 # Utilities ---------------------------------------------------------------
@@ -982,4 +1025,76 @@ strip_x_from_alt_icd10 <- function(df,
                         "X$")
 
   return(df)
+}
+
+## Validation helpers ---------------------------
+
+check_mapping_args <- function(from,
+                               to) {
+  match.arg(arg = from,
+            choices = CODE_TYPE_TO_LKP_TABLE_MAP$code)
+  # choices = CLINICAL_CODE_MAPPINGS_MAP$from)
+
+  match.arg(arg = to,
+            choices = CODE_TYPE_TO_LKP_TABLE_MAP$code)
+  # choices = CLINICAL_CODE_MAPPINGS_MAP$to)
+
+  assertthat::assert_that(!from == to,
+                          msg = "Error! `from` and `to` args cannot be the same")
+
+  # get appropriate mapping sheet
+  swap_mapping_cols <- FALSE
+  mapping_table <- get_from_to_mapping_sheet(from = from, to = to)
+
+  # if above returns `character(0)`, try to map the other way
+  if (rlang::is_empty(mapping_table)) {
+    swap_mapping_cols <- TRUE
+    mapping_table <- get_from_to_mapping_sheet(from = to, to = from)
+  }
+
+  # if still returns `character(0)`, error
+  if (rlang::is_empty(mapping_table)) {
+    stop("Error! Invalid (or unavailable) code mapping request")
+  } else if (swap_mapping_cols) {
+    warning("Warning! No mapping sheet available for this request. Attempting to map anyway using: ", mapping_table)
+  }
+
+  # get from_col and to_col column names for mapping sheet
+  # swap if appropriate
+  if (swap_mapping_cols) {
+    from_col <-
+      get_value_for_mapping_sheet(mapping_table = mapping_table,
+                                  value = "to_col")
+    to_col <-
+      get_value_for_mapping_sheet(mapping_table = mapping_table,
+                                  value = "from_col")
+  } else {
+    from_col <-
+      get_value_for_mapping_sheet(mapping_table = mapping_table,
+                                  value = "from_col")
+    to_col <-
+      get_value_for_mapping_sheet(mapping_table = mapping_table,
+                                  value = "to_col")
+  }
+
+  # return result
+  return(list(
+    from_col = from_col,
+    to_col = to_col,
+    mapping_table = mapping_table
+  ))
+}
+
+check_all_lkps_maps_path <- function(file_path) {
+  # check file exists
+  assertthat::assert_that(file.exists(file_path),
+                          msg = paste0("Error! No file found at ",
+                                       file_path))
+
+  # check file ends with '.db'
+  assertthat::assert_that(stringr::str_detect(file_path,
+                                              ".+\\.db"))
+
+  # return con object if tests pass
+  DBI::dbConnect(RSQLite::SQLite(), file_path)
 }

@@ -8,7 +8,7 @@ map_codes(
   codes,
   from,
   to,
-  all_lkps_maps,
+  all_lkps_maps = "all_lkps_maps.db",
   codes_only = FALSE,
   standardise_output = TRUE,
   quiet = FALSE,
@@ -16,13 +16,17 @@ map_codes(
 )
 }
 \arguments{
-\item{codes}{character. A character vector of codes to be mapped.}
+\item{codes}{A character vector of codes to be mapped.}
 
-\item{from}{character (scalar). Coding system that \code{codes} belong to.}
+\item{from}{Coding system that \code{codes} belong to.}
 
-\item{to}{character (scalar). Coding system to map \code{codes} to.}
+\item{to}{Coding system to map \code{codes} to.}
 
-\item{all_lkps_maps}{the \code{all_lkps_maps} list.}
+\item{all_lkps_maps}{Either a named list of lookup and mapping tables (either
+data frames or \code{tbl_dbi} objects), or the path to a SQLite database
+containing these tables (see also \code{\link[=build_all_lkps_maps]{build_all_lkps_maps()}} and
+\code{\link[=all_lkps_maps_to_db]{all_lkps_maps_to_db()}}). By default, will look for a SQLite datbase called
+\code{all_lkps_maps.db} in the current working directory.}
 
 \item{codes_only}{bool. If \code{TRUE}, return a character vector of
 \emph{unique} codes. If \code{FALSE} (default), return a data frame of all
@@ -54,6 +58,7 @@ The values for arguments \code{from} and \code{to} must be one of
 \seealso{
 Other Clinical code lookups and mappings: 
 \code{\link{codes_starting_with}()},
+\code{\link{get_mapping_df}()},
 \code{\link{lookup_codes}()},
 \code{\link{reformat_icd10_codes}()}
 }

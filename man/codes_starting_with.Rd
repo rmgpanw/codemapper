@@ -7,7 +7,7 @@
 codes_starting_with(
   codes,
   code_type,
-  all_lkps_maps,
+  all_lkps_maps = "all_lkps_maps.db",
   codes_only = FALSE,
   preferred_description_only = TRUE,
   standardise_output = TRUE,
@@ -22,7 +22,11 @@ codes.}
 Must be one of \code{read2}, \code{read3}, \code{icd9}, \code{icd10},
 \code{bnf}, \code{dmd}, \code{read2_drugs} or \code{opcs4}.}
 
-\item{all_lkps_maps}{the \code{all_lkps_maps} list.}
+\item{all_lkps_maps}{Either a named list of lookup and mapping tables (either
+data frames or \code{tbl_dbi} objects), or the path to a SQLite database
+containing these tables (see also \code{\link[=build_all_lkps_maps]{build_all_lkps_maps()}} and
+\code{\link[=all_lkps_maps_to_db]{all_lkps_maps_to_db()}}). By default, will look for a SQLite datbase called
+\code{all_lkps_maps.db} in the current working directory.}
 
 \item{codes_only}{bool. If \code{TRUE}, return a character vector of
 \emph{unique} codes. If \code{FALSE} (default), return a data frame of all
@@ -45,6 +49,7 @@ This is case \emph{sensitive} (important for read codes especially).
 }
 \seealso{
 Other Clinical code lookups and mappings: 
+\code{\link{get_mapping_df}()},
 \code{\link{lookup_codes}()},
 \code{\link{map_codes}()},
 \code{\link{reformat_icd10_codes}()}

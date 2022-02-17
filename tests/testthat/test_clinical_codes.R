@@ -244,6 +244,33 @@ test_that("`map_codes()` works when mapping icd9 to icd10", {
   )
 })
 
+# `get_mapping_df()` --------------------------
+test_that("`get_mapping_df()` returns the expected output", {
+  read2_icd10_df <- get_mapping_df(from = "read2",
+                                   to = "icd10",
+                                   all_lkps_maps = all_lkps_maps) %>%
+    head(n = 1)
+
+  icd10_read2_df <- suppressWarnings(get_mapping_df(
+    from = "icd10",
+    to = "read2",
+    all_lkps_maps = all_lkps_maps
+  )) %>%
+    head(n = 1)
+
+  expect_equal(
+    read2_icd10_df,
+    tibble::tibble(from = "A0...",
+                   to = "A00-A09")
+  )
+
+  expect_equal(
+    icd10_read2_df,
+    tibble::tibble(from = "A00-A09",
+                   to = "A0...")
+  )
+})
+
 # `reformat_standardised_codelist()` --------------------------------------
 
 test_that("`reformat_standardised_codelist()` returns the expected output format",

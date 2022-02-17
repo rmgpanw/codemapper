@@ -15,7 +15,11 @@ reformat_icd10_codes(
 \arguments{
 \item{icd10_codes}{character vector of ICD-10 codes}
 
-\item{all_lkps_maps}{the \code{all_lkps_maps} list.}
+\item{all_lkps_maps}{Either a named list of lookup and mapping tables (either
+data frames or \code{tbl_dbi} objects), or the path to a SQLite database
+containing these tables (see also \code{\link[=build_all_lkps_maps]{build_all_lkps_maps()}} and
+\code{\link[=all_lkps_maps_to_db]{all_lkps_maps_to_db()}}). By default, will look for a SQLite datbase called
+\code{all_lkps_maps.db} in the current working directory.}
 
 \item{input_icd10_format}{character. Must be either "ICD10_CODE" or
 "ALT_CODE".}
@@ -43,6 +47,7 @@ This function converts from one format to the other.
 \seealso{
 Other Clinical code lookups and mappings: 
 \code{\link{codes_starting_with}()},
+\code{\link{get_mapping_df}()},
 \code{\link{lookup_codes}()},
 \code{\link{map_codes}()}
 }
