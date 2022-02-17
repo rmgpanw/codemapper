@@ -7,9 +7,6 @@ tar_option_set(
   imports = c("codemapper")
 )
 
-# source("R/utils.R")
-# source("R/lookups_and_mappings.R")
-
 # End this file with a list of target objects.
 list(
   # Look up and mapping tables-----------------------------------------------------------
@@ -29,7 +26,7 @@ list(
 
   tar_target(ALL_LKPS_MAPS_DB,
              codemapper::all_lkps_maps_to_db(all_lkps_maps,
-                                             "output/all_lkps_maps.db",
+                                             "all_lkps_maps.db",
                                              overwrite = TRUE),
              format = "file"),
 
@@ -37,42 +34,44 @@ list(
   tar_target(
     index_RMD,
     command = {
-      !!tar_knitr_deps_expr("analysis/index.Rmd")
-      suppressMessages(workflowr::wflow_build("analysis/index.Rmd", verbose = FALSE))
+      !!tar_knitr_deps_expr(file.path("analysis", "index.Rmd"))
+      suppressMessages(workflowr::wflow_build(file.path("analysis", "index.Rmd"), verbose = FALSE))
       c(
-        "analysis/index.Rmd",
-        "public/index.html"
+        file.path("analysis", "index.Rmd"),
+        file.path("public", "index.html")
       )
     },
     format = "file"
   ),
 
 
-  tar_target(
-    reformat_all_lkps_maps_RMD,
-    command = {
-      !!tar_knitr_deps_expr("analysis/reformat_all_lkps_maps.Rmd")
-      suppressMessages(workflowr::wflow_build("analysis/reformat_all_lkps_maps.Rmd", verbose = FALSE))
-      c(
-        "analysis/reformat_all_lkps_maps.Rmd",
-        "public/reformat_all_lkps_maps.html"
-      )
-    },
-    format = "file"
-  ),
+  tar_target(reformat_all_lkps_maps_RMD,
+             command = {
+               !!tar_knitr_deps_expr(file.path("analysis", "reformat_all_lkps_maps.Rmd"))
+               suppressMessages(workflowr::wflow_build(
+                 file.path("analysis", "reformat_all_lkps_maps.Rmd"),
+                 verbose = FALSE
+               ))
+               c(
+                 file.path("analysis", "reformat_all_lkps_maps.Rmd"),
+                 file.path("public", "reformat_all_lkps_maps.html")
+               )
+             },
+             format = "file"),
 
-  tar_target(
-    clinical_codes_lkps_and_mappings_RMD,
-    command = {
-      !!tar_knitr_deps_expr("analysis/clinical_codes_lkps_and_mappings.Rmd")
-      suppressMessages(workflowr::wflow_build("analysis/clinical_codes_lkps_and_mappings.Rmd", verbose = FALSE))
-      c(
-        "analysis/clinical_codes_lkps_and_mappings.Rmd",
-        "public/clinical_codes_lkps_and_mappings.html"
-      )
-    },
-    format = "file"
-  ),
+  tar_target(clinical_codes_lkps_and_mappings_RMD,
+             command = {
+               !!tar_knitr_deps_expr(file.path("analysis", "clinical_codes_lkps_and_mappings.Rmd"))
+               suppressMessages(workflowr::wflow_build(
+                 file.path("analysis", "clinical_codes_lkps_and_mappings.Rmd"),
+                 verbose = FALSE
+               ))
+               c(
+                 file.path("analysis", "clinical_codes_lkps_and_mappings.Rmd"),
+                 file.path("public", "clinical_codes_lkps_and_mappings.html")
+               )
+             },
+             format = "file"),
 
   tar_target(
     PHECODES_RMD,

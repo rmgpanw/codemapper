@@ -14,8 +14,8 @@
 
 <title>Reformatting UKB ‘all_lkps_maps.xlsx’</title>
 
-<script src="site_libs/header-attrs-2.9/header-attrs.js"></script>
-<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<script src="site_libs/header-attrs-2.11/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
 <script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
@@ -289,7 +289,7 @@ $(document).ready(function () {
 
 <h1 class="title toc-ignore">Reformatting UKB ‘all_lkps_maps.xlsx’</h1>
 <h4 class="author">Alasdair Warwick</h4>
-<h4 class="date">14 December, 2021</h4>
+<h4 class="date">17 February, 2022</h4>
 
 </div>
 
@@ -314,7 +314,7 @@ $(document).ready(function () {
 <div class="tab-content">
 <div id="summary" class="tab-pane fade in active">
 <p>
-<strong>Last updated:</strong> 2021-12-14
+<strong>Last updated:</strong> 2022-02-17
 </p>
 <p>
 <strong>Checks:</strong> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> 6 <span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span> 1
@@ -333,24 +333,57 @@ This reproducible <a href="http://rmarkdown.rstudio.com">R Markdown</a> analysis
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRMarkdownfilestronguncommittedchanges"> <span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span> <strong>R Markdown file:</strong> uncommitted changes </a>
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRMarkdownfilestronguptodate"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>R Markdown file:</strong> up-to-date </a>
 </p>
 </div>
-<div id="strongRMarkdownfilestronguncommittedchanges" class="panel-collapse collapse">
+<div id="strongRMarkdownfilestronguptodate" class="panel-collapse collapse">
 <div class="panel-body">
-<p>The R Markdown file has staged changes. To know which version of the R Markdown file created these results, you’ll want to first commit it to the Git repo. If you’re still working on the analysis, you can ignore this warning. When you’re finished, you can run <code>wflow_publish</code> to commit the R Markdown file and build the HTML.</p>
+<p>Great! Since the R Markdown file has been committed to the Git repository, you know the exact version of the code that produced these results.</p>
 </div>
 </div>
 </div>
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongEnvironmentstrongempty"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Environment:</strong> empty </a>
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongEnvironmentstrongobjectspresent"> <span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span> <strong>Environment:</strong> objects present </a>
 </p>
 </div>
-<div id="strongEnvironmentstrongempty" class="panel-collapse collapse">
+<div id="strongEnvironmentstrongobjectspresent" class="panel-collapse collapse">
 <div class="panel-body">
-<p>Great job! The global environment was empty. Objects defined in the global environment can affect the analysis in your R Markdown file in unknown ways. For reproduciblity it’s best to always run the code in an empty environment.</p>
+<p>
+The global environment had objects present when the code in the R Markdown file was run. These objects can affect the analysis in your R Markdown file in unknown ways. For reproduciblity it’s best to always run the code in an empty environment. Use <code>wflow_publish</code> or <code>wflow_build</code> to ensure that the code is always run in an empty environment.
+</p>
+<p>
+The following objects were defined in the global environment when these results were created:
+</p>
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th style="text-align:left;">
+Name
+</th>
+<th style="text-align:left;">
+Class
+</th>
+<th style="text-align:left;">
+Size
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+install_codemapper
+</td>
+<td style="text-align:left;">
+function
+</td>
+<td style="text-align:left;">
+1.2 Kb
+</td>
+</tr>
+</tbody>
+</table>
 </div>
 </div>
 </div>
@@ -405,44 +438,42 @@ This reproducible <a href="http://rmarkdown.rstudio.com">R Markdown</a> analysis
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgitlabcomrmgpanwcodemappertree0faaef9473ee8a850b742666810da55a2b387641targetblank0faaef9a"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Repository version:</strong> <a href="https://gitlab.com/rmgpanw/codemapper/tree/0faaef9473ee8a850b742666810da55a2b387641" target="_blank">0faaef9</a> </a>
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgitlabcomrmgpanwcodemappertree72dfd86c1f799869f56e32637ed0ff7bc1c84f9btargetblank72dfd86a"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Repository version:</strong> <a href="https://gitlab.com/rmgpanw/codemapper/tree/72dfd86c1f799869f56e32637ed0ff7bc1c84f9b" target="_blank">72dfd86</a> </a>
 </p>
 </div>
-<div id="strongRepositoryversionstrongahrefhttpsgitlabcomrmgpanwcodemappertree0faaef9473ee8a850b742666810da55a2b387641targetblank0faaef9a" class="panel-collapse collapse">
+<div id="strongRepositoryversionstrongahrefhttpsgitlabcomrmgpanwcodemappertree72dfd86c1f799869f56e32637ed0ff7bc1c84f9btargetblank72dfd86a" class="panel-collapse collapse">
 <div class="panel-body">
 <p>
 Great! You are using Git for version control. Tracking code development and connecting the code version to the results is critical for reproducibility.
 </p>
 <p>
-The results in this page were generated with repository version <a href="https://gitlab.com/rmgpanw/codemapper/tree/0faaef9473ee8a850b742666810da55a2b387641" target="_blank">0faaef9</a>. See the <em>Past versions</em> tab to see a history of the changes made to the R Markdown and HTML files.
+The results in this page were generated with repository version <a href="https://gitlab.com/rmgpanw/codemapper/tree/72dfd86c1f799869f56e32637ed0ff7bc1c84f9b" target="_blank">72dfd86</a>. See the <em>Past versions</em> tab to see a history of the changes made to the R Markdown and HTML files.
 </p>
 <p>
 Note that you need to be careful to ensure that all relevant files for the analysis have been committed to Git prior to generating the results (you can use <code>wflow_publish</code> or <code>wflow_git_commit</code>). workflowr only checks the R Markdown file, but you know if there are other scripts or data files that it depends on. Below is the status of the Git repository when the results were generated:
 </p>
 <pre><code>
 Ignored files:
-    Ignored:    .DS_Store
-    Ignored:    .Rhistory
+    Ignored:    .Renviron
     Ignored:    .Rproj.user/
-    Ignored:    R/.DS_Store
-    Ignored:    _targets/
-    Ignored:    config.ini
-    Ignored:    data/
-    Ignored:    inst/
-    Ignored:    output/
+    Ignored:    _targets/objects/
+    Ignored:    all_lkps_maps.db
     Ignored:    renv/library/
-    Ignored:    renv/local/
     Ignored:    renv/staging/
-    Ignored:    tests/.DS_Store
+    Ignored:    tar_make.R
 
 Untracked files:
-    Untracked:  tar_make.R
+    Untracked:  _targets/meta/.gitignore
 
 Unstaged changes:
-    Deleted:    code/tar_make.R
+    Modified:   .gitignore
+    Modified:   _targets.R
+    Modified:   _targets/meta/meta
+    Deleted:    _targets/scratch/all_lkps_maps64c77dad81fb
 
 Staged changes:
-    Modified:   analysis/reformat_all_lkps_maps.Rmd
+    New:        _targets/meta/meta
+    New:        _targets/scratch/all_lkps_maps64c77dad81fb
 
 </code></pre>
 <p>
@@ -481,6 +512,40 @@ Message
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://glcdn.githack.com/rmgpanw/codemapper/raw/38fee6c1510435782f78a1342d5709cb761816f7/public/reformat_all_lkps_maps.html" target="_blank">38fee6c</a>
+</td>
+<td>
+rmgpanw
+</td>
+<td>
+2021-12-15
+</td>
+<td>
+update codes_starting_with function to escape ‘.’, and update tests also
+</td>
+</tr>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://gitlab.com/rmgpanw/codemapper/blob/44786748813956b4cb52abd859b9734373fa93b5/analysis/reformat_all_lkps_maps.Rmd" target="_blank">4478674</a>
+</td>
+<td>
+rmgpanw
+</td>
+<td>
+2021-12-14
+</td>
+<td>
+update documentation re icd10 codes in reformat_all_lkps_maps.Rmd
+</td>
+</tr>
 <tr>
 <td>
 Rmd
@@ -886,7 +951,7 @@ targets script working
 <td align="left">NA</td>
 </tr>
 <tr class="even">
-<td align="left">Contains information from NHS Digital, licenced under the current version of the Open Government Licence available at www.nationalarchives.gov.uk/doc/open-government-licence/open-government-licence.htm"</td>
+<td align="left">Contains information from NHS Digital, licenced under the current version of the Open Government Licence available at www.nationalarchives.gov.uk/doc/open-government-licence/open-government-licence.htm”</td>
 <td align="left">NA</td>
 </tr>
 </tbody>
@@ -1675,13 +1740,13 @@ targets script working
 </button>
 </p>
 <div id="workflowr-sessioninfo" class="collapse">
-<pre><code>R version 4.1.0 (2021-05-18)
-Platform: x86_64-apple-darwin17.0 (64-bit)
-Running under: macOS Big Sur 10.16
+<pre><code>R version 4.1.2 (2021-11-01)
+Platform: aarch64-apple-darwin20 (64-bit)
+Running under: macOS Monterey 12.2
 
 Matrix products: default
-BLAS:   /Library/Frameworks/R.framework/Versions/4.1/Resources/lib/libRblas.dylib
-LAPACK: /Library/Frameworks/R.framework/Versions/4.1/Resources/lib/libRlapack.dylib
+BLAS:   /Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/lib/libRblas.0.dylib
+LAPACK: /Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/lib/libRlapack.dylib
 
 locale:
 [1] en_GB.UTF-8/en_GB.UTF-8/en_GB.UTF-8/C/en_GB.UTF-8/en_GB.UTF-8
@@ -1700,24 +1765,24 @@ other attached packages:
 loaded via a namespace (and not attached):
  [1] fs_1.5.0            usethis_2.0.1       fontawesome_0.2.2  
  [4] bit64_4.0.5         lubridate_1.7.10    devtools_2.4.2     
- [7] httr_1.4.2          rprojroot_2.0.2     tools_4.1.0        
+ [7] httr_1.4.2          rprojroot_2.0.2     tools_4.1.2        
 [10] backports_1.2.1     bslib_0.3.0         utf8_1.2.2         
 [13] R6_2.5.1            DBI_1.1.1           colorspace_2.0-2   
 [16] withr_2.4.2         tidyselect_1.1.1    prettyunits_1.1.1  
-[19] processx_3.5.2      bit_4.0.4           compiler_4.1.0     
+[19] processx_3.5.2      bit_4.0.4           compiler_4.1.2     
 [22] git2r_0.28.0        cli_3.0.1           rvest_1.0.1        
 [25] xml2_1.3.2          desc_1.3.0          sass_0.4.0         
 [28] scales_1.1.1        callr_3.7.0         shinyFeedback_0.4.0
-[31] digest_0.6.28       rmarkdown_2.9       ini_0.3.1          
+[31] digest_0.6.28       rmarkdown_2.11      ini_0.3.1          
 [34] pkgconfig_2.0.3     htmltools_0.5.2     sessioninfo_1.1.1  
-[37] highr_0.9           dbplyr_2.1.1        fastmap_1.1.0      
+[37] dbplyr_2.1.1        fastmap_1.1.0       highr_0.9          
 [40] htmlwidgets_1.5.4   rlang_0.4.11        RSQLite_2.2.8      
 [43] rstudioapi_0.13     shiny_1.7.0         jquerylib_0.1.4    
 [46] generics_0.1.0      configr_0.3.5       jsonlite_1.7.2     
 [49] magrittr_2.0.1      Rcpp_1.0.7          munsell_0.5.0      
 [52] fansi_0.5.0         lifecycle_1.0.1     stringi_1.7.4      
 [55] whisker_0.4         yaml_2.2.1          pkgbuild_1.2.0     
-[58] blob_1.2.2          grid_4.1.0          promises_1.2.0.1   
+[58] blob_1.2.2          grid_4.1.2          promises_1.2.0.1   
 [61] RcppTOML_0.1.7      crayon_1.4.1        haven_2.4.3        
 [64] hms_1.1.1           knitr_1.34          ps_1.6.0           
 [67] pillar_1.6.3        igraph_1.2.6        codetools_0.2-18   

@@ -14,8 +14,8 @@
 
 <title>Clinical codes - lookups and mappings</title>
 
-<script src="site_libs/header-attrs-2.9/header-attrs.js"></script>
-<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<script src="site_libs/header-attrs-2.11/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
 <script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
@@ -283,7 +283,7 @@ $(document).ready(function () {
 
 <h1 class="title toc-ignore">Clinical codes - lookups and mappings</h1>
 <h4 class="author">Alasdair Warwick</h4>
-<h4 class="date">09 October, 2021</h4>
+<h4 class="date">17 February, 2022</h4>
 
 </div>
 
@@ -308,7 +308,7 @@ $(document).ready(function () {
 <div class="tab-content">
 <div id="summary" class="tab-pane fade in active">
 <p>
-<strong>Last updated:</strong> 2021-10-09
+<strong>Last updated:</strong> 2022-02-17
 </p>
 <p>
 <strong>Checks:</strong> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> 6 <span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span> 1
@@ -327,24 +327,57 @@ This reproducible <a href="http://rmarkdown.rstudio.com">R Markdown</a> analysis
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRMarkdownfilestronguncommittedchanges"> <span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span> <strong>R Markdown file:</strong> uncommitted changes </a>
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRMarkdownfilestronguptodate"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>R Markdown file:</strong> up-to-date </a>
 </p>
 </div>
-<div id="strongRMarkdownfilestronguncommittedchanges" class="panel-collapse collapse">
+<div id="strongRMarkdownfilestronguptodate" class="panel-collapse collapse">
 <div class="panel-body">
-<p>The R Markdown file has unstaged changes. To know which version of the R Markdown file created these results, you’ll want to first commit it to the Git repo. If you’re still working on the analysis, you can ignore this warning. When you’re finished, you can run <code>wflow_publish</code> to commit the R Markdown file and build the HTML.</p>
+<p>Great! Since the R Markdown file has been committed to the Git repository, you know the exact version of the code that produced these results.</p>
 </div>
 </div>
 </div>
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongEnvironmentstrongempty"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Environment:</strong> empty </a>
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongEnvironmentstrongobjectspresent"> <span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span> <strong>Environment:</strong> objects present </a>
 </p>
 </div>
-<div id="strongEnvironmentstrongempty" class="panel-collapse collapse">
+<div id="strongEnvironmentstrongobjectspresent" class="panel-collapse collapse">
 <div class="panel-body">
-<p>Great job! The global environment was empty. Objects defined in the global environment can affect the analysis in your R Markdown file in unknown ways. For reproduciblity it’s best to always run the code in an empty environment.</p>
+<p>
+The global environment had objects present when the code in the R Markdown file was run. These objects can affect the analysis in your R Markdown file in unknown ways. For reproduciblity it’s best to always run the code in an empty environment. Use <code>wflow_publish</code> or <code>wflow_build</code> to ensure that the code is always run in an empty environment.
+</p>
+<p>
+The following objects were defined in the global environment when these results were created:
+</p>
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th style="text-align:left;">
+Name
+</th>
+<th style="text-align:left;">
+Class
+</th>
+<th style="text-align:left;">
+Size
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+install_codemapper
+</td>
+<td style="text-align:left;">
+function
+</td>
+<td style="text-align:left;">
+1.2 Kb
+</td>
+</tr>
+</tbody>
+</table>
 </div>
 </div>
 </div>
@@ -399,47 +432,41 @@ This reproducible <a href="http://rmarkdown.rstudio.com">R Markdown</a> analysis
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgitlabcomrmgpanwcodemappertree7f22a80a1db1d6eeea505f74a3e272b7bd7e3c25targetblank7f22a80a"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Repository version:</strong> <a href="https://gitlab.com/rmgpanw/codemapper/tree/7f22a80a1db1d6eeea505f74a3e272b7bd7e3c25" target="_blank">7f22a80</a> </a>
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgitlabcomrmgpanwcodemappertree72dfd86c1f799869f56e32637ed0ff7bc1c84f9btargetblank72dfd86a"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Repository version:</strong> <a href="https://gitlab.com/rmgpanw/codemapper/tree/72dfd86c1f799869f56e32637ed0ff7bc1c84f9b" target="_blank">72dfd86</a> </a>
 </p>
 </div>
-<div id="strongRepositoryversionstrongahrefhttpsgitlabcomrmgpanwcodemappertree7f22a80a1db1d6eeea505f74a3e272b7bd7e3c25targetblank7f22a80a" class="panel-collapse collapse">
+<div id="strongRepositoryversionstrongahrefhttpsgitlabcomrmgpanwcodemappertree72dfd86c1f799869f56e32637ed0ff7bc1c84f9btargetblank72dfd86a" class="panel-collapse collapse">
 <div class="panel-body">
 <p>
 Great! You are using Git for version control. Tracking code development and connecting the code version to the results is critical for reproducibility.
 </p>
 <p>
-The results in this page were generated with repository version <a href="https://gitlab.com/rmgpanw/codemapper/tree/7f22a80a1db1d6eeea505f74a3e272b7bd7e3c25" target="_blank">7f22a80</a>. See the <em>Past versions</em> tab to see a history of the changes made to the R Markdown and HTML files.
+The results in this page were generated with repository version <a href="https://gitlab.com/rmgpanw/codemapper/tree/72dfd86c1f799869f56e32637ed0ff7bc1c84f9b" target="_blank">72dfd86</a>. See the <em>Past versions</em> tab to see a history of the changes made to the R Markdown and HTML files.
 </p>
 <p>
 Note that you need to be careful to ensure that all relevant files for the analysis have been committed to Git prior to generating the results (you can use <code>wflow_publish</code> or <code>wflow_git_commit</code>). workflowr only checks the R Markdown file, but you know if there are other scripts or data files that it depends on. Below is the status of the Git repository when the results were generated:
 </p>
 <pre><code>
 Ignored files:
-    Ignored:    .DS_Store
-    Ignored:    .Rhistory
+    Ignored:    .Renviron
     Ignored:    .Rproj.user/
-    Ignored:    R/.DS_Store
-    Ignored:    _targets/
-    Ignored:    config.ini
-    Ignored:    data/
-    Ignored:    inst/
-    Ignored:    output/
+    Ignored:    _targets/objects/
     Ignored:    renv/library/
-    Ignored:    renv/local/
     Ignored:    renv/staging/
-    Ignored:    tests/.DS_Store
+    Ignored:    tar_make.R
+
+Untracked files:
+    Untracked:  _targets/meta/.gitignore
 
 Unstaged changes:
-    Modified:   .Rbuildignore
-    Modified:   DESCRIPTION
-    Modified:   R/app.R
-    Modified:   R/clinical_codes.R
-    Modified:   R/constants.R
-    Modified:   R/lookups_and_mappings.R
-    Modified:   R/utils.R
-    Modified:   analysis/clinical_codes_lkps_and_mappings.Rmd
-    Modified:   man/build_all_lkps_maps.Rd
-    Modified:   tests/testthat/test_clinical_codes.R
+    Modified:   .gitignore
+    Modified:   _targets.R
+    Modified:   _targets/meta/meta
+    Deleted:    _targets/scratch/all_lkps_maps64c77dad81fb
+
+Staged changes:
+    New:        _targets/meta/meta
+    New:        _targets/scratch/all_lkps_maps64c77dad81fb
 
 </code></pre>
 <p>
@@ -478,6 +505,40 @@ Message
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://gitlab.com/rmgpanw/codemapper/blob/f8d1889aa064f0bdc69a8162bbbbbc3185673c9d/analysis/clinical_codes_lkps_and_mappings.Rmd" target="_blank">f8d1889</a>
+</td>
+<td>
+rmgpanw
+</td>
+<td>
+2021-10-09
+</td>
+<td>
+icd10 codes now returned as ALT CODE; codemapper app includes self-reported codes
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://glcdn.githack.com/rmgpanw/codemapper/raw/f8d1889aa064f0bdc69a8162bbbbbc3185673c9d/public/clinical_codes_lkps_and_mappings.html" target="_blank">f8d1889</a>
+</td>
+<td>
+rmgpanw
+</td>
+<td>
+2021-10-09
+</td>
+<td>
+icd10 codes now returned as ALT CODE; codemapper app includes self-reported codes
+</td>
+</tr>
 <tr>
 <td>
 Rmd
@@ -745,12 +806,7 @@ codes_starting_with(codes = t1dm_read2,
                 all_lkps_maps = all_lkps_maps, 
                 codes_only = TRUE,
                 standardise_output = FALSE)
-#&gt;  [1] &quot;C108.&quot; &quot;C1080&quot; &quot;C1081&quot; &quot;C1082&quot; &quot;C1083&quot; &quot;C1084&quot; &quot;C1085&quot; &quot;C1086&quot; &quot;C1087&quot;
-#&gt; [10] &quot;C1088&quot; &quot;C1089&quot; &quot;C108A&quot; &quot;C108B&quot; &quot;C108C&quot; &quot;C108D&quot; &quot;C108E&quot; &quot;C108F&quot; &quot;C108G&quot;
-#&gt; [19] &quot;C108H&quot; &quot;C108J&quot; &quot;C108y&quot; &quot;C108z&quot; &quot;C10E.&quot; &quot;C10E0&quot; &quot;C10E1&quot; &quot;C10E2&quot; &quot;C10E3&quot;
-#&gt; [28] &quot;C10E4&quot; &quot;C10E5&quot; &quot;C10E6&quot; &quot;C10E7&quot; &quot;C10E8&quot; &quot;C10E9&quot; &quot;C10EA&quot; &quot;C10EB&quot; &quot;C10EC&quot;
-#&gt; [37] &quot;C10ED&quot; &quot;C10EE&quot; &quot;C10EF&quot; &quot;C10EG&quot; &quot;C10EH&quot; &quot;C10EJ&quot; &quot;C10EK&quot; &quot;C10EL&quot; &quot;C10EM&quot;
-#&gt; [46] &quot;C10EN&quot; &quot;C10EP&quot; &quot;C10EQ&quot; &quot;C10ER&quot;</code></pre>
+#&gt; [1] &quot;C108.&quot; &quot;C10E.&quot;</code></pre>
 <blockquote>
 <p><strong>Note:</strong> Some coding systems include a ‘.’ (e.g. ICD-10) - this may return unexpected results with <code>codes_starting_with()</code>, as this function searches using regexs and ‘.’ is interpreted as a wildcard.</p>
 </blockquote>
@@ -764,15 +820,11 @@ codes_starting_with(codes = t1dm_read2,
                 all_lkps_maps = all_lkps_maps, 
                 codes_only = FALSE) %&gt;% 
   head()
-#&gt; # A tibble: 6 × 3
-#&gt;   code  description                                                    code_type
-#&gt;   &lt;chr&gt; &lt;chr&gt;                                                          &lt;chr&gt;    
-#&gt; 1 C108. Insulin dependent diabetes mellitus                            read2    
-#&gt; 2 C1080 Insulin-dependent diabetes mellitus with renal complications   read2    
-#&gt; 3 C1081 Insulin-dependent diabetes mellitus with ophthalmic complicat… read2    
-#&gt; 4 C1082 Insulin-dependent diabetes mellitus with neurological complic… read2    
-#&gt; 5 C1083 Insulin dependent diabetes mellitus with multiple complicatio… read2    
-#&gt; 6 C1084 Unstable insulin dependent diabetes mellitus                   read2</code></pre>
+#&gt; # A tibble: 2 × 3
+#&gt;   code  description                         code_type
+#&gt;   &lt;chr&gt; &lt;chr&gt;                               &lt;chr&gt;    
+#&gt; 1 C108. Insulin dependent diabetes mellitus read2    
+#&gt; 2 C10E. Type 1 diabetes mellitus            read2</code></pre>
 </div>
 <div id="icd-10" class="section level1">
 <h1>ICD-10</h1>
@@ -786,13 +838,13 @@ codes_starting_with(codes = t1dm_read2,
 </p>
 <div id="workflowr-sessioninfo" class="collapse">
 <pre class="r"><code>sessionInfo()
-#&gt; R version 4.1.0 (2021-05-18)
-#&gt; Platform: x86_64-apple-darwin17.0 (64-bit)
-#&gt; Running under: macOS Big Sur 10.16
+#&gt; R version 4.1.2 (2021-11-01)
+#&gt; Platform: aarch64-apple-darwin20 (64-bit)
+#&gt; Running under: macOS Monterey 12.2
 #&gt; 
 #&gt; Matrix products: default
-#&gt; BLAS:   /Library/Frameworks/R.framework/Versions/4.1/Resources/lib/libRblas.dylib
-#&gt; LAPACK: /Library/Frameworks/R.framework/Versions/4.1/Resources/lib/libRlapack.dylib
+#&gt; BLAS:   /Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/lib/libRblas.0.dylib
+#&gt; LAPACK: /Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/lib/libRlapack.dylib
 #&gt; 
 #&gt; locale:
 #&gt; [1] en_GB.UTF-8/en_GB.UTF-8/en_GB.UTF-8/C/en_GB.UTF-8/en_GB.UTF-8
@@ -807,24 +859,25 @@ codes_starting_with(codes = t1dm_read2,
 #&gt; [10] codemapper_0.0.0.9000 ukbwranglr_0.0.0.9000 workflowr_1.6.2      
 #&gt; 
 #&gt; loaded via a namespace (and not attached):
-#&gt;  [1] Rcpp_1.0.7        lubridate_1.7.10  ps_1.6.0          assertthat_0.2.1 
-#&gt;  [5] rprojroot_2.0.2   digest_0.6.28     utf8_1.2.2        mime_0.12        
-#&gt;  [9] R6_2.5.1          cellranger_1.1.0  backports_1.2.1   reprex_2.0.1     
-#&gt; [13] evaluate_0.14     httr_1.4.2        pillar_1.6.3      rlang_0.4.11     
-#&gt; [17] readxl_1.3.1      rstudioapi_0.13   data.table_1.14.2 callr_3.7.0      
-#&gt; [21] whisker_0.4       jquerylib_0.1.4   rmarkdown_2.9     igraph_1.2.6     
-#&gt; [25] munsell_0.5.0     shiny_1.7.0       broom_0.7.9       compiler_4.1.0   
-#&gt; [29] httpuv_1.6.3      modelr_0.1.8      xfun_0.24         pkgconfig_2.0.3  
-#&gt; [33] htmltools_0.5.2   tidyselect_1.1.1  codetools_0.2-18  fansi_0.5.0      
-#&gt; [37] withr_2.4.2       crayon_1.4.1      tzdb_0.1.2        dbplyr_2.1.1     
-#&gt; [41] later_1.3.0       grid_4.1.0        jsonlite_1.7.2    xtable_1.8-4     
-#&gt; [45] gtable_0.3.0      lifecycle_1.0.1   DBI_1.1.1         git2r_0.28.0     
-#&gt; [49] magrittr_2.0.1    scales_1.1.1      cli_3.0.1         stringi_1.7.4    
-#&gt; [53] renv_0.13.2       fs_1.5.0          promises_1.2.0.1  xml2_1.3.2       
-#&gt; [57] bslib_0.3.0       targets_0.8.0     ellipsis_0.3.2    generics_0.1.0   
-#&gt; [61] vctrs_0.3.8       tools_4.1.0       glue_1.4.2        hms_1.1.1        
-#&gt; [65] processx_3.5.2    fastmap_1.1.0     yaml_2.2.1        colorspace_2.0-2 
-#&gt; [69] rvest_1.0.1       knitr_1.34        haven_2.4.3       sass_0.4.0</code></pre>
+#&gt;  [1] httr_1.4.2        sass_0.4.0        jsonlite_1.7.2    modelr_0.1.8     
+#&gt;  [5] bslib_0.3.0       shiny_1.7.0       assertthat_0.2.1  highr_0.9        
+#&gt;  [9] renv_0.13.2       cellranger_1.1.0  yaml_2.2.1        pillar_1.6.3     
+#&gt; [13] backports_1.2.1   glue_1.4.2        digest_0.6.28     promises_1.2.0.1 
+#&gt; [17] rvest_1.0.1       colorspace_2.0-2  htmltools_0.5.2   httpuv_1.6.3     
+#&gt; [21] pkgconfig_2.0.3   broom_0.7.9       haven_2.4.3       xtable_1.8-4     
+#&gt; [25] scales_1.1.1      processx_3.5.2    whisker_0.4       later_1.3.0      
+#&gt; [29] tzdb_0.1.2        git2r_0.28.0      generics_0.1.0    ellipsis_0.3.2   
+#&gt; [33] withr_2.4.2       cli_3.0.1         magrittr_2.0.1    crayon_1.4.1     
+#&gt; [37] readxl_1.3.1      mime_0.12         evaluate_0.14     ps_1.6.0         
+#&gt; [41] fs_1.5.0          fansi_0.5.0       xml2_1.3.2        tools_4.1.2      
+#&gt; [45] data.table_1.14.2 hms_1.1.1         lifecycle_1.0.1   munsell_0.5.0    
+#&gt; [49] reprex_2.0.1      targets_0.8.0     callr_3.7.0       compiler_4.1.2   
+#&gt; [53] jquerylib_0.1.4   rlang_0.4.11      grid_4.1.2        rstudioapi_0.13  
+#&gt; [57] igraph_1.2.6      rmarkdown_2.11    gtable_0.3.0      codetools_0.2-18 
+#&gt; [61] DBI_1.1.1         R6_2.5.1          lubridate_1.7.10  knitr_1.34       
+#&gt; [65] fastmap_1.1.0     utf8_1.2.2        rprojroot_2.0.2   stringi_1.7.4    
+#&gt; [69] Rcpp_1.0.7        vctrs_0.3.8       dbplyr_2.1.1      tidyselect_1.1.1 
+#&gt; [73] xfun_0.24</code></pre>
 </div>
 </div>
 
