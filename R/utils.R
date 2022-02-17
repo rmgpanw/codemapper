@@ -114,13 +114,15 @@ all_lkps_maps_to_db <- function(all_lkps_maps,
 #'   \code{\link{get_nhsbsa_snomed_bnf}}.
 #' @param ukb_codings The UK Biobank codings file, as returned by
 #'   \code{\link[ukbwranglr]{get_ukb_codings_direct}}.
+#' @param ctv3sctmap2 Path to the NHS TRUD mapping file for Read 3 to SNOMEDCT ("ctv3sctmap2_uk_20200401000001.txt").
 #'
 #' @return Returns a named list of data frames.
 #' @export
 build_all_lkps_maps <-
   function(all_lkps_maps = get_ukb_all_lkps_maps_raw_direct(),
            bnf_dmd = get_nhsbsa_snomed_bnf(),
-           ukb_codings = ukbwranglr::get_ukb_codings_direct()) {
+           ukb_codings = ukbwranglr::get_ukb_codings_direct(),
+           ctv3sctmap2 = NULL) {
     # ukb resource 592
     all_lkps_maps <- all_lkps_maps
     all_lkps_maps <- all_lkps_maps %>%
@@ -172,6 +174,11 @@ build_all_lkps_maps <-
     # https://www.nature.com/articles/s41467-019-09572-5#additional-information
     self_report_med_to_atc_map <- get_ukb_self_report_med_to_atc_map()
 
+    # add NHS TRUD Read 3 to SNOMEDCT mapping table
+    if (!is.null(ctv3sctmap2)) {
+      read_ctv3_sct <- readr::read_tsv(ctv3sctmap2)
+    }
+
     # combine
     all_lkps_maps <- c(
       all_lkps_maps,
@@ -185,6 +192,11 @@ build_all_lkps_maps <-
         self_report_med_to_atc_map = self_report_med_to_atc_map
       )
     )
+
+    if (!is.null(ctv3sctmap2)) {
+      all_lkps_maps <- c(all_lkps_maps,
+                         list(read_ctv3_sct = read_ctv3_sct))
+    }
 
     message("Success!")
     return(all_lkps_maps)
@@ -499,9 +511,4 @@ update_code_selection <- function(current_selection,
 
 validate_all_lkps_maps <- function(all_lkps_maps) {
   TRUE
-}
-
-get_all_lkps_maps <- function() {
-  # download
-  targets::tar_read(all_lkps_maps)
 }

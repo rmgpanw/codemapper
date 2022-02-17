@@ -9,4 +9,5 @@ globalVariables(
 #'
 #' @docType package
 #' @name codemapper
+#' @import ukbwranglr
 NULL

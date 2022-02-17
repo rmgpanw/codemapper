@@ -9,6 +9,13 @@ tar_option_set(
 
 # End this file with a list of target objects.
 list(
+  # Files
+  tar_target(
+    CTV3SCTMAP2,
+    Sys.getenv("CTV3SCTMAP2"),
+    format = "file"
+  ),
+
   # Look up and mapping tables-----------------------------------------------------------
   # raw UKB resource 592 - each sheet from the excel file is an item in the list
   tar_target(
@@ -22,7 +29,7 @@ list(
 
   # `all_lkps_maps_raw` with redundant bottom rows removed, some tables extended, NHSBSA BNF-SNOMED table appended
   tar_target(all_lkps_maps,
-             build_all_lkps_maps()),
+             build_all_lkps_maps(ctv3sctmap2 = CTV3SCTMAP2)),
 
   tar_target(ALL_LKPS_MAPS_DB,
              codemapper::all_lkps_maps_to_db(all_lkps_maps,

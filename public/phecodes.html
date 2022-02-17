@@ -432,16 +432,16 @@ function
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgitlabcomrmgpanwcodemappertree72dfd86c1f799869f56e32637ed0ff7bc1c84f9btargetblank72dfd86a"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Repository version:</strong> <a href="https://gitlab.com/rmgpanw/codemapper/tree/72dfd86c1f799869f56e32637ed0ff7bc1c84f9b" target="_blank">72dfd86</a> </a>
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgitlabcomrmgpanwcodemappertreea44eb90f156f0866a6d60c2d37c8f479b7610c60targetblanka44eb90a"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Repository version:</strong> <a href="https://gitlab.com/rmgpanw/codemapper/tree/a44eb90f156f0866a6d60c2d37c8f479b7610c60" target="_blank">a44eb90</a> </a>
 </p>
 </div>
-<div id="strongRepositoryversionstrongahrefhttpsgitlabcomrmgpanwcodemappertree72dfd86c1f799869f56e32637ed0ff7bc1c84f9btargetblank72dfd86a" class="panel-collapse collapse">
+<div id="strongRepositoryversionstrongahrefhttpsgitlabcomrmgpanwcodemappertreea44eb90f156f0866a6d60c2d37c8f479b7610c60targetblanka44eb90a" class="panel-collapse collapse">
 <div class="panel-body">
 <p>
 Great! You are using Git for version control. Tracking code development and connecting the code version to the results is critical for reproducibility.
 </p>
 <p>
-The results in this page were generated with repository version <a href="https://gitlab.com/rmgpanw/codemapper/tree/72dfd86c1f799869f56e32637ed0ff7bc1c84f9b" target="_blank">72dfd86</a>. See the <em>Past versions</em> tab to see a history of the changes made to the R Markdown and HTML files.
+The results in this page were generated with repository version <a href="https://gitlab.com/rmgpanw/codemapper/tree/a44eb90f156f0866a6d60c2d37c8f479b7610c60" target="_blank">a44eb90</a>. See the <em>Past versions</em> tab to see a history of the changes made to the R Markdown and HTML files.
 </p>
 <p>
 Note that you need to be careful to ensure that all relevant files for the analysis have been committed to Git prior to generating the results (you can use <code>wflow_publish</code> or <code>wflow_git_commit</code>). workflowr only checks the R Markdown file, but you know if there are other scripts or data files that it depends on. Below is the status of the Git repository when the results were generated:
@@ -449,25 +449,27 @@ Note that you need to be careful to ensure that all relevant files for the analy
 <pre><code>
 Ignored files:
     Ignored:    .Renviron
+    Ignored:    .Rhistory
     Ignored:    .Rproj.user/
-    Ignored:    _targets/objects/
+    Ignored:    _targets/
     Ignored:    all_lkps_maps.db
     Ignored:    renv/library/
     Ignored:    renv/staging/
     Ignored:    tar_make.R
 
-Untracked files:
-    Untracked:  _targets/meta/.gitignore
-
 Unstaged changes:
-    Modified:   .gitignore
+    Modified:   .Rbuildignore
+    Modified:   DESCRIPTION
+    Modified:   NAMESPACE
+    Modified:   R/clinical_codes.R
+    Modified:   R/codemapper.R
+    Modified:   R/constants.R
+    Modified:   R/utils.R
     Modified:   _targets.R
-    Modified:   _targets/meta/meta
-    Deleted:    _targets/scratch/all_lkps_maps64c77dad81fb
-
-Staged changes:
-    New:        _targets/meta/meta
-    New:        _targets/scratch/all_lkps_maps64c77dad81fb
+    Modified:   analysis/clinical_codes_lkps_and_mappings.Rmd
+    Modified:   man/build_all_lkps_maps.Rd
+    Modified:   man/reformat_icd10_codes.Rd
+    Modified:   tests/testthat/test_constants.R
 
 </code></pre>
 <p>
@@ -511,6 +513,40 @@ Message
 Rmd
 </td>
 <td>
+<a href="https://gitlab.com/rmgpanw/codemapper/blob/5c2a3e32ad9ae48eb531afaa647ec1135bdc446c/analysis/phecodes.Rmd" target="_blank">5c2a3e3</a>
+</td>
+<td>
+Chuin Ying Ung
+</td>
+<td>
+2022-02-17
+</td>
+<td>
+update _targets.R (housekeeping) and phecode.Rmd
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://glcdn.githack.com/rmgpanw/codemapper/raw/5c2a3e32ad9ae48eb531afaa647ec1135bdc446c/public/phecodes.html" target="_blank">5c2a3e3</a>
+</td>
+<td>
+Chuin Ying Ung
+</td>
+<td>
+2022-02-17
+</td>
+<td>
+update _targets.R (housekeeping) and phecode.Rmd
+</td>
+</tr>
+<tr>
+<td>
+Rmd
+</td>
+<td>
 <a href="https://gitlab.com/rmgpanw/codemapper/blob/8d148048d398954d691f742ee89406782a4ccf2d/analysis/phecodes.Rmd" target="_blank">8d14804</a>
 </td>
 <td>
@@ -533,6 +569,45 @@ add phecode.Rmd
 <div id="overview" class="section level1">
 <h1>Overview</h1>
 <p><strong>Aim:</strong> to explore the phecode lookup and mapping files.</p>
+</div>
+<div id="background---phecodes" class="section level1">
+<h1>Background - phecodes</h1>
+<ul>
+<li>LINKS TO KEY PUBLICATIONS AND WEBPAGES</li>
+<li>WHAT CODING SYSTEM IS PHECODES BASED ON, AND WHICH CLINICAL CODES CAN BE MAPPED TO THIS?</li>
+</ul>
+</div>
+<div id="phewas-r-package" class="section level1">
+<h1>PheWAS R package</h1>
+<ul>
+<li>READ HELP PAGE FROM RUNNING BELOW</li>
+<li>TO START, PERHAPS TRY RUNNING THE EXAMPLE (AT BOTTOM OF HELP PAGE) - COPY AND PASTE INTO THIS NOTEBOOK SO WE CAN SEE THE OUTPUT AT EACH STEP</li>
+</ul>
+</div>
+<div id="mapping-files" class="section level1">
+<h1>Mapping files</h1>
+<ul>
+<li><p>DOWNLOAD PHECODE MAPPING FILES TO DATA DIRECTORY,THEN LOAD INTO R</p></li>
+<li><p>How many ICD-10 codes are included in the UK Biobank lookup table? (head shown below)</p></li>
+</ul>
+<pre><code># A tibble: 17,934 × 12
+   ICD10_CODE ALT_CODE USAGE   USAGE_UK DESCRIPTION        MODIFIER_4 MODIFIER_5
+   &lt;chr&gt;      &lt;chr&gt;    &lt;chr&gt;   &lt;chr&gt;    &lt;chr&gt;              &lt;chr&gt;      &lt;chr&gt;     
+ 1 A00        A00      DEFAULT 3        Cholera            &lt;NA&gt;       &lt;NA&gt;      
+ 2 A00.0      A000     DEFAULT 3        Cholera due to Vi… &lt;NA&gt;       &lt;NA&gt;      
+ 3 A00.1      A001     DEFAULT 3        Cholera due to Vi… &lt;NA&gt;       &lt;NA&gt;      
+ 4 A00.9      A009     DEFAULT 3        Cholera, unspecif… &lt;NA&gt;       &lt;NA&gt;      
+ 5 A01        A01      DEFAULT 3        Typhoid and parat… &lt;NA&gt;       &lt;NA&gt;      
+ 6 A01.0      A010     DEFAULT 3        Typhoid fever      &lt;NA&gt;       &lt;NA&gt;      
+ 7 A01.1      A011     DEFAULT 3        Paratyphoid fever… &lt;NA&gt;       &lt;NA&gt;      
+ 8 A01.2      A012     DEFAULT 3        Paratyphoid fever… &lt;NA&gt;       &lt;NA&gt;      
+ 9 A01.3      A013     DEFAULT 3        Paratyphoid fever… &lt;NA&gt;       &lt;NA&gt;      
+10 A01.4      A014     DEFAULT 3        Paratyphoid fever… &lt;NA&gt;       &lt;NA&gt;      
+# … with 17,924 more rows, and 5 more variables: QUALIFIERS &lt;chr&gt;,
+#   GENDER_MASK &lt;chr&gt;, MIN_AGE &lt;chr&gt;, MAX_AGE &lt;chr&gt;, TREE_DESCRIPTION &lt;chr&gt;</code></pre>
+<ul>
+<li>Which ICD-10 codes map to &gt;1 phecode? (I think this is mentioned on the phecode website, and in Spiros’ github repo readme)</li>
+</ul>
 <br>
 <p>
 <button type="button" class="btn btn-default btn-workflowr btn-workflowr-sessioninfo" data-toggle="collapse" data-target="#workflowr-sessioninfo" style="display: block;">
@@ -540,22 +615,23 @@ add phecode.Rmd
 </button>
 </p>
 <div id="workflowr-sessioninfo" class="collapse">
-<pre><code>R version 4.1.2 (2021-11-01)
-Platform: aarch64-apple-darwin20 (64-bit)
-Running under: macOS Monterey 12.2
+<pre><code>R version 4.1.0 (2021-05-18)
+Platform: x86_64-apple-darwin17.0 (64-bit)
+Running under: macOS Big Sur 10.16
 
 Matrix products: default
-BLAS:   /Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/lib/libRblas.0.dylib
-LAPACK: /Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/lib/libRlapack.dylib
+BLAS:   /Library/Frameworks/R.framework/Versions/4.1/Resources/lib/libRblas.dylib
+LAPACK: /Library/Frameworks/R.framework/Versions/4.1/Resources/lib/libRlapack.dylib
 
 locale:
 [1] en_GB.UTF-8/en_GB.UTF-8/en_GB.UTF-8/C/en_GB.UTF-8/en_GB.UTF-8
 
 attached base packages:
-[1] stats     graphics  grDevices datasets  utils     methods   base     
+[1] parallel  stats     graphics  grDevices datasets  utils     methods  
+[8] base     
 
 other attached packages:
- [1] codemapper_0.0.0.9000 testthat_3.0.4        ukbwranglr_0.0.0.9000
+ [1] PheWAS_0.99.5-5       codemapper_0.0.0.9000 ukbwranglr_0.0.0.9000
  [4] targets_0.8.0         crosstalk_1.1.1       readxl_1.3.1         
  [7] reactable_0.2.3       forcats_0.5.1         stringr_1.4.0        
 [10] dplyr_1.0.7           purrr_0.3.4           readr_2.0.2          
@@ -563,37 +639,38 @@ other attached packages:
 [16] tidyverse_1.3.1       workflowr_1.6.2      
 
 loaded via a namespace (and not attached):
- [1] fs_1.5.0            usethis_2.0.1       fontawesome_0.2.2  
- [4] bit64_4.0.5         lubridate_1.7.10    devtools_2.4.2     
- [7] httr_1.4.2          rprojroot_2.0.2     tools_4.1.2        
-[10] backports_1.2.1     bslib_0.3.0         utf8_1.2.2         
-[13] R6_2.5.1            DBI_1.1.1           colorspace_2.0-2   
-[16] withr_2.4.2         tidyselect_1.1.1    prettyunits_1.1.1  
-[19] processx_3.5.2      bit_4.0.4           compiler_4.1.2     
-[22] git2r_0.28.0        cli_3.0.1           rvest_1.0.1        
-[25] xml2_1.3.2          desc_1.3.0          sass_0.4.0         
-[28] scales_1.1.1        callr_3.7.0         shinyFeedback_0.4.0
-[31] digest_0.6.28       rmarkdown_2.11      ini_0.3.1          
-[34] pkgconfig_2.0.3     htmltools_0.5.2     sessioninfo_1.1.1  
-[37] dbplyr_2.1.1        fastmap_1.1.0       highr_0.9          
-[40] htmlwidgets_1.5.4   rlang_0.4.11        RSQLite_2.2.8      
-[43] rstudioapi_0.13     shiny_1.7.0         jquerylib_0.1.4    
-[46] generics_0.1.0      configr_0.3.5       jsonlite_1.7.2     
-[49] magrittr_2.0.1      Rcpp_1.0.7          munsell_0.5.0      
-[52] fansi_0.5.0         lifecycle_1.0.1     stringi_1.7.4      
-[55] whisker_0.4         yaml_2.2.1          pkgbuild_1.2.0     
-[58] blob_1.2.2          grid_4.1.2          promises_1.2.0.1   
-[61] RcppTOML_0.1.7      crayon_1.4.1        haven_2.4.3        
-[64] hms_1.1.1           knitr_1.34          ps_1.6.0           
-[67] pillar_1.6.3        igraph_1.2.6        codetools_0.2-18   
-[70] pkgload_1.2.2       reprex_2.0.1        glue_1.4.2         
-[73] evaluate_0.14       remotes_2.4.0       data.table_1.14.2  
-[76] renv_0.13.2         modelr_0.1.8        vctrs_0.3.8        
-[79] tzdb_0.1.2          httpuv_1.6.3        cellranger_1.1.0   
-[82] gtable_0.3.0        assertthat_0.2.1    cachem_1.0.6       
-[85] xfun_0.24           mime_0.12           xtable_1.8-4       
-[88] broom_0.7.9         later_1.3.0         memoise_2.0.0      
-[91] ellipsis_0.3.2     </code></pre>
+ [1] minqa_1.2.4          colorspace_2.0-2     ellipsis_0.3.2      
+ [4] rprojroot_2.0.2      fs_1.5.0             rstudioapi_0.13     
+ [7] mice_3.14.0          ggrepel_0.9.1        DT_0.20             
+[10] fansi_0.5.0          lubridate_1.7.10     mathjaxr_1.4-0      
+[13] xml2_1.3.2           codetools_0.2-18     splines_4.1.0       
+[16] knitr_1.34           jsonlite_1.7.2       nloptr_2.0.0        
+[19] logistf_1.24.1       broom_0.7.9          dbplyr_2.1.1        
+[22] shiny_1.7.0          compiler_4.1.0       httr_1.4.2          
+[25] backports_1.2.1      assertthat_0.2.1     Matrix_1.3-3        
+[28] fastmap_1.1.0        cli_3.0.1            later_1.3.0         
+[31] htmltools_0.5.2      tools_4.1.0          igraph_1.2.6        
+[34] gtable_0.3.0         glue_1.4.2           Rcpp_1.0.7          
+[37] cellranger_1.1.0     jquerylib_0.1.4      vctrs_0.3.8         
+[40] nlme_3.1-152         lmtest_0.9-39        xfun_0.24           
+[43] ps_1.6.0             lme4_1.1-28          rvest_1.0.1         
+[46] mime_0.12            CompQuadForm_1.4.3   lifecycle_1.0.1     
+[49] renv_0.13.2          formula.tools_1.7.1  MASS_7.3-54         
+[52] zoo_1.8-9            scales_1.1.1         hms_1.1.1           
+[55] promises_1.2.0.1     meta_5.2-0           metafor_3.0-2       
+[58] yaml_2.2.1           sass_0.4.0           stringi_1.7.4       
+[61] highr_0.9            boot_1.3-28          operator.tools_1.6.3
+[64] rlang_0.4.11         pkgconfig_2.0.3      evaluate_0.14       
+[67] lattice_0.20-44      htmlwidgets_1.5.4    processx_3.5.2      
+[70] tidyselect_1.1.1     magrittr_2.0.1       R6_2.5.1            
+[73] generics_0.1.0       DBI_1.1.1            pillar_1.6.3        
+[76] haven_2.4.3          whisker_0.4          withr_2.4.2         
+[79] mgcv_1.8-35          survival_3.2-13      modelr_0.1.8        
+[82] crayon_1.4.1         utf8_1.2.2           tzdb_0.1.2          
+[85] rmarkdown_2.11       grid_4.1.0           data.table_1.14.2   
+[88] callr_3.7.0          git2r_0.28.0         reprex_2.0.1        
+[91] digest_0.6.28        xtable_1.8-4         httpuv_1.6.3        
+[94] munsell_0.5.0        bslib_0.3.0         </code></pre>
 </div>
 </div>
 

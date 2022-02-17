@@ -1,0 +1,5 @@
+destination: public/pkgdown_site
+
+url: https://rmgpanw.gitlab.io/codemapper
+template:
+  bootstrap: 5

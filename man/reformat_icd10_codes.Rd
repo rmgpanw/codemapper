@@ -8,7 +8,8 @@ reformat_icd10_codes(
   icd10_codes,
   all_lkps_maps,
   input_icd10_format = "ICD10_CODE",
-  output_icd10_format = "ALT_CODE"
+  output_icd10_format = "ALT_CODE",
+  strip_x = FALSE
 )
 }
 \arguments{
@@ -21,6 +22,10 @@ reformat_icd10_codes(
 
 \item{output_icd10_format}{character. Must be either "ICD10_CODE" or
 "ALT_CODE".}
+
+\item{strip_x}{logical. If \code{TRUE}, any 3 character ICD10 codes in
+'ALT_CODE' format with no children (e.g. 'A38X', Scarlet fever) will have
+the last 'X' removed. Default value is \code{FALSE}.}
 }
 \value{
 character vector of ICD-10 codes, reformatted as specified by

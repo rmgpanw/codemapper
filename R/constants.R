@@ -32,7 +32,8 @@ ALL_LKPS_MAPS_TABLE_NAMES <- c(
   "read_ctv3_opcs4",
   "read_ctv3_read_v2",
   "bnf_dmd",
-  "opcs4_lkp"
+  "opcs4_lkp",
+  "read_ctv3_sct"
 )
 
 # TODO - unhash this
@@ -67,7 +68,8 @@ CODE_TYPE_TO_LKP_TABLE_MAP <- tibble::tribble(
   "data_coding_3", "Self-reported cancer (dc-3)", "self_report_cancer", "data_coding_3", "description", NA, NA, "category",
   "data_coding_4", "Self-reported medications (dc-4)", "self_report_medication", "data_coding_4", "description", NA, NA, "category",
   "data_coding_5", "Self-reported operations (dc-5)", "self_report_operation", "data_coding_5", "description", NA, NA, "category",
-  "data_coding_6", "Self-reported non-cancer (dc-6)", "self_report_non_cancer", "data_coding_6", "description", NA, NA, "category"
+  "data_coding_6", "Self-reported non-cancer (dc-6)", "self_report_non_cancer", "data_coding_6", "description", NA, NA, "category",
+  "sct", "SNOMED CT", "read_ctv3_sct", "SCT_CONCEPTID", "CTV3_CONCEPTID", NA, NA, NA
 )
 
 # CLINICAL_CODE_MAPPINGS_MAP ----------------------------------------------
@@ -89,5 +91,6 @@ CLINICAL_CODE_MAPPINGS_MAP <- tibble::tribble(
   "read3", "icd10", "read_ctv3_icd10", "read_code", "icd10_code", NA, NA,
   "read3", "opcs4", "read_ctv3_opcs4", "read_code", "opcs4_code", NA, NA,
   "read3", "read2", "read_ctv3_read_v2", "READV3_CODE", "READV2_CODE", "TERMV2_TYPE", "P",
-  "bnf", "dmd", "bnf_dmd", "bnf_code", "snomed_code", NA, NA
+  "bnf", "dmd", "bnf_dmd", "bnf_code", "snomed_code", NA, NA,
+  "read3", "sct", "read_ctv3_sct", "CTV3_CONCEPTID", "SCT_CONCEPTID", NA, NA
 )

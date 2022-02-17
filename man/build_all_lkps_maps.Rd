@@ -7,7 +7,8 @@
 build_all_lkps_maps(
   all_lkps_maps = get_ukb_all_lkps_maps_raw_direct(),
   bnf_dmd = get_nhsbsa_snomed_bnf(),
-  ukb_codings = ukbwranglr::get_ukb_codings_direct()
+  ukb_codings = ukbwranglr::get_ukb_codings_direct(),
+  ctv3sctmap2 = NULL
 )
 }
 \arguments{
@@ -19,6 +20,8 @@ build_all_lkps_maps(
 
 \item{ukb_codings}{The UK Biobank codings file, as returned by
 \code{\link[ukbwranglr]{get_ukb_codings_direct}}.}
+
+\item{ctv3sctmap2}{Path to the NHS TRUD mapping file for Read 3 to SNOMEDCT ("ctv3sctmap2_uk_20200401000001.txt").}
 }
 \value{
 Returns a named list of data frames.

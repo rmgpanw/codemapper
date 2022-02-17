@@ -311,7 +311,7 @@ $(document).ready(function () {
 <strong>Last updated:</strong> 2022-02-17
 </p>
 <p>
-<strong>Checks:</strong> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> 6 <span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span> 1
+<strong>Checks:</strong> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> 5 <span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span> 2
 </p>
 <p>
 <strong>Knit directory:</strong> <code>codemapper/</code> <span class="glyphicon glyphicon-question-sign" aria-hidden="true" title="This is the local directory in which the code in this file was executed."> </span>
@@ -327,12 +327,12 @@ This reproducible <a href="http://rmarkdown.rstudio.com">R Markdown</a> analysis
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRMarkdownfilestronguptodate"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>R Markdown file:</strong> up-to-date </a>
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRMarkdownfilestronguncommittedchanges"> <span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span> <strong>R Markdown file:</strong> uncommitted changes </a>
 </p>
 </div>
-<div id="strongRMarkdownfilestronguptodate" class="panel-collapse collapse">
+<div id="strongRMarkdownfilestronguncommittedchanges" class="panel-collapse collapse">
 <div class="panel-body">
-<p>Great! Since the R Markdown file has been committed to the Git repository, you know the exact version of the code that produced these results.</p>
+<p>The R Markdown file has unstaged changes. To know which version of the R Markdown file created these results, you’ll want to first commit it to the Git repo. If you’re still working on the analysis, you can ignore this warning. When you’re finished, you can run <code>wflow_publish</code> to commit the R Markdown file and build the HTML.</p>
 </div>
 </div>
 </div>
@@ -432,16 +432,16 @@ function
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgitlabcomrmgpanwcodemappertree72dfd86c1f799869f56e32637ed0ff7bc1c84f9btargetblank72dfd86a"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Repository version:</strong> <a href="https://gitlab.com/rmgpanw/codemapper/tree/72dfd86c1f799869f56e32637ed0ff7bc1c84f9b" target="_blank">72dfd86</a> </a>
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgitlabcomrmgpanwcodemappertreea44eb90f156f0866a6d60c2d37c8f479b7610c60targetblanka44eb90a"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Repository version:</strong> <a href="https://gitlab.com/rmgpanw/codemapper/tree/a44eb90f156f0866a6d60c2d37c8f479b7610c60" target="_blank">a44eb90</a> </a>
 </p>
 </div>
-<div id="strongRepositoryversionstrongahrefhttpsgitlabcomrmgpanwcodemappertree72dfd86c1f799869f56e32637ed0ff7bc1c84f9btargetblank72dfd86a" class="panel-collapse collapse">
+<div id="strongRepositoryversionstrongahrefhttpsgitlabcomrmgpanwcodemappertreea44eb90f156f0866a6d60c2d37c8f479b7610c60targetblanka44eb90a" class="panel-collapse collapse">
 <div class="panel-body">
 <p>
 Great! You are using Git for version control. Tracking code development and connecting the code version to the results is critical for reproducibility.
 </p>
 <p>
-The results in this page were generated with repository version <a href="https://gitlab.com/rmgpanw/codemapper/tree/72dfd86c1f799869f56e32637ed0ff7bc1c84f9b" target="_blank">72dfd86</a>. See the <em>Past versions</em> tab to see a history of the changes made to the R Markdown and HTML files.
+The results in this page were generated with repository version <a href="https://gitlab.com/rmgpanw/codemapper/tree/a44eb90f156f0866a6d60c2d37c8f479b7610c60" target="_blank">a44eb90</a>. See the <em>Past versions</em> tab to see a history of the changes made to the R Markdown and HTML files.
 </p>
 <p>
 Note that you need to be careful to ensure that all relevant files for the analysis have been committed to Git prior to generating the results (you can use <code>wflow_publish</code> or <code>wflow_git_commit</code>). workflowr only checks the R Markdown file, but you know if there are other scripts or data files that it depends on. Below is the status of the Git repository when the results were generated:
@@ -449,24 +449,27 @@ Note that you need to be careful to ensure that all relevant files for the analy
 <pre><code>
 Ignored files:
     Ignored:    .Renviron
+    Ignored:    .Rhistory
     Ignored:    .Rproj.user/
-    Ignored:    _targets/objects/
+    Ignored:    _targets/
+    Ignored:    all_lkps_maps.db
     Ignored:    renv/library/
     Ignored:    renv/staging/
     Ignored:    tar_make.R
 
-Untracked files:
-    Untracked:  _targets/meta/.gitignore
-
 Unstaged changes:
-    Modified:   .gitignore
+    Modified:   .Rbuildignore
+    Modified:   DESCRIPTION
+    Modified:   NAMESPACE
+    Modified:   R/clinical_codes.R
+    Modified:   R/codemapper.R
+    Modified:   R/constants.R
+    Modified:   R/utils.R
     Modified:   _targets.R
-    Modified:   _targets/meta/meta
-    Deleted:    _targets/scratch/all_lkps_maps64c77dad81fb
-
-Staged changes:
-    New:        _targets/meta/meta
-    New:        _targets/scratch/all_lkps_maps64c77dad81fb
+    Modified:   analysis/clinical_codes_lkps_and_mappings.Rmd
+    Modified:   man/build_all_lkps_maps.Rd
+    Modified:   man/reformat_icd10_codes.Rd
+    Modified:   tests/testthat/test_constants.R
 
 </code></pre>
 <p>
@@ -505,6 +508,23 @@ Message
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://glcdn.githack.com/rmgpanw/codemapper/raw/5c2a3e32ad9ae48eb531afaa647ec1135bdc446c/public/clinical_codes_lkps_and_mappings.html" target="_blank">5c2a3e3</a>
+</td>
+<td>
+Chuin Ying Ung
+</td>
+<td>
+2022-02-17
+</td>
+<td>
+update _targets.R (housekeeping) and phecode.Rmd
+</td>
+</tr>
 <tr>
 <td>
 Rmd
@@ -618,7 +638,7 @@ library(tidyverse)
 </ul>
 <p>The functions provided by <code>codemapper</code> rely on <a href="https://biobank.ndph.ox.ac.uk/ukb/refer.cgi?id=592">UK Biobank resource 592</a>, which includes an Excel workbook containing lookup and mapping tables, and the NHSBSA BNF to SNOMED code mapping file (available <a href="https://www.nhsbsa.nhs.uk/prescription-data/understanding-our-data/bnf-snomed-mapping">here</a>). These tables have been converted into a named list of data frames. This can be retrieved with <code>TODO()</code>:</p>
 <pre class="r"><code># retrieve code mappings in .Rdata format
-all_lkps_maps &lt;- codemapper:::get_all_lkps_maps()
+targets::tar_load(all_lkps_maps)
 
 # each item in the list is a sheet in the UKB Excel workbook (resource 592)
 names(all_lkps_maps)
@@ -633,7 +653,8 @@ names(all_lkps_maps)
 #&gt; [17] &quot;read_ctv3_read_v2&quot;          &quot;bnf_dmd&quot;                   
 #&gt; [19] &quot;opcs4_lkp&quot;                  &quot;self_report_cancer&quot;        
 #&gt; [21] &quot;self_report_medication&quot;     &quot;self_report_operation&quot;     
-#&gt; [23] &quot;self_report_non_cancer&quot;     &quot;self_report_med_to_atc_map&quot;</code></pre>
+#&gt; [23] &quot;self_report_non_cancer&quot;     &quot;self_report_med_to_atc_map&quot;
+#&gt; [25] &quot;read_ctv3_sct&quot;</code></pre>
 </div>
 <div id="code-lookups" class="section level1">
 <h1>Code lookups</h1>
@@ -838,13 +859,13 @@ codes_starting_with(codes = t1dm_read2,
 </p>
 <div id="workflowr-sessioninfo" class="collapse">
 <pre class="r"><code>sessionInfo()
-#&gt; R version 4.1.2 (2021-11-01)
-#&gt; Platform: aarch64-apple-darwin20 (64-bit)
-#&gt; Running under: macOS Monterey 12.2
+#&gt; R version 4.1.0 (2021-05-18)
+#&gt; Platform: x86_64-apple-darwin17.0 (64-bit)
+#&gt; Running under: macOS Big Sur 10.16
 #&gt; 
 #&gt; Matrix products: default
-#&gt; BLAS:   /Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/lib/libRblas.0.dylib
-#&gt; LAPACK: /Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/lib/libRlapack.dylib
+#&gt; BLAS:   /Library/Frameworks/R.framework/Versions/4.1/Resources/lib/libRblas.dylib
+#&gt; LAPACK: /Library/Frameworks/R.framework/Versions/4.1/Resources/lib/libRlapack.dylib
 #&gt; 
 #&gt; locale:
 #&gt; [1] en_GB.UTF-8/en_GB.UTF-8/en_GB.UTF-8/C/en_GB.UTF-8/en_GB.UTF-8
@@ -869,10 +890,10 @@ codes_starting_with(codes = t1dm_read2,
 #&gt; [29] tzdb_0.1.2        git2r_0.28.0      generics_0.1.0    ellipsis_0.3.2   
 #&gt; [33] withr_2.4.2       cli_3.0.1         magrittr_2.0.1    crayon_1.4.1     
 #&gt; [37] readxl_1.3.1      mime_0.12         evaluate_0.14     ps_1.6.0         
-#&gt; [41] fs_1.5.0          fansi_0.5.0       xml2_1.3.2        tools_4.1.2      
+#&gt; [41] fs_1.5.0          fansi_0.5.0       xml2_1.3.2        tools_4.1.0      
 #&gt; [45] data.table_1.14.2 hms_1.1.1         lifecycle_1.0.1   munsell_0.5.0    
-#&gt; [49] reprex_2.0.1      targets_0.8.0     callr_3.7.0       compiler_4.1.2   
-#&gt; [53] jquerylib_0.1.4   rlang_0.4.11      grid_4.1.2        rstudioapi_0.13  
+#&gt; [49] reprex_2.0.1      targets_0.8.0     callr_3.7.0       compiler_4.1.0   
+#&gt; [53] jquerylib_0.1.4   rlang_0.4.11      grid_4.1.0        rstudioapi_0.13  
 #&gt; [57] igraph_1.2.6      rmarkdown_2.11    gtable_0.3.0      codetools_0.2-18 
 #&gt; [61] DBI_1.1.1         R6_2.5.1          lubridate_1.7.10  knitr_1.34       
 #&gt; [65] fastmap_1.1.0     utf8_1.2.2        rprojroot_2.0.2   stringi_1.7.4    

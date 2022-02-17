@@ -13,3 +13,5 @@
 ^code/*
 ^public/*
 ^output/*
+^all_lkps_maps\.db$
+^tar_make\.R$

@@ -33,7 +33,7 @@ The functions provided by `codemapper` rely on [UK Biobank resource 592](https:/
 
 ```{r}
 # retrieve code mappings in .Rdata format
-all_lkps_maps <- codemapper:::get_all_lkps_maps()
+targets::tar_load(all_lkps_maps)
 
 # each item in the list is a sheet in the UKB Excel workbook (resource 592)
 names(all_lkps_maps)

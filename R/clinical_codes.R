@@ -596,7 +596,7 @@ check_icd10_codes_are_alt_code_format <- function(icd10_codes,
     icd10_format_3_char_codes <- icd10_lkp %>%
       dplyr::filter(stringr::str_detect(.data[["ALT_CODE"]],
                                         pattern = "X$")) %>%
-      dplyr::pull(ICD10_CODE)
+      dplyr::pull(.data[["ICD10_CODE"]])
 
     icd10_codes_3_char_codes <- subset(icd10_codes,
                                        icd10_codes %in% icd10_format_3_char_codes)
