@@ -114,7 +114,14 @@ all_lkps_maps_to_db <- function(all_lkps_maps,
 #'   \code{\link{get_nhsbsa_snomed_bnf}}.
 #' @param ukb_codings The UK Biobank codings file, as returned by
 #'   \code{\link[ukbwranglr]{get_ukb_codings_direct}}.
-#' @param ctv3sctmap2 Path to the NHS TRUD mapping file for Read 3 to SNOMEDCT ("ctv3sctmap2_uk_20200401000001.txt").
+#' @param ctv3sctmap2 Optional: path to the NHS TRUD mapping file for Read 3 to
+#'   SNOMEDCT ("ctv3sctmap2_uk_20200401000001.txt").
+#' @param phecode_1_2_lkp Optional: path to the phecode v1.2 lookup file
+#'   ("phecode_definitions1.2.csv.zip").
+#' @param icd10_phecode_1_2 Optional: path to the phecode v1.2 to ICD10 mapping
+#'   file ("Phecode_map_v1_2_icd10_beta.csv.zip").
+#' @param icd9_phecode_1_2 Optional: path to the phecode v1.2 to ICD10 mapping
+#'   file ("phecode_icd9_map_unrolled.csv.zip").
 #'
 #' @return Returns a named list of data frames.
 #' @export
@@ -122,7 +129,10 @@ build_all_lkps_maps <-
   function(all_lkps_maps = get_ukb_all_lkps_maps_raw_direct(),
            bnf_dmd = get_nhsbsa_snomed_bnf(),
            ukb_codings = ukbwranglr::get_ukb_codings_direct(),
-           ctv3sctmap2 = NULL) {
+           ctv3sctmap2 = NULL,
+           phecode_1_2_lkp = NULL,
+           icd10_phecode_1_2 = NULL,
+           icd9_phecode_1_2 = NULL) {
     # ukb resource 592
     all_lkps_maps <- all_lkps_maps
     all_lkps_maps <- all_lkps_maps %>%
@@ -174,9 +184,30 @@ build_all_lkps_maps <-
     # https://www.nature.com/articles/s41467-019-09572-5#additional-information
     self_report_med_to_atc_map <- get_ukb_self_report_med_to_atc_map()
 
-    # add NHS TRUD Read 3 to SNOMEDCT mapping table
+    # add 'extra' tables
+
+    ## NHS TRUD Read 3 to SNOMEDCT mapping table
     if (!is.null(ctv3sctmap2)) {
       read_ctv3_sct <- readr::read_tsv(ctv3sctmap2)
+    }
+
+    ## Phecode lookup
+    if (!is.null(phecode_1_2_lkp)) {
+      phecode_lkp <- readr::read_csv(phecode_1_2_lkp)
+    }
+
+    ## Phecode to ICD10 map
+    if (!is.null(icd10_phecode_1_2)) {
+      icd10_phecode <- readr::read_csv(icd10_phecode_1_2) %>%
+        dplyr::mutate("ALT_CODE" = stringr::str_remove(.data[["ICD10"]],
+                                                        pattern = "\\."))
+    }
+
+    ## Phecode to ICD9 map
+    if (!is.null(icd9_phecode_1_2)) {
+      icd9_phecode <- readr::read_csv(icd9_phecode_1_2) %>%
+        dplyr::mutate("icd9" = stringr::str_remove(.data[["icd9"]],
+                                                       pattern = "\\."))
     }
 
     # combine
@@ -193,9 +224,25 @@ build_all_lkps_maps <-
       )
     )
 
+    # append 'extra' lookup/mapping tables
     if (!is.null(ctv3sctmap2)) {
       all_lkps_maps <- c(all_lkps_maps,
                          list(read_ctv3_sct = read_ctv3_sct))
+    }
+
+    if (!is.null(phecode_1_2_lkp)) {
+      all_lkps_maps <- c(all_lkps_maps,
+                         list(phecode_lkp = phecode_lkp))
+    }
+
+    if (!is.null(icd10_phecode_1_2)) {
+      all_lkps_maps <- c(all_lkps_maps,
+                         list(icd10_phecode = icd10_phecode))
+    }
+
+    if (!is.null(icd9_phecode_1_2)) {
+      all_lkps_maps <- c(all_lkps_maps,
+                         list(icd9_phecode = icd9_phecode))
     }
 
     message("Success!")

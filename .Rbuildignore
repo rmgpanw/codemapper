@@ -15,3 +15,5 @@
 ^output/*
 ^all_lkps_maps\.db$
 ^tar_make\.R$
+^_gitlab-ci\.dependencies\.R$
+^_pkgdown\.yml$

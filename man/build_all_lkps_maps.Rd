@@ -8,7 +8,10 @@ build_all_lkps_maps(
   all_lkps_maps = get_ukb_all_lkps_maps_raw_direct(),
   bnf_dmd = get_nhsbsa_snomed_bnf(),
   ukb_codings = ukbwranglr::get_ukb_codings_direct(),
-  ctv3sctmap2 = NULL
+  ctv3sctmap2 = NULL,
+  phecode_1_2_lkp = NULL,
+  icd10_phecode_1_2 = NULL,
+  icd9_phecode_1_2 = NULL
 )
 }
 \arguments{
@@ -21,7 +24,17 @@ build_all_lkps_maps(
 \item{ukb_codings}{The UK Biobank codings file, as returned by
 \code{\link[ukbwranglr]{get_ukb_codings_direct}}.}
 
-\item{ctv3sctmap2}{Path to the NHS TRUD mapping file for Read 3 to SNOMEDCT ("ctv3sctmap2_uk_20200401000001.txt").}
+\item{ctv3sctmap2}{Optional: path to the NHS TRUD mapping file for Read 3 to
+SNOMEDCT ("ctv3sctmap2_uk_20200401000001.txt").}
+
+\item{phecode_1_2_lkp}{Optional: path to the phecode v1.2 lookup file
+("phecode_definitions1.2.csv.zip").}
+
+\item{icd10_phecode_1_2}{Optional: path to the phecode v1.2 to ICD10 mapping
+file ("Phecode_map_v1_2_icd10_beta.csv.zip").}
+
+\item{icd9_phecode_1_2}{Optional: path to the phecode v1.2 to ICD10 mapping
+file ("phecode_icd9_map_unrolled.csv.zip").}
 }
 \value{
 Returns a named list of data frames.

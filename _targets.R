@@ -9,10 +9,31 @@ tar_option_set(
 
 # End this file with a list of target objects.
 list(
-  # Files
+  # Files ------------------------
+
+  ## TRUD ------------------------
   tar_target(
     CTV3SCTMAP2,
     Sys.getenv("CTV3SCTMAP2"),
+    format = "file"
+  ),
+
+  ## PheCODES --------------------
+  tar_target(
+    PHECODE_1_2_LKP,
+    Sys.getenv("PHECODE_1_2_LKP"),
+    format = "file"
+  ),
+
+  tar_target(
+    PHECODE_1_2_ICD10_MAP,
+    Sys.getenv("PHECODE_1_2_ICD10_MAP"),
+    format = "file"
+  ),
+
+  tar_target(
+    PHECODE_1_2_ICD9_MAP,
+    Sys.getenv("PHECODE_1_2_ICD9_MAP"),
     format = "file"
   ),
 
@@ -29,7 +50,12 @@ list(
 
   # `all_lkps_maps_raw` with redundant bottom rows removed, some tables extended, NHSBSA BNF-SNOMED table appended
   tar_target(all_lkps_maps,
-             build_all_lkps_maps(ctv3sctmap2 = CTV3SCTMAP2)),
+             build_all_lkps_maps(
+               ctv3sctmap2 = CTV3SCTMAP2,
+               phecode_1_2_lkp = PHECODE_1_2_LKP,
+               icd10_phecode_1_2 = PHECODE_1_2_ICD10_MAP,
+               icd9_phecode_1_2 = PHECODE_1_2_ICD9_MAP
+               )),
 
   tar_target(ALL_LKPS_MAPS_DB,
              codemapper::all_lkps_maps_to_db(all_lkps_maps,
