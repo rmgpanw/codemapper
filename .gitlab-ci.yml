@@ -1,6 +1,7 @@
 image: rocker/verse:4.1.0
 
 stages:
+  - renv
   - build
   - test
   - deploy
@@ -20,6 +21,11 @@ before_script:
   - Rscript -e "if (!requireNamespace('renv', quietly = TRUE)) install.packages('renv')"
   - Rscript -e "renv::restore()"
 
+renv_setup:
+  stage: renv
+  script:
+    - echo "Nothing to do..."
+
 building:
   stage: build
   script:
@@ -38,8 +44,6 @@ testing:
     only:
         - master
     script:
-        - Rscript -e 'install.packages("DT")'
-        - Rscript -e 'install.packages("covr")'
         - Rscript -e 'covr::gitlab(file = "coverage/coverage.html", quiet = FALSE)'
     coverage: '/Coverage: \d+\.\d+/'
     artifacts:
@@ -54,7 +58,6 @@ pages:
     dependencies:
         - testing
     script:
-        - Rscript -e 'install.packages("pkgdown", type = "binary")'
         - Rscript -e 'pkgdown::build_site()'
         - mv coverage public
     artifacts:
