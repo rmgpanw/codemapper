@@ -1,7 +1,6 @@
 image: rocker/verse:4.1.0
 
 stages:
-  - renv
   - build
   - test
   - deploy
@@ -12,7 +11,7 @@ variables:
   RENV_PATHS_LIBRARY: ${CI_PROJECT_DIR}/renv/library
 
 cache:
-  key: ${CI_JOB_NAME}
+  key: one-key-to-rule-them-all
   paths:
     - ${RENV_PATHS_CACHE}
     - ${RENV_PATHS_LIBRARY}
@@ -20,11 +19,6 @@ cache:
 before_script:
   - Rscript -e "if (!requireNamespace('renv', quietly = TRUE)) install.packages('renv')"
   - Rscript -e "renv::restore()"
-
-renv_setup:
-  stage: renv
-  script:
-    - echo "Nothing to do..."
 
 building:
   stage: build
