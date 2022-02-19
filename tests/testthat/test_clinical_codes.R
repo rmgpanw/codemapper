@@ -251,6 +251,22 @@ test_that("`get_mapping_df()` returns the expected output", {
                                    all_lkps_maps = all_lkps_maps) %>%
     head(n = 1)
 
+  read2_icd10_df_renamed <- get_mapping_df(
+    from = "read2",
+    to = "icd10",
+    all_lkps_maps = all_lkps_maps,
+    rename_from_to = c(from = "from", to = "to")
+  ) %>%
+    head(n = 1)
+
+  read2_icd10_df_renamed2 <- get_mapping_df(
+    from = "read2",
+    to = "icd10",
+    all_lkps_maps = all_lkps_maps,
+    rename_from_to = c(to = "to", from = "from")
+  ) %>%
+    head(n = 1)
+
   icd10_read2_df <- suppressWarnings(get_mapping_df(
     from = "icd10",
     to = "read2",
@@ -260,14 +276,26 @@ test_that("`get_mapping_df()` returns the expected output", {
 
   expect_equal(
     read2_icd10_df,
+    tibble::tibble(read2 = "A0...",
+                   icd10 = "A00-A09")
+  )
+
+  expect_equal(
+    read2_icd10_df_renamed,
     tibble::tibble(from = "A0...",
                    to = "A00-A09")
   )
 
+  # should be the same as above
+  expect_equal(
+    read2_icd10_df_renamed2,
+    read2_icd10_df_renamed
+  )
+
   expect_equal(
     icd10_read2_df,
-    tibble::tibble(from = "A00-A09",
-                   to = "A0...")
+    tibble::tibble(icd10 = "A00-A09",
+                   read2 = "A0...")
   )
 })
 

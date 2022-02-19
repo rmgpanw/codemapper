@@ -488,6 +488,10 @@ map_codes <- function(codes,
 #' @param from A clinical coding system to map from.
 #' @param to A clinical coding system to map to.
 #' @inheritParams codes_starting_with
+#' @param rename_from_to Optionally supply a named vector to rename the 'from'
+#'   and 'to' columns. For example `c(from = "original_codes", to =
+#'   "new_codes")`. By default, the columns will be named using the values for
+#'   `from` and `to` arguments.
 #'
 #' @return A data frame with column names 'from' and 'to'.
 #' @export
@@ -495,10 +499,20 @@ map_codes <- function(codes,
 #' @family Clinical code lookups and mappings
 get_mapping_df <- function(from,
                         to,
-                        all_lkps_maps = "all_lkps_maps.db") {
+                        all_lkps_maps = "all_lkps_maps.db",
+                        rename_from_to = NULL) {
   # validate args
   check_mapping_args(from = from,
                      to = to)
+
+  rename_from_to_error_msg <- "Error! `rename_from_to` should be a named character vector of length 2, with names 'from' and 'to'"
+
+  if (!is.null(rename_from_to)) {
+    assertthat::assert_that(is.character(rename_from_to) &&
+                              (length(rename_from_to) == 2) &&
+                              all(c("from", "to") %in% names(rename_from_to)),
+                            msg = rename_from_to_error_msg)
+  }
 
   # connect to database file path
   if (is.character(all_lkps_maps)) {
@@ -526,10 +540,19 @@ get_mapping_df <- function(from,
   result <- all_lkps_maps[[mapping_table]] %>%
     dplyr::select(tidyselect::all_of(from_to_cols)) %>%
     dplyr::distinct() %>%
-    dplyr::collect() %>%
+    dplyr::collect()
+
+  # rename
+  if (!is.null(rename_from_to)) {
+    new_from_to_cols <- c(rename_from_to['from'], rename_from_to['to'])
+  } else {
+    new_from_to_cols <- c(from, to)
+  }
+
+  result <- result %>%
     ukbwranglr:::rename_cols(
       old_colnames = from_to_cols,
-      new_colnames = c("from", "to")
+      new_colnames = new_from_to_cols
     )
 
   return(result)
