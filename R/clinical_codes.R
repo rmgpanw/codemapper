@@ -492,6 +492,9 @@ map_codes <- function(codes,
 #'   and 'to' columns. For example `c(from = "original_codes", to =
 #'   "new_codes")`. By default, the columns will be named using the values for
 #'   `from` and `to` arguments.
+#' @param na.rm If `TRUE` (default), remove any rows with `NA` from the returned
+#'   mapping data frame. The mapping tables may sometimes include `NA` values to
+#'   explicitly show which 'from' codes have not been mapped.
 #'
 #' @return A data frame with column names 'from' and 'to'.
 #' @export
@@ -500,7 +503,8 @@ map_codes <- function(codes,
 get_mapping_df <- function(from,
                         to,
                         all_lkps_maps = "all_lkps_maps.db",
-                        rename_from_to = NULL) {
+                        rename_from_to = NULL,
+                        na.rm = TRUE) {
   # validate args
   check_mapping_args(from = from,
                      to = to)
@@ -541,6 +545,11 @@ get_mapping_df <- function(from,
     dplyr::select(tidyselect::all_of(from_to_cols)) %>%
     dplyr::distinct() %>%
     dplyr::collect()
+
+  # remove rows with `NA` values
+  if (na.rm) {
+    result <- tidyr::drop_na(result)
+  }
 
   # rename
   if (!is.null(rename_from_to)) {

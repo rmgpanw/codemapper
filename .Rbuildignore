@@ -17,3 +17,4 @@
 ^tar_make\.R$
 ^_gitlab-ci\.dependencies\.R$
 ^_pkgdown\.yml$
+^temp_tests/*

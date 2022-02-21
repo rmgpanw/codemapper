@@ -4,7 +4,13 @@
 \alias{get_mapping_df}
 \title{Get a 'from-to' mapping data frame}
 \usage{
-get_mapping_df(from, to, all_lkps_maps = "all_lkps_maps.db")
+get_mapping_df(
+  from,
+  to,
+  all_lkps_maps = "all_lkps_maps.db",
+  rename_from_to = NULL,
+  na.rm = TRUE
+)
 }
 \arguments{
 \item{from}{A clinical coding system to map from.}
@@ -16,6 +22,14 @@ data frames or \code{tbl_dbi} objects), or the path to a SQLite database
 containing these tables (see also \code{\link[=build_all_lkps_maps]{build_all_lkps_maps()}} and
 \code{\link[=all_lkps_maps_to_db]{all_lkps_maps_to_db()}}). By default, will look for a SQLite datbase called
 \code{all_lkps_maps.db} in the current working directory.}
+
+\item{rename_from_to}{Optionally supply a named vector to rename the 'from'
+and 'to' columns. For example \code{c(from = "original_codes", to = "new_codes")}. By default, the columns will be named using the values for
+\code{from} and \code{to} arguments.}
+
+\item{na.rm}{If \code{TRUE} (default), remove any rows with \code{NA} from the returned
+mapping data frame. The mapping tables may sometimes include \code{NA} values to
+explicitly show which 'from' codes have not been mapped.}
 }
 \value{
 A data frame with column names 'from' and 'to'.
