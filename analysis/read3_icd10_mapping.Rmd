@@ -1,0 +1,64 @@
+---
+title: "Read 3 to ICD-10 mapping"
+author: "A Warwick and CY Ung"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output: 
+  workflowr::wflow_html:
+    toc: false
+editor_options:
+  chunk_output_type: console
+---
+
+```{r global-options, echo=FALSE}
+knitr::opts_chunk$set(warning=FALSE, message=FALSE, echo=FALSE)
+```
+
+```{r}
+library(tidyverse)
+library(reactable)
+library(readxl)
+library(crosstalk)
+library(targets)
+library(codemapper)
+```
+
+# Summary points
+
+
+
+# Raw data preview
+
+```{r}
+
+```
+
+# Notes
+
+The read3 code XaIP9 codes to ICD10 code N508
+```{r}
+test<-map_codes(codes = "XaIP9",
+          from = "read3",
+          to = "icd10",
+          all_lkps_maps = "all_lkps_maps.db",
+          standardise_output = FALSE)
+
+test2<-map_codes(codes = "XaIP9",
+          from = "read3",
+          to = "icd10",
+          all_lkps_maps = "all_lkps_maps.db",
+          standardise_output = TRUE) %>% dplyr::rename("icd10_code" = "code")
+
+test3<- dplyr::left_join(test, test2) 
+
+all_lkps_minus_icd10 <- c("read2", "read3", "icd9") %>%
+        purrr::set_names() %>%
+        purrr::map(~ codemapper::code_descriptions_like(reg_expr = ".*",
+                                                 code_type = .x)) %>% 
+        dplyr::bind_rows() %>% dplyr::rename("read_code" = "code")
+
+dplyr::left_join(test3, all_lkps_minus_icd10) %>% View()
+```
+
+
+# Transformed table
+
