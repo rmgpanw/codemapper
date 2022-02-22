@@ -32,7 +32,7 @@ list(
 
   # Workflowr Rmds ----------------------------------------------------------
   tar_target(
-    index_RMD,
+    INDEX_RMD,
     command = {
       !!tar_knitr_deps_expr(file.path("analysis", "index.Rmd"))
       suppressMessages(workflowr::wflow_build(file.path("analysis", "index.Rmd"), verbose = FALSE))
