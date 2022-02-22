@@ -133,26 +133,42 @@ build_all_lkps_maps <-
            phecode_1_2_lkp = NULL,
            icd10_phecode_1_2 = NULL,
            icd9_phecode_1_2 = NULL) {
-    # ukb resource 592
+    # ukb resource 592 ----------------
     all_lkps_maps <- all_lkps_maps
     all_lkps_maps <- all_lkps_maps %>%
       remove_irrelevant_rows_all_lkps_maps()
 
-    # extend tables
+    ## amend tables ---------------
+
+    ### read3_icd10 ------------------------
+
+    # remove keep `mapping_status` 'R', 'A' and 'U'
+    all_lkps_maps$read_ctv3_icd10 <- all_lkps_maps$read_ctv3_icd10 %>%
+      dplyr::filter(!.data[["mapping_status"]] %in% c(
+        "R",
+        "A",
+        "U"
+      ))
+
+    ## extend tables -----------------
     message("Extending tables in UKB resource 592")
     all_lkps_maps$read_v2_drugs_bnf <-
       extend_read_v2_drugs_bnf(all_lkps_maps)
     all_lkps_maps$bnf_lkp <-
       extend_bnf_lkp(all_lkps_maps)
 
-    # opcs4, from ukb codings file
+    # opcs4 -------------------------
+
+    ## from ukb codings file
     opcs4_lkp <- make_lkp_from_ukb_codings(
       ukb_codings = ukb_codings,
       Coding = "240",
       Value_col_new_name = "opcs4_code"
     )
 
-    # UKB self-reported medical conditions/medications/operations from ukb codings file
+    # UKB self-reported medical conditions/medications/operations ------------
+
+    ## from ukb codings file
     self_report_cancer <-
       make_lkp_from_ukb_codings(
         ukb_codings = ukb_codings,
@@ -184,33 +200,33 @@ build_all_lkps_maps <-
     # https://www.nature.com/articles/s41467-019-09572-5#additional-information
     self_report_med_to_atc_map <- get_ukb_self_report_med_to_atc_map()
 
-    # add 'extra' tables
+    # Add 'extra' tables -------------------------
 
-    ## NHS TRUD Read 3 to SNOMEDCT mapping table
+    ## NHS TRUD Read 3 to SNOMEDCT mapping table ---------
     if (!is.null(ctv3sctmap2)) {
       read_ctv3_sct <- readr::read_tsv(ctv3sctmap2)
     }
 
-    ## Phecode lookup
+    ## Phecode lookup ----------------
     if (!is.null(phecode_1_2_lkp)) {
       phecode_lkp <- readr::read_csv(phecode_1_2_lkp)
     }
 
-    ## Phecode to ICD10 map
+    ## Phecode to ICD10 map ---------------------
     if (!is.null(icd10_phecode_1_2)) {
       icd10_phecode <- readr::read_csv(icd10_phecode_1_2) %>%
         dplyr::mutate("ALT_CODE" = stringr::str_remove(.data[["ICD10"]],
                                                         pattern = "\\."))
     }
 
-    ## Phecode to ICD9 map
+    ## Phecode to ICD9 map ------------------
     if (!is.null(icd9_phecode_1_2)) {
       icd9_phecode <- readr::read_csv(icd9_phecode_1_2) %>%
         dplyr::mutate("icd9" = stringr::str_remove(.data[["icd9"]],
                                                        pattern = "\\."))
     }
 
-    # combine
+    # Combine -----------------------
     all_lkps_maps <- c(
       all_lkps_maps,
       list(
@@ -224,7 +240,7 @@ build_all_lkps_maps <-
       )
     )
 
-    # append 'extra' lookup/mapping tables
+    # Append 'extra' lookup/mapping tables
     if (!is.null(ctv3sctmap2)) {
       all_lkps_maps <- c(all_lkps_maps,
                          list(read_ctv3_sct = read_ctv3_sct))
