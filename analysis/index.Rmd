@@ -10,3 +10,12 @@ editor_options:
 
 - [Reformat `all_lkps_maps`](reformat_all_lkps_maps.html)
 - [Using `codemapper` functions](clinical_codes_lkps_and_mappings.html)
+- [Phecodes](phecodes.html)
+
+Notes on adapting raw lookup and mapping tables for `codemapper`
+
+# Lookup tables
+
+# Mapping tables
+
+-   [Read 2 to ICD-10](read2_icd10_mapping.html)

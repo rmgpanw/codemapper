@@ -1,0 +1,47 @@
+---
+title: "Read 2 to ICD-10 mapping"
+author: "A Warwick and CY Ung"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output: 
+  workflowr::wflow_html:
+    toc: false
+editor_options:
+  chunk_output_type: console
+---
+
+```{r global-options, echo=FALSE}
+knitr::opts_chunk$set(warning=FALSE, message=FALSE, echo=FALSE)
+```
+
+```{r}
+library(tidyverse)
+library(reactable)
+library(readxl)
+library(crosstalk)
+library(targets)
+library(codemapper)
+```
+
+# Summary points
+
+
+
+# Raw data preview
+
+```{r}
+
+```
+
+# Notes
+
+```{r}
+map_codes(codes = "XaIP9",
+          from = "read3",
+          to = "icd10",
+          all_lkps_maps = "all_lkps_maps.db",
+          standardise_output = FALSE)
+```
+
+
+# Transformed table
+

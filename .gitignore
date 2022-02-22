@@ -13,3 +13,4 @@ tar_make.R
 _targets/*
 .Renviron
 all_lkps_maps.db
+ukbb_pan_ancestry-master/*

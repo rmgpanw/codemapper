@@ -20,6 +20,7 @@ library(readxl)
 library(crosstalk)
 library(targets)
 library(codemapper)
+library(ggVennDiagram)
 
 # phewas r package
 # devtools::install_github("PheWAS/PheWAS")
@@ -45,21 +46,178 @@ all_lkps_maps <- tar_read(all_lkps_maps)
 - TO START, PERHAPS TRY RUNNING THE EXAMPLE (AT BOTTOM OF HELP PAGE) - COPY AND PASTE INTO THIS NOTEBOOK SO WE CAN SEE THE OUTPUT AT EACH STEP
 
 ```{r}
-?PheWAS
+# Load the PheWAS package
+# library(PheWAS)
+#Set the random seed so it is replicable
+set.seed(1)
+```
+
+# Generate some example data
+```{r}
+ex=generateExample()
+
+# Extract the three parts from the returned list
+id.vocab.code.count=ex$id.vocab.code.count
+genotypes=ex$genotypes
+id.sex=ex$id.sex
+```
+
+#Create the phecode table- translates the codes, adds exclusions, and reshapes to a wide format.
+#Sum up the counts in the data where applicable.
+```{r}
+phenotypes = createPhenotypes(id.vocab.code.count,
+                              aggregate.fun = sum,
+                              id.sex = id.sex)
+```
+
+#Combine the data
+```{r}
+data=inner_join(inner_join(phenotypes,genotypes),id.sex)
+```
+
+#Run the PheWAS
+```{r}
+results = phewas_ext(
+  data,
+  phenotypes = names(phenotypes)[-1],
+  genotypes = c("rsEXAMPLE"),
+  covariates = c("sex"),
+  cores = 1
+)
+```
+
+#Plot the results
+```{r}
+phewasManhattan(results, 
+  title="My Example PheWAS Manhattan Plot")
+```
+
+#Add PheWAS descriptions
+```{r}
+results_d=addPhecodeInfo(results)
+```
+
+#List the top 10 results
+```{r}
+results_d[order(results_d$p)[1:10],]
+```
+
+#Create a nice interactive table (eg, in RStudio)
+
+```{r}
+phewasDT(results)
 ```
 
 # Mapping files
 
 - DOWNLOAD PHECODE MAPPING FILES TO DATA DIRECTORY,THEN LOAD INTO R
-
+- Downloaded files from ukbb pan ancestry https://github.com/atgu/ukbb_pan_ancestry 
 ```{r}
+icd9_phecode_map <- read_tsv("~/Documents/PhDLocal/codemapper/ukbb_pan_ancestry-master/data/UKB_PHENOME_ICD9_PHECODE_MAP_20200109.txt")
 
+icd10_phecode_map <- read_tsv("~/Documents/PhDLocal/codemapper/ukbb_pan_ancestry-master/data/UKB_PHENOME_ICD10_PHECODE_MAP_20200109.txt")
+
+# remove "\\." from icd9_phecode_map as this is removed in all_lkps_maps$icd9_lkp
+icd9_phecode_map <- icd9_phecode_map %>% mutate(ICD9 = str_remove(
+  string = ICD9,
+  pattern = "\\." 
+))
 ```
 
-- How many ICD-10 codes are included in the UK Biobank lookup table? (head shown below)
+- How many ICD codes are included in the UK Biobank lookup table? (head shown below)
 
 ```{r}
-all_lkps_maps$icd10_lkp
+# venn diagram of overlap
+## icd10
+list(
+  icd10_lkp = unique(all_lkps_maps$icd10_lkp$ICD10_CODE),
+  phecode_icd10 = unique(icd10_phecode_map$ICD10)
+) %>% 
+  ggVennDiagram()
+
+##icd9
+list(
+  icd9_lkp = unique(all_lkps_maps$icd9_lkp$ICD9),
+  phecode_icd9 = unique(icd9_phecode_map$ICD9)
+) %>% 
+  ggVennDiagram()
 ```
 
-- Which ICD-10 codes map to >1 phecode? (I think this is mentioned on the phecode website, and in Spiros' github repo readme)
+- Which ICD-10 codes are not shared by phecode_map and all_lkps_maps
+```{r}
+# filter icd10
+icd10_all_lkps_maps_not_in_phecode_map <- all_lkps_maps$icd10_lkp %>% filter(
+  !all_lkps_maps$icd10_lkp$ICD10_CODE %in% icd10_phecode_map$ICD10
+)
+
+icd10_phecode_map_not_in_all_lkps_maps <- icd10_phecode_map %>% filter(
+  !icd10_phecode_map$ICD10  %in% all_lkps_maps$icd10_lkp$ICD10_CODE
+)
+
+# filter icd9
+icd9_all_lkps_maps_not_in_phecode_map <- all_lkps_maps$icd9_lkp %>% filter(
+  !all_lkps_maps$icd9_lkp$ICD9 %in% icd9_phecode_map$ICD9
+)
+
+icd9_phecode_map_not_in_all_lkps_maps <- icd9_phecode_map %>% filter(
+  !icd9_phecode_map$ICD9  %in% all_lkps_maps$icd9_lkp$ICD9
+)
+```
+
+- How many ICD-10 codes map to >1 phecode? (I think this is mentioned on the phecode website, and in Spiros' github repo readme)
+```{r}
+icd10_phecode_map %>% count(ICD10) %>% filter(n>1) %>% nrow() 
+
+icd10_phecode_map %>% count(ICD10) %>% filter(n>1) %>% reactable(filterable = TRUE,sortable = TRUE)
+```
+
+
+```{r}
+icd10_phecode_map %>%
+  filter(str_detect(
+    string = phecode,
+    pattern = "\\.",
+    negate = TRUE
+  )) %>%
+  count(ICD10) %>% filter(n > 1) %>% nrow()
+
+icd10_not_unique_phecodes <-icd10_phecode_map %>%
+  filter(str_detect(
+    string = phecode,
+    pattern = "\\.",
+    negate = TRUE
+  )) %>%
+  count(ICD10, sort = TRUE )%>%
+filter(n>1)
+
+icd10_phecode_map %>% filter(ICD10 %in% icd10_not_unique_phecodes$ICD10) %>% select (c(ICD10, phecode,meaning, description)) %>% reactable(filterable = TRUE,searchable = TRUE)
+```
+
+- How many ICD-9 codes map to >1 phecode?  
+```{r}
+icd9_phecode_map %>% count(ICD9) %>% filter(n>1) %>% nrow() 
+
+icd9_phecode_map %>% count(ICD9) %>% filter(n>1) %>% reactable(filterable = TRUE,searchable = TRUE)
+```
+
+
+```{r}
+icd9_phecode_map %>%
+  filter(str_detect(
+    string = phecode,
+    pattern = "\\.",
+    negate = TRUE
+  )) %>%
+  count(ICD9) %>% filter(n > 1) %>% nrow()
+
+icd9_not_unique_phecodes <-icd9_phecode_map %>%
+  filter(str_detect(
+    string = phecode,
+    pattern = "\\.",
+    negate = TRUE
+  )) %>%
+  count(ICD9, sort = TRUE )%>%
+filter(n>1)
+
+icd9_phecode_map %>% filter(ICD9 %in% icd9_not_unique_phecodes$ICD9) %>% select (c(ICD9, phecode,meaning, description)) %>% reactable(filterable = TRUE,searchable = TRUE)
+```
