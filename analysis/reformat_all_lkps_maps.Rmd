@@ -183,6 +183,24 @@ all_lkps_maps$bnf_dmd %>%
 
 # `icd10_lkp`
 
+Field names:
+- CODE = ICD10 code
+- ALT-CODE = This form strips the decimal point from the code and appends the filler X where the 3 character category is undivided. 
+- USAGE = Dagger / Asterisk indication
+- USAGE_UK = Dagger / Asterisk indication
+- DESCRIPTION = Longest preferred rubric
+- MODIFIER_4 = 4th character modifier suffix
+- MODIFIER_5 = 5th character modifier suffix
+- QUALIFIERS = Dual classification (asterisk codes)
+- GENDER_MASK = Gender mask: Identifies single sex conditions
+- MIN_AGE = Minimum age that applies to this code
+- MAX_AGE = Max age that applies to this code
+- TREE_DESCRIPTION = This data field also contains descriptions that are functional in the context of the 3 character descriptions of their parent category, and are thus suitable for presentation where that context is available. For example:
+C00 Malignant neoplasm of lip
+C00.0 External upper lip
+C00.1 External lower lip
+C00.2 External lip, unspecified
+
 ```{r}
 n_icd10_ends_x <- all_lkps_maps_raw$icd10_lkp %>% 
   filter(str_detect(ALT_CODE,

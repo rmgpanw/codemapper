@@ -24,7 +24,7 @@ library(codemapper)
 
 # Summary points
 
-
+- Inaccurate mapping of read3 to ICD10 codes when codes with mapping_status 'R' are mapped without referring to codes with mapping status 'D'.
 
 # Raw data preview
 
@@ -34,29 +34,42 @@ library(codemapper)
 
 # Notes
 
-The read3 code XaIP9 codes to ICD10 code N508
+The read3 code XaIP9 mistakenly maps 'sebaceous cyst' to various ICD10 codes that code for 'Other specified disorders of eyelid' (H028),  'Other specified disorders of male genital organs' (N508), 'Other benign mammary dysplasias' (N608) and 'Other specified conditions associated with female genital organs...' (N948)
+
+These inaccurate codes are coded 'R' under 'mapping_status' in 'read_ctv3_icd10'. 'mapping_status' denotes nature of mapping and contains letters E (exact one-to-one mapping), G (mapping is correct but read-coded concept is more detailed), D (default mapping), R (requires checking - must be checked against default mapping), A (alternative that is not marked as D or R) and U (unspecified). U is not used.
+
+Other field names in the 'read_ctv3_icd10' file are:
+- refine_flag (C = completely refined i.e. target code is sufficiently detailed to be acceptable, M = mandatory to refine further, P = possible but not mandatory to refine further)
+- add_code_flag (C = complete, no further codes are needed, M = mandatory to add a further code, P = possible but not mandatory to add further code)
+- element_num (A Read Code may need several target codes for a complete mapping, but each of these may have alternatives. Therefore, each set of alternatives is given a distinct element number. Element numbers start at 0, incrementing by 1. There are rarely more than two sets.)
+- block_num (A block is a complete set of target codes for a mapping from any one Read Code (including all alternatives to the suggested codes). There are a number of occasions where more than one block exists for a Read Code. This occurs, for example, when a Read Code maps either to a single target code or to a target code plus a second code (which may itself have alternatives).
+Blocks are numbered successively 0, 1, 2...)
+
+This field naming system is also used in read_ctv3_icd9.
+
 ```{r}
-test<-map_codes(codes = "XaIP9",
+mapped_codes <-map_codes(codes = "XaIP9",
           from = "read3",
           to = "icd10",
           all_lkps_maps = "all_lkps_maps.db",
           standardise_output = FALSE)
 
-test2<-map_codes(codes = "XaIP9",
+icd10_descriptions <-map_codes(codes = "XaIP9",
           from = "read3",
           to = "icd10",
           all_lkps_maps = "all_lkps_maps.db",
-          standardise_output = TRUE) %>% dplyr::rename("icd10_code" = "code")
+          standardise_output = TRUE) %>% dplyr::rename("icd10_code" = "code",
+                                                       "icd10_description" = "description")
 
-test3<- dplyr::left_join(test, test2) 
+joined <- dplyr::left_join(mapped_codes, icd10_descriptions)
 
-all_lkps_minus_icd10 <- c("read2", "read3", "icd9") %>%
-        purrr::set_names() %>%
-        purrr::map(~ codemapper::code_descriptions_like(reg_expr = ".*",
-                                                 code_type = .x)) %>% 
-        dplyr::bind_rows() %>% dplyr::rename("read_code" = "code")
+read3_descriptions<-codemapper::lookup_codes(joined$read_code, code_type = "read3") 
 
-dplyr::left_join(test3, all_lkps_minus_icd10) %>% View()
+result <- joined %>% dplyr::mutate(read_description = read3_descriptions$description) %>% dplyr::select(read_code,
+                                                                         read_description,
+                                                                         icd10_code,
+                                                                         icd10_description)
+ 
 ```
 
 
