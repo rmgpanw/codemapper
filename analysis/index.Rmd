@@ -8,7 +8,7 @@ editor_options:
   chunk_output_type: console
 ---
 
-Notes on adapting raw lookup and mapping tables for `codemapper`
+Notes on adapting raw lookup and mapping tables for `codemapper` (see also [pkgdown site](pkgdown_site/index.html))
 
 # Lookup tables
 

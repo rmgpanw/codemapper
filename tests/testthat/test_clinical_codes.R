@@ -382,30 +382,27 @@ test_that("`handle_unrecognised_codes()` produces an error/warning message appro
   # should raise an error
   expect_error(
     handle_unrecognised_codes(unrecognised_codes = "error",
-                              codes = "foo",
-                              code_type = "imaginary_coding_system",
-                              search_col = c("A", "B", "C")),
+                              missing_codes = "foo",
+                              code_type = "imaginary_coding_system"),
     regexp = "The following 1 codes were not found for imaginary_coding_system"
   )
 
   # should raise a warning
   expect_warning(
     handle_unrecognised_codes(unrecognised_codes = "warning",
-                              codes = "foo",
-                               code_type = "imaginary_coding_system",
-                               search_col = c("A", "B", "C")),
+                              missing_codes = "foo",
+                               code_type = "imaginary_coding_system"),
     regexp = "The following 1 codes were not found for imaginary_coding_system"
   )
 
   # should return NULL
   expect_null(
-    handle_unrecognised_codes(unrecognised_codes = "error",
-                              codes = "A",
-                             code_type = "imaginary_coding_system",
-                             search_col = c("A", "B", "C"))
+    handle_unrecognised_codes(
+      unrecognised_codes = "error",
+      missing_codes = character(),
+      code_type = "imaginary_coding_system"
     )
-
-
+  )
 })
 
 # `reformat_icd10_codes()` ------------------------------------------------
@@ -413,7 +410,7 @@ test_that("`reformat_icd10_codes()` returns the expected values for ICD10_CODE t
   expect_equal(
     # warning raised because "I714" not present in ICD10_CODE col of icd10_lkp
     # table
-    reformat_icd10_codes(
+    suppressWarnings(reformat_icd10_codes(
         icd10_codes = c("D75.1",
                         "H40", # will be the same for ICD10_CODE and ALT_CODE
                         "H40.1",
@@ -421,16 +418,15 @@ test_that("`reformat_icd10_codes()` returns the expected values for ICD10_CODE t
                         "M00.0"), # multiple associated ALT_CODEs
         all_lkps_maps = all_lkps_maps,
         input_icd10_format = "ICD10_CODE",
-        output_icd10_format = "ALT_CODE"
-      ),
-    c("D751", "H40", "H401", "I714", "M000")
+        output_icd10_format = "ALT_CODE",
+        unrecognised_codes = "warning"
+      )),
+    c("D751", "H40", "H401", "M000", "M0000", "M0001", "M0002", "M0003", "M0004", "M0005", "M0006", "M0007", "M0008", "M0009")
   )
 })
 
 test_that("`reformat_icd10_codes()` returns the expected values for ALT_CODE to ICD10_CODE", {
   expect_equal(
-    # warning raised because "I714" not present in ICD10_CODE col of icd10_lkp
-    # table
     reformat_icd10_codes(
         icd10_codes = c("D751",
                         "H40", # will be the same for ICD10_CODE and ALT_CODE
@@ -443,7 +439,7 @@ test_that("`reformat_icd10_codes()` returns the expected values for ALT_CODE to 
         input_icd10_format = "ALT_CODE",
         output_icd10_format = "ICD10_CODE"
       ),
-    c("D75.1", "H40", "H40.1", "I71.4", "M00.0", "M00.0", "M00.0")
+    c("D75.1", "H40", "H40.1", "I71.4", "M00.0")
   )
 })
 
@@ -455,57 +451,25 @@ test_that(
         icd10_codes = c("A38"),
         all_lkps_maps = all_lkps_maps,
         input_icd10_format = "ICD10_CODE",
-        output_icd10_format = "ALT_CODE",
-        strip_x = TRUE
-      ),
-      "A38"
-    )
-
-    expect_equal(
-      reformat_icd10_codes(
-        icd10_codes = c("A38"),
-        all_lkps_maps = all_lkps_maps,
-        input_icd10_format = "ICD10_CODE",
-        output_icd10_format = "ALT_CODE",
-        strip_x = FALSE
+        output_icd10_format = "ALT_CODE"
       ),
       "A38X"
     )
   }
 )
 
-# `check_icd10_codes_are_alt_code_format()` -------------------------------
-
 test_that(
-  "`check_icd10_codes_are_alt_code_format()` detects icd-10 codes containing '.' character",
+  "`reformat_icd10_codes()` strips 'X' from undivided 3 character codes in `ALT_CODE` format (when `strip_x` is `TRUE`)",
   {
-    expect_error(
-      check_icd10_codes_are_alt_code_format(c("E10.1", "E11"), all_lkps_maps),
-      regexp = "contain a '.'"
-    )
-
-    expect_true(check_icd10_codes_are_alt_code_format(c("E11"), all_lkps_maps))
-  }
-)
-
-test_that(
-  "`check_icd10_codes_are_alt_code_format()` detects 3 character only icd-10 codes (e.g. Scarlet fever)",
-  {
-    expect_error(
-      check_icd10_codes_are_alt_code_format(c("A38"), all_lkps_maps),
-      regexp = "should end with 'X'"
-    )
-
-    expect_true(check_icd10_codes_are_alt_code_format(c("A38X"), all_lkps_maps))
-  }
-)
-
-test_that(
-  "`check_icd10_codes_are_alt_code_format()` detects non-icd-10 codes",
-  {
-    expect_error(
-      check_icd10_codes_are_alt_code_format(c("C1080"), all_lkps_maps),
-      regexp = "not recognised as ICD-10"
+    expect_equal(
+      reformat_icd10_codes(
+        icd10_codes = c("A38"),
+        all_lkps_maps = all_lkps_maps,
+        input_icd10_format = "ICD10_CODE",
+        output_icd10_format = "ALT_CODE",
+        strip_x = TRUE
+      ),
+      "A38"
     )
   }
 )

@@ -63,6 +63,18 @@ list(
                                              overwrite = TRUE),
              format = "file"),
 
+  tar_target(ALL_LKPS_MAPS_DB_GZIP,
+             {
+               gzip_file_path <- paste0(ALL_LKPS_MAPS_DB, ".gz")
+
+               R.utils::gzip(filename = ALL_LKPS_MAPS_DB,
+                           destname = gzip_file_path,
+                           remove = FALSE)
+
+               gzip_file_path
+             },
+             format = "file"),
+
   # Workflowr Rmds ----------------------------------------------------------
   tar_target(
     INDEX_RMD,
@@ -105,6 +117,19 @@ list(
                )
              },
              format = "file"),
+
+  tar_target(
+    READ3_ICD10_MAPPING_RMD,
+    command = {
+      !!tar_knitr_deps_expr(file.path("analysis", "read3_icd10_mapping.Rmd"))
+      suppressMessages(workflowr::wflow_build(file.path("analysis", "read3_icd10_mapping.Rmd"), verbose = FALSE))
+      c(
+        file.path("analysis", "read3_icd10_mapping.Rmd"),
+        file.path("public", "read3_icd10_mapping.html")
+      )
+    },
+    format = "file"
+  ),
 
   tar_target(
     PHECODES_RMD,

@@ -197,21 +197,18 @@ lookup_codes <- function(codes,
     preferred_description_code <- get_preferred_description_code_for_lookup_sheet(lookup_sheet = lkp_table)
   }
 
-  # check for unrecognised codes
-  handle_unrecognised_codes(
-    unrecognised_codes = unrecognised_codes,
-    codes = codes,
-    code_type = code_type,
-    search_col = all_lkps_maps[[lkp_table]] %>%
-      dplyr::select(.data[[code_col]]) %>%
-      dplyr::collect() %>%
-      dplyr::pull(.data[[code_col]])
-  )
-
   # lookup - filter lookup sheet for codes
   result <- all_lkps_maps[[lkp_table]] %>%
     dplyr::filter(.data[[code_col]] %in% codes) %>%
     dplyr::collect()
+
+  # check for unrecognised codes
+  missing_codes <- subset(codes,
+                          !codes %in% result[[code_col]])
+
+  handle_unrecognised_codes(unrecognised_codes = unrecognised_codes,
+                            missing_codes = missing_codes,
+                            code_type = code_type)
 
   # filter for preferred code descriptions only if requested
   if (!is.null(preferred_description_only)) {
@@ -408,16 +405,6 @@ map_codes <- function(codes,
   to_col <- mapping_params$to_col
   mapping_table <- mapping_params$mapping_table
 
-  handle_unrecognised_codes(
-    unrecognised_codes = unrecognised_codes,
-    codes = codes,
-    code_type = from,
-    search_col = all_lkps_maps[[mapping_table]] %>%
-      dplyr::select(.data[[from_col]]) %>%
-      dplyr::collect() %>%
-      dplyr::pull(.data[[from_col]])
-  )
-
   # determine relevant column indicating whether code description is preferred
   # (for code types with synonymous code descriptions like read 2 and read 3)
   preferred_description_col <- get_value_for_mapping_sheet(mapping_table = mapping_table,
@@ -430,11 +417,17 @@ map_codes <- function(codes,
   }
 
   # do mapping
-
-
   result <- all_lkps_maps[[mapping_table]] %>%
     dplyr::filter(.data[[from_col]] %in% codes) %>%
     dplyr::collect()
+
+  # check for unrecognised codes
+  missing_codes <- subset(codes,
+                          !codes %in% result[[from_col]])
+
+  handle_unrecognised_codes(unrecognised_codes = unrecognised_codes,
+                            missing_codes = missing_codes,
+                            code_type = from)
 
   # return result
   if (nrow(result) == 0) {
@@ -562,30 +555,35 @@ get_mapping_df <- function(from,
 #'
 #' The lookup sheet in
 #' \href{https://biobank.ndph.ox.ac.uk/ukb/refer.cgi?id=592}{UKB resource 592}
-#' for ICD-10 ("icd10_lkp") has a column called "ALT_CODE", which is an
+#' for ICD-10 ("icd10_lkp") has a column called `ALT_CODE`, which is an
 #' alternative format for ICD-10 codes. This is the format used in the mapping
 #' sheets for this resource, as well as in
 #' \href{https://biobank.ndph.ox.ac.uk/ukb/field.cgi?id=41270}{Field ID 41270}.
-#' This function converts from one format to the other.
+#' *Note however that in contrast to the ICD10 lookup and mapping sheets,
+#' undivided 3 character codes do not have an 'X' appended in the UK Biobank
+#' dataset*. This function converts from one format to the other, with the
+#' option to strip the final 'X' from undivided 3 character codes if converting
+#' to `ALT_CODE` format.
 #'
 #' @param icd10_codes character vector of ICD-10 codes
 #' @param input_icd10_format character. Must be either "ICD10_CODE" or
 #'   "ALT_CODE".
 #' @param output_icd10_format character. Must be either "ICD10_CODE" or
 #'   "ALT_CODE".
-#' @param strip_x logical. If \code{TRUE}, any 3 character ICD10 codes in
-#'   'ALT_CODE' format with no children (e.g. 'A38X', Scarlet fever) will have
-#'   the last 'X' removed. Default value is \code{FALSE}.
 #' @inheritParams codes_starting_with
+#' @inheritParams lookup_codes
+#' @param strip_x If `TRUE` and converting to `ALT_CODE` format, 'X' is removed
+#'   from the end of undivided 3 character codes (default is `FALSE`).
 #'
 #' @return character vector of ICD-10 codes, reformatted as specified by
 #'   \code{output_icd10_format}.
 #' @export
 #' @family Clinical code lookups and mappings
 reformat_icd10_codes <- function(icd10_codes,
-                                 all_lkps_maps,
+                                 all_lkps_maps = "all_lkps_maps.db",
                                  input_icd10_format = "ICD10_CODE",
                                  output_icd10_format = "ALT_CODE",
+                                 unrecognised_codes = "error",
                                  strip_x = FALSE) {
   # validate args
   match.arg(arg = input_icd10_format,
@@ -598,121 +596,83 @@ reformat_icd10_codes <- function(icd10_codes,
   assertthat::assert_that(input_icd10_format != output_icd10_format,
                           msg = "Error for `reformat_icd10_codes()`! Input and output icd10 formats cannot be the same")
 
-  # TO DELETE reformat icd10 codes
-  # result <- all_lkps_maps$icd10_lkp %>%
-  #   dplyr::filter(.data[[input_icd10_format]] %in% icd10_codes) %>%
-  #   dplyr::collect()
-
-  icd10_lkp <- all_lkps_maps$icd10_lkp %>%
-    dplyr::collect()
-
-    # some ICD10_CODE values have multiple associated ALT_CODEs - the ALT_CODEs
-    # include modifiers 4 and 5. (e.g. ICD-10 codes M00, M77, M07, M72, M65, S52
-    # or S72). Need to take only ony ALT_CODE in these cases (slice(1L) takes
-    # the first of each group, which should be the ALT_CODE without any
-    # modifiers)
-
-    # this is not the case the other way around (ALT_CODE to ICD10_CODE),
-    # however running this step does not prolong the function time significantly
-
-    # note, there are a couple of NA values as the last line of the icd10_lkp
-    # sheet contains a statement re permissions
-    icd10_lkp <- icd10_lkp %>%
-      dplyr::filter(!is.na(.data[[input_icd10_format]])) %>%
-      dplyr::group_by(.data[[input_icd10_format]]) %>%
-      dplyr::slice(1L) %>%
-      dplyr::ungroup()
-
-  if (strip_x) {
-    icd10_lkp <- strip_x_from_alt_icd10(df = icd10_lkp,
-                           alt_icd10_code_col = "ALT_CODE")
+  if (strip_x & (output_icd10_format == "ICD10_CODE")) {
+    stop("`strip_x` can only be `TRUE` if `output_icd10_format` is 'ALT_CODE'")
   }
 
-  dict <- icd10_lkp[[output_icd10_format]]
-  names(dict) <- icd10_lkp[[input_icd10_format]]
+  # connect to database file path
+  if (is.character(all_lkps_maps)) {
+    con <- check_all_lkps_maps_path(all_lkps_maps)
+    all_lkps_maps <- ukbwranglr::db_tables_to_list(con)
+    on.exit(DBI::dbDisconnect(con))
+  }
 
-  result <- ukbwranglr:::revalue_vector(icd10_codes,
-                 dict = dict,
-                 default_value = NULL,
-                 suppress_warnings = TRUE)
+  validate_all_lkps_maps()
 
-  # TO DELETE
-  # result <- result %>%
-  #   .[[output_icd10_format]] %>%
-  #   unique()
-
-  if (rlang::is_empty(result)) {
-    warning("Warning! `reformat_icd10_codes()` found no icd10 code matches. Returning NULL")
-    return(NULL)
-  } else(
-    return(result)
-  )
-}
-
-check_icd10_codes_are_alt_code_format <- function(icd10_codes,
-                                                  all_lkps_maps,
-                                                  check_3_char_codes_ending_X = TRUE) {
-  icd10_lkp <- all_lkps_maps$icd10_lkp %>%
+  icd10_mapping_df <- all_lkps_maps$icd10_lkp %>%
+    dplyr::filter(.data[[input_icd10_format]] %in% icd10_codes) %>%
+    dplyr::select(tidyselect::all_of(c(
+      "ICD10_CODE",
+      "ALT_CODE"
+    ))) %>%
     dplyr::collect()
 
-  # check if there are any codes that should end with 'X' in ALT_CODE format (e.g. Scarlet fever, "A38X")
-  if (check_3_char_codes_ending_X) {
-    icd10_format_3_char_codes <- icd10_lkp %>%
-      dplyr::filter(stringr::str_detect(.data[["ALT_CODE"]],
-                                        pattern = "X$")) %>%
-      dplyr::pull(.data[["ICD10_CODE"]])
+  # handle any unrecognised codes
+  missing_codes <- subset(icd10_codes,
+                          !icd10_codes %in% icd10_mapping_df[[input_icd10_format]])
 
-    icd10_codes_3_char_codes <- subset(icd10_codes,
-                                       icd10_codes %in% icd10_format_3_char_codes)
+  handle_unrecognised_codes(unrecognised_codes = unrecognised_codes,
+                            missing_codes = missing_codes,
+                            code_type = input_icd10_format)
 
-    assertthat::assert_that(
-      length(icd10_codes_3_char_codes) == 0,
-      msg = paste0(
-        "The following ",
-        length(icd10_codes_3_char_codes),
-        " 3 character ICD-10 codes should end with 'X'. Try converting to 'ALT_CODE' format with `reformat_icd10_codes` and `strip_x = FALSE`. Codes to review: ",
-        stringr::str_c(icd10_codes_3_char_codes,
-                       sep = "",
-                       collapse = ", ")
-      )
+    # Note: some ICD10_CODE values have multiple associated ALT_CODEs - these
+    # include a modifier description in `MODIFIER_5` (e.g. ICD-10 codes M00,
+    # M77, M07, M72, M65, S52 or S72). The number of output codes may therefore
+    # be larger/smaller than the input number. Raise informative message if this
+    # is is the case.
+
+  non_unique_icd10_codes <- icd10_mapping_df %>%
+    dplyr::count(.data[["ICD10_CODE"]]) %>%
+    dplyr::filter(.data[["n"]] > 1) %>%
+    dplyr::pull(.data[["ICD10_CODE"]])
+
+  if (length(non_unique_icd10_codes) > 0) {
+    input_icd10_not_1_to_1_mapping <- icd10_mapping_df %>%
+      dplyr::filter(.data[["ICD10_CODE"]] %in% non_unique_icd10_codes) %>%
+      dplyr::pull(.data[[input_icd10_format]]) %>%
+      unique()
+
+    more_or_fewer_returned_codes <- ifelse(input_icd10_format == "ICD10_CODE",
+                                        yes = "*more*",
+                                        no = "*fewer*")
+
+    message(
+      "The following ",
+      length(input_icd10_not_1_to_1_mapping),
+      " input ICD10 codes do not have a 1-to-1 mapping: '",
+      stringr::str_c(
+        input_icd10_not_1_to_1_mapping,
+        sep = "",
+        collapse = "', '"
+      ),
+      "'. There will therefore be ",
+      more_or_fewer_returned_codes,
+      " output than input codes"
     )
   }
 
-  # by this point, all ICD10 codes should be ALT_CODE format. Check all codes exist
-  unrecognised_icd10_codes <- subset(icd10_codes,
-                                     !icd10_codes %in% icd10_lkp$ALT_CODE)
+  # get requested icd10 format
+  result <- unique(icd10_mapping_df[[output_icd10_format]])
 
-  if (length(unrecognised_icd10_codes) > 0) {
-    error_message <- paste0("Error! ",
-                            length(unrecognised_icd10_codes),
-                            " codes are not recognised as ICD-10 in ALT_CODE format: ",
-                            stringr::str_c(unrecognised_icd10_codes,
-                                           sep = "",
-                                           collapse = ", "))
-
-    # basic test - if `icd10_codes` contains '.', then it may be an ICD10 code,
-    # but not in ALT_CODE format
-    codes_with_dot <- subset(
-      unrecognised_icd10_codes,
-      stringr::str_detect(unrecognised_icd10_codes,
-                          pattern = "\\.")
-    )
-
-    if (length(codes_with_dot) > 0) {
-      error_message <- paste0(error_message,
-                              " .\n",
-                              length(codes_with_dot),
-                              " codes contain a '.'. If definitely ICD-10, try converting these to 'ALT_CODE' format with `reformat_icd10_codes`: ",
-                              stringr::str_c(codes_with_dot,
-                                             sep = "",
-                                             collapse = ", "))
+  # optionally remove appended 'X' for undivided 3 character codes in `ALT_CODE` format
+  if (strip_x & (output_icd10_format == "ALT_CODE")) {
+    message("Removing 'X' from any undivided 3 character ICD10 codes")
+      result <- stringr::str_remove(result,
+                                    "X$")
     }
 
-    stop(error_message)
-  }
-
-  # ...if all checks pass
-  invisible(TRUE)
+  # return result
+  return(result)
 }
 
 # PRIVATE FUNCTIONS -------------------------------------------------------
@@ -845,29 +805,24 @@ get_preferred_description_code_for_lookup_sheet <- function(lookup_sheet) {
 
 #' Helper function - raise error or warning if unrecognised codes are present
 #'
-#' Raises a warning if searched codes do not exist for a clinical code system.
+#' Raises an error or warning for unrecognised codes.
 #'
 #' @param unrecognised_codes Either 'error' or 'warning'. Determines how to
 #'   handle unrecognised codes
-#' @param codes character vector. The codes being searched for.
-#' @param code_type character. Type of code
-#' @param search_col character vector. The column of codes (e.g. read2, ICD etc)
-#'   being searched in.
+#' @param missing_codes character vector of unrecognised codes.
+#' @param code_type The type of clinical coding system
 #'
-#' @return informative warning message, or nothing
+#' @return Called for side effects.
 #' @noRd
 #' @family Clinical code lookups and mappings
 handle_unrecognised_codes <-
   function(unrecognised_codes,
-           codes,
-           code_type,
-           search_col) {
+           missing_codes,
+           code_type) {
     match.arg(unrecognised_codes,
               choices = c("error", "warning"))
 
-    if (any(!codes %in% search_col)) {
-      missing_codes <- unique(subset(codes, !codes %in% search_col))
-
+    if (length(missing_codes) > 0) {
       missing_codes_message <- paste0(
         "The following ",
         length(missing_codes),
@@ -962,39 +917,26 @@ standardise_output_fn <- function(df, lkp_table, code_col, description_col, code
   names(df)[which(names(df) == code_col)] <- "code"
   names(df)[which(names(df) == description_col)] <- "description"
 
-  # ICD-10 has a modifier column e.g. "E10" = "Type 1 diabetes mellitus",
-  # whereas "E10.0" = "Type 1 diabetes mellitus with coma". "With coma" is
-  # contained in the modifier columns "MODIFIER-4". See 'S27' for an example
-  # code where additional description is contained in the "MODIFER-5" column.
-  # The returned "description" column from `standardise_output == TRUE`
+  # Some ICD-10 descriptions include a modifier e.g. "E10" = "Type 1 diabetes
+  # mellitus", whereas "E10.0" = "Type 1 diabetes mellitus with coma". "With
+  # coma" is contained in the modifier columns "MODIFIER-4". See 'S27' for an
+  # example code where additional description is contained in the "MODIFER-5"
+  # column. The returned "description" column from `standardise_output == TRUE`
   # therefore combines the 'DESCRIPTION' column with one of these 2 columns
-  # (whichever is not NA).
+  # (whichever is not NA). There are no codes with a modifier description in
+  # both "MODIFIER_4" and "MODIFIER_5".
 
-  # Also, remove "."
   if (lkp_table == "icd10_lkp") {
     df$description <- dplyr::case_when(
       !is.na(df$MODIFIER_4) ~ paste(df$description, df$MODIFIER_4),
       !is.na(df$MODIFIER_5) ~ paste(df$description, df$MODIFIER_5),
       TRUE ~ df$description
     )
-
-    df <- strip_x_from_alt_icd10(df = df,
-                                 alt_icd10_code_col = "code")
   }
 
   # return code, description and code_type cols only
   df <- df[c("code", "description")]
   df[["code_type"]] <- code_type
-
-  return(df)
-}
-
-strip_x_from_alt_icd10 <- function(df,
-                                   alt_icd10_code_col) {
-  # used for 3 character ICD10 codes in 'AlT_CODE' format, which end with 'X' if there are no children codes
-  df[[alt_icd10_code_col]] <-
-    stringr::str_remove(df[[alt_icd10_code_col]],
-                        "X$")
 
   return(df)
 }

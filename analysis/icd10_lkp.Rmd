@@ -1,5 +1,5 @@
 ---
-title: "ICD-10 lookup table"
+title: "ICD10 lookup table"
 author: "A Warwick and CY Ung"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
 output: 
@@ -28,24 +28,115 @@ tar_load(all_lkps_maps_raw)
 
 ## codemapper tldr
 
-- remove x(?)
+- In UK Biobank data, ICD10 codes are recorded in the `ALT_CODE` format, *however an 'X' filler is not appended for codes where the 3 character category is undivided*. For example, the ICD10 code for Scarlet fever, `A38`, is recorded as `A38X` under `ALT_CODE` in the ICD10 lookup table, but recorded as `A38` in UK Biobank data.
 
-# `ICD10_CODE` and `ALT-CODE` formats
+# ICD10 formats: `ICD10_CODE` and `ALT-CODE`
 
-ICD-10 codes are recorded in 2 formats: `ICD10_CODE` and `ALT-CODE`. UK Biobank [resource 592](https://biobank.ndph.ox.ac.uk/ukb/refer.cgi?id=592) states:
+ICD10 codes are recorded in 2 formats in UK Biobank [resource 592](https://biobank.ndph.ox.ac.uk/ukb/refer.cgi?id=592) `ICD10_CODE` and `ALT_CODE`. The documentation states:
 
 ```
-- CODE = ICD10 code
-- ALT-CODE = This form strips the decimal point from the code and appends the filler X where the 3 character category is undivided. 
+- ICD10_CODE = ICD10 code
+- ALT_CODE = This form strips the decimal point from the code and appends the filler X where the 3 character category is undivided. 
 ```
 
-Other differences:
+> In UK Biobank data, ICD10 codes are recorded in the `ALT_CODE` format, *however an 'X' filler is not appended for codes where the 3 character category is undivided*. For example, the ICD10 code for Scarlet fever, `A38`, is recorded as `A38X` under `ALT_CODE` in the ICD10 lookup table, but recorded as `A38` in UK Biobank data:
 
-- MODIFIER_5: number added to ALT_CODE. Note M45.X does not have M45X equivalent (only M45X0-9), but S27.5 does have S275 equivalent
+```{r}
+all_lkps_maps_raw$icd10_lkp %>% 
+  filter(ICD10_CODE == "A38") %>% 
+  select(ICD10_CODE:DESCRIPTION) %>% 
+  knitr::kable()
+```
 
-How does codemapper deal with 'X' (cf mapping sheets)
+A full list of undivided 3 character ICD10 codes is listed below:
 
-# TODO
+```{r}
+alt_code_ends_x <- all_lkps_maps_raw$icd10_lkp %>% 
+  filter(str_detect(ALT_CODE,
+             ".X$"))
+
+alt_code_ends_x %>% 
+  reactable(filterable = TRUE,
+            resizable = TRUE,
+            searchable = TRUE,
+            showPageSizeOptions = TRUE,
+            pageSizeOptions = c(5, 10, 25, 50, 100, 200),
+            paginationType = "jump",
+            defaultPageSize = 5)
+```
+
+While some ICD10 codes end with 'X' (e.g. `M45.X`), only undivided 3 character codes end with 'X' in `ALT_CODE` format:
+
+```{r}
+alt_code_ends_x %>% 
+  mutate(ICD10_CODE_length = str_length(ICD10_CODE)) %>% 
+  count(ICD10_CODE_length, 
+        name = "n_ALT_CODEs_ending_with_X") %>% 
+  knitr::kable()
+```
+
+There are also some other differences between the `ICD10_CODE` and `ALT_CODE` formats. In some cases, the same `ICD10_CODE` can have multiple descriptions that are differentiated by `MODIFIER_5`. For example, `S27.9` describes 'Injury unspecified intrathoracic organ', which can be further modified as follows:
+
+```{r}
+all_lkps_maps_raw$icd10_lkp %>% 
+  filter(ICD10_CODE == "S27.9") %>% 
+  select(ICD10_CODE:MODIFIER_5) %>% 
+  knitr::kable()
+```
+
+Simply removing the '.' from `ICD10-CODE` will not capture all codes in these cases. Note also that in some cases, removing the '.' will not capture any codes used inn UK Biobank: 
+
+```{r}
+all_lkps_maps_raw$icd10_lkp %>% 
+  filter(ICD10_CODE == "M45.X") %>% 
+  select(ICD10_CODE:MODIFIER_5) %>% 
+  knitr::kable()
+```
+
+The number of ICD10 codes with multiple descriptions is summarised by the following table. Note that these all have a `MODIFIER_5` description.
+
+```{r}
+n_non_unique_icd10_code_df <- all_lkps_maps_raw$icd10_lkp %>% 
+  group_by(ICD10_CODE) %>% 
+  summarise(n = n(),
+         n_MODIFIER_5_not_na = sum(!is.na(MODIFIER_5)),
+         n_MODIFIER_4_not_na = sum(!is.na(MODIFIER_4))) %>% 
+  filter(n > 1) %>% 
+  # select(ICD10_CODE:MODIFIER_5,
+  #        contains("not_na")) %>% 
+  arrange(n_MODIFIER_5_not_na)
+
+list(
+  n_non_unique_icd10_code = nrow(n_non_unique_icd10_code_df),
+  n_with_modifier_5 = sum(n_non_unique_icd10_code_df$n_MODIFIER_5_not_na > 0),
+  n_with_modifier_4 = sum(n_non_unique_icd10_code_df$n_MODIFIER_4_not_na > 0)
+) %>% 
+  as_tibble() %>% 
+  knitr::kable()
+```
+
+ICD10 codes with `MODIFIER_4` descriptions are differentiated by their 4th digit. For example:
+
+```{r}
+all_lkps_maps_raw$icd10_lkp %>% 
+  filter(str_detect(ICD10_CODE,
+                    "^E10")) %>% 
+  select(ICD10_CODE:MODIFIER_5) %>% 
+  knitr::kable()
+```
+
+```{r}
+# check there are no icd10 codes with values in both the modifier 4 and 5 cols
+n_icd10_codes_with_both_modifier_4_and_5 <- all_lkps_maps_raw$icd10_lkp %>% 
+  filter(!is.na(MODIFIER_4) & !is.na(MODIFIER_5)) %>% 
+  nrow()
+
+assertthat::are_equal(n_icd10_codes_with_both_modifier_4_and_5, 0)
+```
+
+Note, there are no ICD10 codes with values for both `MODIFIER_4` AND `MODIFIER_5`.
+
+# Miscellaneous
 
 ```
 - USAGE = Dagger / Asterisk indication
@@ -63,55 +154,3 @@ C00.0 External upper lip
 C00.1 External lower lip
 C00.2 External lip, unspecified
 ```
-
-```{r}
-n_icd10_ends_x <- all_lkps_maps_raw$icd10_lkp %>% 
-  filter(str_detect(ALT_CODE,
-             ".X$")) %>% 
-  nrow()
-```
-
-For `r n_icd10_ends_x` codes where the 3 character category is undivided, 'X' is appended in the `ALT_CODE` column. These are listed below:
-
-```{r}
-all_lkps_maps_raw$icd10_lkp %>% 
-  filter(str_detect(ALT_CODE,
-             ".X$")) %>% 
-  reactable(filterable = TRUE,
-            resizable = TRUE,
-            searchable = TRUE,
-            showPageSizeOptions = TRUE,
-            pageSizeOptions = c(5, 10, 25, 50, 100, 200),
-            paginationType = "jump",
-            defaultPageSize = 5)
-```
-
-UK Biobank ICD-10 codes are recorded as per the `ALT_CODE` format, but does ***not*** append 'X' for these undivided 3 character category codes. 
-
-The 'X' is therefore removed when looking up codes from the `icd_10` lookup sheet with argument `standardise_output = TRUE`. However, the 'X' is retained in the `icd10_lkp` sheet `ALT_CODE` column.
-
-```{r}
-# make sure that only 3 character ICD10 codes have an ALT_CODE ending with X
-lengths_ICD10_CODE_ALT_ends_X <- all_lkps_maps_raw$icd10_lkp %>% 
-  filter(str_detect(ALT_CODE,
-             ".X$")) %>% 
-  mutate(length_ICD10_CODE = str_length(ICD10_CODE)) %>% 
-  pull(length_ICD10_CODE) %>% 
-  unique()
-
-assertthat::are_equal(lengths_ICD10_CODE_ALT_ends_X,
-                      3)
-```
-
-```{r}
-# check there are no icd10 codes with values in both the modifier 4 and 5 cols
-n_icd10_codes_with_both_modifier_4_and_5 <- all_lkps_maps_raw$icd10_lkp %>% 
-  filter(!is.na(MODIFIER_4) & !is.na(MODIFIER_5)) %>% 
-  nrow()
-
-assertthat::are_equal(n_icd10_codes_with_both_modifier_4_and_5, 0)
-```
-
-There are no ICD-10 codes with values for both `MODIFIER_4` AND `MODIFIER_5`.
-
-Examples of codes with modifiers: `E10` and `I70.0`. For the latter, note that `I70.0` in `ICD10_CODE` format can have (i) no modifier (ii) 'without gangrene' modifier, or (iii) 'with gangrene' modifier. In `ALT_CODE` format, these appear as `I700`, `I7000` and `I7001` respectively.
