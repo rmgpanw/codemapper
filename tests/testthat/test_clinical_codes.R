@@ -141,8 +141,8 @@ test_that(
                 from = "read2",
                 to = "read3",
                 all_lkps_maps = all_lkps_maps,
-                quiet = FALSE),
-      regexp = "Warning! The following codes were not found for read2: 'foo', 'bar'",
+                unrecognised_codes = "warning"),
+      regexp = "The following 2 codes were not found for read2: 'foo', 'bar'",
       fixed = TRUE
     )
   }
@@ -156,7 +156,7 @@ test_that(
                 from = "read2",
                 to = "read3",
                 all_lkps_maps = all_lkps_maps,
-                quiet = FALSE,
+                unrecognised_codes = "error",
                 codes_only = TRUE,
                 standardise_output = FALSE),
       "X40J4"
@@ -168,7 +168,7 @@ test_that(
                      from = "read2",
                      to = "read3",
                      all_lkps_maps = all_lkps_maps,
-                     quiet = FALSE,
+                     unrecognised_codes = "error",
                      codes_only = FALSE,
                      preferred_description_only = FALSE,
                      standardise_output = FALSE)),
@@ -184,7 +184,7 @@ test_that(
         from = "read2",
         to = "read3",
         all_lkps_maps = all_lkps_maps,
-        quiet = FALSE,
+        unrecognised_codes = "error",
         codes_only = FALSE,
         preferred_description_only = TRUE,
         standardise_output = FALSE
@@ -203,7 +203,7 @@ test_that(
         from = "read2",
         to = "read3",
         all_lkps_maps = all_lkps_maps,
-        quiet = FALSE,
+        unrecognised_codes = "error",
         codes_only = FALSE,
         preferred_description_only = TRUE,
         standardise_output = TRUE
@@ -220,7 +220,7 @@ test_that("`map_codes()` works as expected for mapping icd10 to icd9 codes (thes
     from = "icd10",
     to = "icd9",
     all_lkps_maps = all_lkps_maps,
-    quiet = FALSE,
+    unrecognised_codes = "error",
     codes_only = FALSE,
     preferred_description_only = TRUE,
     standardise_output = TRUE
@@ -235,7 +235,7 @@ test_that("`map_codes()` works when mapping icd9 to icd10", {
       from = "icd9",
       to = "icd10",
       all_lkps_maps = all_lkps_maps,
-      quiet = FALSE,
+      unrecognised_codes = "error",
       codes_only = FALSE,
       preferred_description_only = TRUE,
       standardise_output = TRUE
@@ -375,20 +375,32 @@ test_that(
   }
 )
 
-# `warning_if_codes_not_found()` ------------------------------------------
+# `handle_unrecognised_codes()` ------------------------------------------
 
-test_that("`warning_if_codes_not_found()` produces a waring message appropriately", {
+test_that("`handle_unrecognised_codes()` produces an error/warning message appropriately", {
+
+  # should raise an error
+  expect_error(
+    handle_unrecognised_codes(unrecognised_codes = "error",
+                              codes = "foo",
+                              code_type = "imaginary_coding_system",
+                              search_col = c("A", "B", "C")),
+    regexp = "The following 1 codes were not found for imaginary_coding_system"
+  )
+
   # should raise a warning
   expect_warning(
-    warning_if_codes_not_found(codes = "foo",
+    handle_unrecognised_codes(unrecognised_codes = "warning",
+                              codes = "foo",
                                code_type = "imaginary_coding_system",
                                search_col = c("A", "B", "C")),
-    regexp = "Warning! The following codes were not found for imaginary_coding_system"
+    regexp = "The following 1 codes were not found for imaginary_coding_system"
   )
 
   # should return NULL
   expect_null(
-    warning_if_codes_not_found(codes = "A",
+    handle_unrecognised_codes(unrecognised_codes = "error",
+                              codes = "A",
                              code_type = "imaginary_coding_system",
                              search_col = c("A", "B", "C"))
     )

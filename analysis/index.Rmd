@@ -8,14 +8,18 @@ editor_options:
   chunk_output_type: console
 ---
 
-- [Reformat `all_lkps_maps`](reformat_all_lkps_maps.html)
-- [Using `codemapper` functions](clinical_codes_lkps_and_mappings.html)
-- [Phecodes](phecodes.html)
-
 Notes on adapting raw lookup and mapping tables for `codemapper`
 
 # Lookup tables
 
+-   [ICD-10 lookup table](icd10_lkp.html)
+
 # Mapping tables
 
 -   [Read 3 to ICD-10](read3_icd10_mapping.html)
+
+# Work in progress
+
+- [Reformat `all_lkps_maps`](reformat_all_lkps_maps.html)
+- [Using `codemapper` functions](clinical_codes_lkps_and_mappings.html)
+- [Phecodes](phecodes.html)

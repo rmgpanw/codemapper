@@ -28,8 +28,6 @@
 #' @param codes_only bool. If \code{TRUE}, return a character vector of
 #'   \emph{unique} codes. If \code{FALSE} (default), return a data frame of all
 #'   results including code descriptions (useful for manual validation).
-#' @param quiet bool. Warning message if any of \code{codes} are not found for
-#'   the supplied \code{code_type}.
 #' @param preferred_description_only bool. Return only preferred descriptions
 #'   for clinical codes with synonyms. Default value is \code{TRUE}.
 #'
@@ -41,8 +39,7 @@ codes_starting_with <- function(codes,
                             all_lkps_maps = "all_lkps_maps.db",
                             codes_only = FALSE,
                             preferred_description_only = TRUE,
-                            standardise_output = TRUE,
-                            quiet = FALSE) {
+                            standardise_output = TRUE) {
   # validate args
   match.arg(arg = code_type,
             choices = CODE_TYPE_TO_LKP_TABLE_MAP$code)
@@ -112,18 +109,7 @@ codes_starting_with <- function(codes,
     return(NULL)
   }
 
-  # TO DELETE - no need for warning message when searching for codes starting with <x>
-
   else {
-    #   if (quiet == FALSE) {
-    #     warning_if_codes_not_found(
-    #       codes = codes_raw,
-    #       code_type = code_type,
-    #       search_col = all_lkps_maps[[lkp_table]] %>%
-    #         dplyr::collect() %>%
-    #         .[[code_col]]
-    #     )
-    #   }
 
     # return either unique codes only, or df including code descriptions
     if (codes_only) {
@@ -140,7 +126,7 @@ codes_starting_with <- function(codes,
           code_type = code_type,
           all_lkps_maps = all_lkps_maps,
           preferred_description_only = preferred_description_only,
-          quiet = quiet
+          unrecognised_codes = "error"
         )
       )
     } else {
@@ -159,6 +145,8 @@ codes_starting_with <- function(codes,
 #'   returns a data frame with all columns for the relevant lookup sheet from
 #'   (\href{https://biobank.ndph.ox.ac.uk/ukb/refer.cgi?id=592}{UK Biobank
 #'   resource 592}).
+#' @param unrecognised_codes Either 'error' (default) or 'warning'. If any input
+#'   `codes` are unrecognised, then either an error or warning will be raised.
 #' @inheritParams codes_starting_with
 #'
 #' @return data frame
@@ -169,7 +157,7 @@ lookup_codes <- function(codes,
                          all_lkps_maps = "all_lkps_maps.db",
                          preferred_description_only = TRUE,
                          standardise_output = TRUE,
-                         quiet = FALSE) {
+                         unrecognised_codes = "error") {
   # validate args
   assertthat::assert_that(
     is.character(codes),
@@ -209,6 +197,17 @@ lookup_codes <- function(codes,
     preferred_description_code <- get_preferred_description_code_for_lookup_sheet(lookup_sheet = lkp_table)
   }
 
+  # check for unrecognised codes
+  handle_unrecognised_codes(
+    unrecognised_codes = unrecognised_codes,
+    codes = codes,
+    code_type = code_type,
+    search_col = all_lkps_maps[[lkp_table]] %>%
+      dplyr::select(.data[[code_col]]) %>%
+      dplyr::collect() %>%
+      dplyr::pull(.data[[code_col]])
+  )
+
   # lookup - filter lookup sheet for codes
   result <- all_lkps_maps[[lkp_table]] %>%
     dplyr::filter(.data[[code_col]] %in% codes) %>%
@@ -237,16 +236,6 @@ lookup_codes <- function(codes,
     message("No matching codes found. Returning `NULL`")
     return(NULL)
   } else {
-    # warning if any `codes` not present in `from_col`
-    # TODO - warning if duplicates found in `codes`
-    if (quiet == FALSE) {
-      warning_if_codes_not_found(codes = codes,
-                                 code_type = code_type,
-                                 search_col = all_lkps_maps[[lkp_table]] %>%
-                                   dplyr::collect() %>%
-                                   .[[code_col]])
-    }
-
     # return either unique codes only, or df including code descriptions
     return(result)
   }
@@ -362,8 +351,9 @@ code_descriptions_like <- function(reg_expr,
 #' @param codes A character vector of codes to be mapped.
 #' @param from Coding system that \code{codes} belong to.
 #' @param to Coding system to map \code{codes} to.
-#' @param quiet bool. Warning message if any of \code{codes} are not found for
-#'   the code type being mapped from.
+#' @param unrecognised_codes Either 'error' (default) or 'warning'. If any input
+#'   `codes` are unrecognised for the coding system being mapped from, then
+#'   either an error or warning will be raised.
 #' @param preferred_description_only bool. Return only preferred descriptions
 #'   for clinical codes with synonyms. Can only be \code{TRUE} if
 #'   \code{standardise_output} is also \code{TRUE}. Default value is
@@ -379,7 +369,7 @@ map_codes <- function(codes,
                       all_lkps_maps = "all_lkps_maps.db",
                       codes_only = FALSE,
                       standardise_output = TRUE,
-                      quiet = FALSE,
+                      unrecognised_codes = "error",
                       preferred_description_only = NULL) {
   # validate args
   ## connect to database file path
@@ -418,6 +408,16 @@ map_codes <- function(codes,
   to_col <- mapping_params$to_col
   mapping_table <- mapping_params$mapping_table
 
+  handle_unrecognised_codes(
+    unrecognised_codes = unrecognised_codes,
+    codes = codes,
+    code_type = from,
+    search_col = all_lkps_maps[[mapping_table]] %>%
+      dplyr::select(.data[[from_col]]) %>%
+      dplyr::collect() %>%
+      dplyr::pull(.data[[from_col]])
+  )
+
   # determine relevant column indicating whether code description is preferred
   # (for code types with synonymous code descriptions like read 2 and read 3)
   preferred_description_col <- get_value_for_mapping_sheet(mapping_table = mapping_table,
@@ -441,17 +441,6 @@ map_codes <- function(codes,
     message("\nNo codes found after mapping. Returning `NULL`")
     return(NULL)
   } else {
-    # warning if any `codes` not present in `from_col`
-    # TODO - warning if duplicates found in `codes`
-    if (quiet == FALSE) {
-      warning_if_codes_not_found(
-        codes = codes,
-        code_type = from,
-        search_col = all_lkps_maps[[mapping_table]] %>%
-          dplyr::collect() %>%
-          .[[from_col]]
-      )
-    }
 
     # return either unique codes only, or df including descriptions
     if (codes_only) {
@@ -471,7 +460,7 @@ map_codes <- function(codes,
           code_type = to,
           all_lkps_maps = all_lkps_maps,
           preferred_description_only = preferred_description_only,
-          quiet = quiet
+          unrecognised_codes = "error"
         )
       )
     } else {
@@ -854,10 +843,12 @@ get_preferred_description_code_for_lookup_sheet <- function(lookup_sheet) {
     .[["preferred_code"]]
 }
 
-#' Helper function - generate warning message
+#' Helper function - raise error or warning if unrecognised codes are present
 #'
 #' Raises a warning if searched codes do not exist for a clinical code system.
 #'
+#' @param unrecognised_codes Either 'error' or 'warning'. Determines how to
+#'   handle unrecognised codes
 #' @param codes character vector. The codes being searched for.
 #' @param code_type character. Type of code
 #' @param search_col character vector. The column of codes (e.g. read2, ICD etc)
@@ -866,82 +857,32 @@ get_preferred_description_code_for_lookup_sheet <- function(lookup_sheet) {
 #' @return informative warning message, or nothing
 #' @noRd
 #' @family Clinical code lookups and mappings
-warning_if_codes_not_found <-
-  function(codes, code_type, search_col) {
+handle_unrecognised_codes <-
+  function(unrecognised_codes,
+           codes,
+           code_type,
+           search_col) {
+    match.arg(unrecognised_codes,
+              choices = c("error", "warning"))
+
     if (any(!codes %in% search_col)) {
       missing_codes <- unique(subset(codes, !codes %in% search_col))
 
-      warning(
-        "Warning! The following codes were not found for ",
+      missing_codes_message <- paste0(
+        "The following ",
+        length(missing_codes),
+        " codes were not found for ",
         code_type,
         ": '",
         stringr::str_c(missing_codes, sep = "", collapse = "', '"),
         "'"
       )
+
+      switch(unrecognised_codes,
+             error = stop(missing_codes_message),
+             warning = warning(missing_codes_message))
     }
   }
-
-
-# TO DELETE?
-
-# Helper function for exploring and mapping clinical codes
-# return_results_clinical_codes <- function(result,
-#                                           all_lkps_maps,
-#                                           code_col,
-#                                           codes_only,
-#                                           standardise_output,
-#                                           quiet,
-#                                           preferred_description_only) {
-#   if (nrow(result) == 0) {
-#     message("\nNo codes found after mapping. Returning `NULL`")
-#     return(NULL)
-#   } else {
-#     # warning if any `codes` not present in `from_col`
-#     # TODO - warning if duplicates found in `codes`
-#     if (quiet == FALSE) {
-#       warning_if_codes_not_found(
-#         codes = codes,
-#         code_type = from,
-#         search_col = all_lkps_maps[[mapping_table]] %>%
-#           dplyr::collect() %>%
-#           .[[from_col]]
-#       )
-#     }
-#
-#     # return either unique codes only, or df including descriptions
-#     if (codes_only) {
-#       result <- unique(result[[to_col]])
-#
-#       return(result)
-#     } else if (standardise_output) {
-#       # Note, not all mapping sheets in UKB resource 592 contain descriptions
-#       # (e.g. 'read_v2_icd9'). Therefore need to use `lookup_codes` if
-#       # `standardise_output` is `TRUE`
-#       if (to == "icd10") {
-#         codes <-
-#           reformat_icd10_codes(
-#             icd10_codes = unique(result[[to_col]]),
-#             all_lkps_maps = all_lkps_maps,
-#             input_icd10_format = "ALT_CODE",
-#             output_icd10_format = "ICD10_CODE"
-#           )
-#       } else {
-#         codes <- unique(result[[to_col]])
-#       }
-#       return(
-#         lookup_codes(
-#           codes = codes,
-#           code_type = to,
-#           all_lkps_maps = all_lkps_maps,
-#           preferred_description_only = preferred_description_only,
-#           quiet = quiet
-#         )
-#       )
-#     } else {
-#       return(result)
-#     }
-#   }
-# }
 
 #' Reformat a dataframe of clinical codes to work with
 #' \code{\link[ukbwranglr]{extract_phenotypes}}
@@ -969,10 +910,9 @@ reformat_standardised_codelist <- function(standardised_codelist,
                                            disease_category,
                                            author) {
   # validate args
-  assertthat::assert_that(any(
-    class(standardised_codelist) %in% c("data.frame", "data.table", "tbl_df")
-  ),
-  msg = "Error! standardised_codelist must be a data frame (or tibble/data table")
+  assertthat::assert_that(is.data.frame(standardised_codelist),
+                          msg = "Error! standardised_codelist must be a data frame (or tibble/data table")
+
   assertthat::is.string(code_type)
   assertthat::is.string(disease)
   assertthat::is.string(disease_category)
