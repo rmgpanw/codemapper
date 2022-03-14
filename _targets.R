@@ -119,6 +119,19 @@ list(
              format = "file"),
 
   tar_target(
+    ICD10_LKP_RMD,
+    command = {
+      !!tar_knitr_deps_expr(file.path("analysis", "icd10_lkp.Rmd"))
+      suppressMessages(workflowr::wflow_build(file.path("analysis", "icd10_lkp.Rmd"), verbose = FALSE))
+      c(
+        file.path("analysis", "icd10_lkp.Rmd"),
+        file.path("public", "icd10_lkp.html")
+      )
+    },
+    format = "file"
+  ),
+
+  tar_target(
     READ3_ICD10_MAPPING_RMD,
     command = {
       !!tar_knitr_deps_expr(file.path("analysis", "read3_icd10_mapping.Rmd"))

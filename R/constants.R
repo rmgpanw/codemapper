@@ -82,19 +82,19 @@ CODE_TYPE_TO_LKP_TABLE_MAP <- tibble::tribble(
 # 'from_col' and 'to_col': the columns to use when mapping
 # Note, `preferred_synonym_col` and `preferred_code` refer to `to_col`
 CLINICAL_CODE_MAPPINGS_MAP <- tibble::tribble(
-  ~ from, ~ to, ~ mapping_table, ~ from_col, ~ to_col, ~ preferred_synonym_col, ~ preferred_code,
-  "icd9", "icd10", "icd9_icd10", "ICD9", "ICD10", NA, NA,
-  "read2_drugs", "bnf", "read_v2_drugs_bnf", "read_code", "bnf_code", NA, NA,
-  "read2", "icd9", "read_v2_icd9", "read_code", "icd9_code", NA, NA,
-  "read2", "icd10", "read_v2_icd10", "read_code", "icd10_code", NA, NA,
-  "read2", "opcs4", "read_v2_opcs4", "read_code", "opcs_4.2_code", NA, NA,
-  "read2", "read3", "read_v2_read_ctv3", "READV2_CODE", "READV3_CODE", "TERMV3_TYPE", "P",
-  "read3", "icd9", "read_ctv3_icd9", "read_code", "icd9_code", NA, NA,
-  "read3", "icd10", "read_ctv3_icd10", "read_code", "icd10_code", NA, NA,
-  "read3", "opcs4", "read_ctv3_opcs4", "read_code", "opcs4_code", NA, NA,
-  "read3", "read2", "read_ctv3_read_v2", "READV3_CODE", "READV2_CODE", "TERMV2_TYPE", "P",
-  "bnf", "dmd", "bnf_dmd", "bnf_code", "snomed_code", NA, NA,
-  "read3", "sct", "read_ctv3_sct", "CTV3_CONCEPTID", "SCT_CONCEPTID", NA, NA,
-  "icd10", "phecode", "icd10_phecode", "ALT_CODE", "PHECODE", NA, NA,
-  "icd9", "phecode", "icd9_phecode", "icd9", "phecode", NA, NA
+  ~ from, ~ to, ~ mapping_table, ~ from_col, ~ to_col, ~ preferred_synonym_col, ~ preferred_code, ~ mapping_status_col, ~ assured_mapping_status_codes,
+  "icd9", "icd10", "icd9_icd10", "ICD9", "ICD10", NA, NA, NA, NA,
+  "read2_drugs", "bnf", "read_v2_drugs_bnf", "read_code", "bnf_code", NA, NA, NA, NA,
+  "read2", "icd9", "read_v2_icd9", "read_code", "icd9_code", NA, NA, NA, NA,
+  "read2", "icd10", "read_v2_icd10", "read_code", "icd10_code", NA, NA, NA, NA,
+  "read2", "opcs4", "read_v2_opcs4", "read_code", "opcs_4.2_code", NA, NA, NA, NA,
+  "read2", "read3", "read_v2_read_ctv3", "READV2_CODE", "READV3_CODE", "TERMV3_TYPE", "P", NA, NA,
+  "read3", "icd9", "read_ctv3_icd9", "read_code", "icd9_code", NA, NA, NA, NA,
+  "read3", "icd10", "read_ctv3_icd10", "read_code", "icd10_code", NA, NA, NA, NA,
+  "read3", "opcs4", "read_ctv3_opcs4", "read_code", "opcs4_code", NA, NA, NA, NA,
+  "read3", "read2", "read_ctv3_read_v2", "READV3_CODE", "READV2_CODE", "TERMV2_TYPE", "P", NA, NA,
+  "bnf", "dmd", "bnf_dmd", "bnf_code", "snomed_code", NA, NA, NA, NA,
+  "read3", "sct", "read_ctv3_sct", "CTV3_CONCEPTID", "SCT_CONCEPTID", NA, NA, NA, NA,
+  "icd10", "phecode", "icd10_phecode", "ALT_CODE", "PHECODE", NA, NA, NA, NA,
+  "icd9", "phecode", "icd9_phecode", "icd9", "phecode", NA, NA, NA, NA
 )

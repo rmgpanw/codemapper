@@ -941,6 +941,102 @@ standardise_output_fn <- function(df, lkp_table, code_col, description_col, code
   return(df)
 }
 
+#' Filter lookup/mapping table for specified values in columns
+#'
+#' Helper function that enables filtering of lookup/mapping tables for certain
+#' values (e.g. filter a mapping table for only 'exact' code mappings). Uses an
+#' `%in%` filter statement. Note that no error is currently raised if attempting
+#' to filter for any values that do not exist in `df` columns.
+#'
+#' @param df Lookup or mapping df to be filtered
+#' @param df_name Name of lookup/mapping df (e.g. "icd10_lkp").
+#' @param col_filters Either `NULL` (default, in which case `df` is returned
+#'   unchanged) or a named list. First level names are names of lookup/mapping
+#'   tables. Each item is also a named list of vectors. Columns in `df` that
+#'   match the list names are filtered for values in the corresponding vectors
+#'   (using `%in%`). An error is raised
+#'
+#' @return A dataframe
+#' @noRd
+filter_cols <- function(df,
+                        df_name,
+                        col_filters = NULL) {
+  # if `col_filters` is `NULL`, return `df` unchanged (exit early)
+  if (is.null(col_filters)) {
+    return(df)
+  }
+
+  # get relevant columns/filter values from `col_filters`
+  col_filters <- col_filters[[df_name]]
+
+  # if `df_name` is not present in `names(col_filters)` return `df` unchanged (exit early)
+  if (is.null(col_filters)) {
+    return(df)
+  }
+
+  # check that selected element of `col_filters` is a named list of vectors
+  stopifnot(is.list(col_filters))
+  if (is.null(names(col_filters))) {
+    stop("Each item in `col_filters` must be named")
+  }
+
+  if (any(names(col_filters) == "")) {
+    stop("Each item in `col_filters` must be named")
+  }
+
+  col_filters_item_types <- col_filters %>%
+    purrr::map_lgl(is.vector)
+
+  assertthat::assert_that(sum(!col_filters_item_types) == 0,
+                          msg = "Each item in `col_filters` must be a vector")
+
+  # check that column names exist in df. Raise error is any are unrecognised.
+  unrecognised_colnames <- subset(names(col_filters),
+                                  !names(col_filters) %in% names(df))
+
+  if (length(unrecognised_colnames) > 0) {
+    stop(
+      paste0(
+        "The following ",
+        length(unrecognised_colnames),
+        " column names specified by `col_filters` are not present in `",
+        df_name,
+        "`: ",
+        stringr::str_c(unrecognised_colnames,
+                       sep = "",
+                       collapse = ", ")
+      ),
+      call. = FALSE
+    )
+  }
+
+  # filter `df` for specified values in each column listed by `col_filters`
+  for (i in names(col_filters)) {
+    col_filter_values <- col_filters[[i]]
+
+    # check that type matches
+    df_col_class <- class(df[[i]])
+    col_filter_values_class <- class(col_filter_values)
+    assertthat::assert_that(df_col_class %in% col_filter_values_class,
+                            msg = paste0("Cannot filter column ",
+                                         i,
+                                         " in ",
+                                         df_name,
+                                         " as classes do not match. Column `",
+                                         i,
+                                         "`` is class ",
+                                         df_col_class,
+                                         ", but filter values specified by `col_filters` are of class ",
+                                         col_filter_values_class))
+
+    df <- df %>%
+      dplyr::filter(.data[[i]] %in% !!col_filter_values)
+  }
+
+  # return result
+  return(df)
+}
+
 ## Validation helpers ---------------------------
 
 check_mapping_args <- function(from,

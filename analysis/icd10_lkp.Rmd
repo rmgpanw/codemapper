@@ -5,12 +5,13 @@ date: "`r format(Sys.time(), '%d %B, %Y')`"
 output: 
   workflowr::wflow_html:
     toc: true
+    code_folding: hide
 editor_options:
   chunk_output_type: console
 ---
 
 ```{r global-options, echo=FALSE}
-knitr::opts_chunk$set(warning=FALSE, message=FALSE, echo=FALSE)
+knitr::opts_chunk$set(warning=FALSE, message=FALSE)
 ```
 
 ```{r}
@@ -24,11 +25,11 @@ library(codemapper)
 tar_load(all_lkps_maps_raw)
 ```
 
-# Overview
+# Summary
 
-## codemapper tldr
-
-- In UK Biobank data, ICD10 codes are recorded in the `ALT_CODE` format, *however an 'X' filler is not appended for codes where the 3 character category is undivided*. For example, the ICD10 code for Scarlet fever, `A38`, is recorded as `A38X` under `ALT_CODE` in the ICD10 lookup table, but recorded as `A38` in UK Biobank data.
+- The ICD10 lookup table includes 2 formats: `ICD10_CODE` and `ALT_CODE`.
+- In UK Biobank data, ICD10 codes are recorded in the `ALT_CODE` format (details below), *however an 'X' filler is not appended for codes where the 3 character category is undivided*. For example, the ICD10 code for Scarlet fever, `A38`, is recorded as `A38X` under `ALT_CODE` in the ICD10 lookup table, but recorded as `A38` in UK Biobank data.
+- Some ICD10 codes have a one-to-many relationship from `ICD10_CODE` to `ALT_CODE` format. These codes have modifier descriptions under the `MODIFIER_5` column.
 
 # ICD10 formats: `ICD10_CODE` and `ALT-CODE`
 
@@ -125,7 +126,7 @@ all_lkps_maps_raw$icd10_lkp %>%
   knitr::kable()
 ```
 
-```{r}
+```{r include=FALSE}
 # check there are no icd10 codes with values in both the modifier 4 and 5 cols
 n_icd10_codes_with_both_modifier_4_and_5 <- all_lkps_maps_raw$icd10_lkp %>% 
   filter(!is.na(MODIFIER_4) & !is.na(MODIFIER_5)) %>% 
@@ -136,7 +137,64 @@ assertthat::are_equal(n_icd10_codes_with_both_modifier_4_and_5, 0)
 
 Note, there are no ICD10 codes with values for both `MODIFIER_4` AND `MODIFIER_5`.
 
-# Miscellaneous
+# Dagger/asterisk pairs
+
+Some ICD10 codes use the 'dagger' and 'asterisk' system, where the primary code for the underlying disease is the 'dagger' and an optional additional code for the manifestation is marked with an 'asterisk'. See this [online article] for a fuller discussion
+
+Dagger and asterisk codes are labelled `DAGGER` and `ASTERIS` For dagger coAsterisks codes are under `QUALIFIER` column
+
+Below: `USAGE_UK == 1`. Here, `USAGE` is labelled `DAGGER` and the corresponding asterisk term(s) are shown under `QUALIFIERS`. Note that other dagger and asterisk code types have different `USAGE_UK` categories (see https://silo.tips/download/icd-10-4-th-edition-codes-and-titles-and-metadata-file-specification (update this link to direct link to ICD10 metadata file))
+
+```{r}
+# mapping df for ICD10_CODE:ALT_CODE format
+icd10_alt_code_map <- all_lkps_maps_raw$icd10_lkp %>% 
+  select(ICD10_CODE, ALT_CODE)
+
+# df of dagger/asterisk pairs
+icd10_dagger_asterisk_pairs <- all_lkps_maps_raw$icd10_lkp %>%
+  filter(!is.na(QUALIFIERS)) 
+
+all_lkps_maps_raw$icd10_lkp %>% 
+  filter(USAGE %in% c("DAGGER", "ASTERIS"))
+
+# get descriptions for these codes
+icd10_dagger_asterisk_descriptions <- icd10_dagger_asterisk_pairs %>%
+  select(ICD10_CODE,
+         QUALIFIERS) %>%
+  map(reformat_icd10_codes) %>%
+  map( ~ lookup_codes(codes = .x, code_type = "icd10")) %>% 
+  bind_rows() %>% 
+  left_join(icd10_alt_code_map,
+            by = c("code" = "ALT_CODE")) %>% 
+  select(description,
+         ALT_CODE = code,
+         ICD10_CODE)
+
+# append descriptions to df of dagger/asterisk pairs
+icd10_dagger_asterisk_pairs %>% 
+  left_join(icd10_dagger_asterisk_descriptions %>% 
+               select(-ICD10_CODE),
+             by = c("ALT_CODE" = "ALT_CODE")) %>% 
+  left_join(icd10_dagger_asterisk_descriptions %>% 
+               select(-ALT_CODE),
+             by = c("QUALIFIERS" = "ICD10_CODE"),   
+             suffix = c("_ALT_CODE", "_QUALIFIERS")) %>% 
+  select(ICD10_CODE,
+         ALT_CODE,
+         description_ALT_CODE,
+         DESCRIPTION,
+         USAGE,
+         QUALIFIERS,
+         description_QUALIFIERS,
+         USAGE_UK) %>% 
+  reactable(filterable = TRUE,
+            searchable = TRUE,
+            showPageSizeOptions = TRUE)
+```
+
+# Other details
+
+More documentation from UK Biobank [resource 592](https://biobank.ndph.ox.ac.uk/ukb/refer.cgi?id=592):
 
 ```
 - USAGE = Dagger / Asterisk indication
@@ -153,4 +211,38 @@ C00 Malignant neoplasm of lip
 C00.0 External upper lip
 C00.1 External lower lip
 C00.2 External lip, unspecified
+```
+
+## USAGE_UK {.tabset .tabset-pills}
+
+Describes different combinations of `USAGE`, `MODIFIER_4`, `MODIFIER_5` and `QUALIFIERS`. See https://silo.tips/download/icd-10-4-th-edition-codes-and-titles-and-metadata-file-specification (TODO - replace with direct link to ICD10 metadata file) 
+
+```{r results='asis'}
+all_lkps_maps_raw$icd10_lkp %>%
+  filter(!is.na(USAGE_UK)) %>%
+  pull(USAGE_UK) %>%
+  unique() %>%
+  set_names() %>%
+  map( ~ all_lkps_maps_raw$icd10_lkp %>%
+         filter(USAGE_UK == .x) %>%
+         head()) %>%
+  iwalk( ~ {
+    cat("### USAGE_UK ", .y, "\n\n")
+    
+    flextable::flextable(.x) %>%
+      flextable::autofit() %>%
+      flextable::flextable_to_rmd()
+    
+    cat("\n\n")
+  })
+```
+
+## GENDER_MASK, MIN_AGE, MAX_AGE, TREE_DESCRIPTION (examples)
+
+```{r}
+all_lkps_maps_raw$icd10_lkp %>% 
+  filter(!is.na(GENDER_MASK)) %>% 
+  head() %>% 
+  flextable::flextable() %>% 
+  flextable::flextable_to_rmd()
 ```

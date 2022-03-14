@@ -473,3 +473,98 @@ test_that(
     )
   }
 )
+
+# `filter_cols` -----------------------------------------------------------
+
+test_that("`filter_cols` filters columns as expected (or returns `df` unchanged, if appropriate)", {
+  # change `Species` column to class 'character'
+  iris_chr <- iris %>%
+    dplyr::mutate(Species = as.character(Species))
+
+  # check returns expected number of rows for single/multiple column/value combinations
+  expect_equal(nrow(
+    filter_cols(
+      df = iris_chr,
+      df_name = "iris",
+      col_filters = list(iris = list(Species = c("setosa")))
+    )
+  ),
+  50)
+
+  expect_equal(nrow(
+    filter_cols(
+      df = iris_chr,
+      df_name = "iris",
+      col_filters = list(iris = list(Species = c("setosa", "virginica")))
+    )
+  ),
+  100)
+
+  expect_equal(nrow(filter_cols(
+    df = iris_chr,
+    df_name = "iris",
+    col_filters = list(iris = list(
+      Species = c("setosa", "virginica"),
+      Petal.Width = c(0.5, 0.6)
+    ))
+  )),
+  2)
+
+  # returns df unchanged if `df_name` not in `names(col_filters)`
+  expect_equal(nrow(filter_cols(
+    df = iris_chr,
+    df_name = "iris",
+    col_filters = list(FOO = list(
+      Species = c("setosa", "virginica"),
+      Petal.Width = c(0.5, 0.6)
+    ))
+  )),
+  150)
+})
+
+test_that("`filter_cols` raises error if `col_filters` includes unrecognised/missing column names", {
+  # unrecognised column name
+  expect_error(
+    filter_cols(
+      df = iris,
+      df_name = "iris",
+      col_filters = list(iris = list(Species2 = c("setosa"),
+                                     Foo = c("setosa")))
+    ),
+    "are not present in"
+  )
+
+  # unnamed item in `col_filters`
+  expect_error(
+    filter_cols(
+      df = iris,
+      df_name = "iris",
+      col_filters = list(iris = list(Species2 = c("setosa"),
+                                     c("setosa")))
+    ),
+    "must be named"
+  )
+})
+
+test_that("`filter_cols` raises error if `col_filters` contains items that are not vectors", {
+  # unrecognised column name
+  expect_error(
+    filter_cols(
+      df = iris,
+      df_name = "iris",
+      col_filters = list(iris = list(Species = iris))
+    ),
+    "Each item in `col_filters` must be a vector"
+  )
+})
+
+test_that("`filter_cols` raises error if class of df column to be filtered does not match class of supplied filter values", {
+  expect_error(
+    filter_cols(
+      df = iris,
+      df_name = "iris",
+      col_filters = list(iris = list(Species = c("setosa")))
+    ),
+    "classes do not match"
+  )
+})
