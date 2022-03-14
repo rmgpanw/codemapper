@@ -11,8 +11,9 @@ map_codes(
   all_lkps_maps = "all_lkps_maps.db",
   codes_only = FALSE,
   standardise_output = TRUE,
-  quiet = FALSE,
-  preferred_description_only = NULL
+  unrecognised_codes = "error",
+  preferred_description_only = NULL,
+  col_filters = default_col_filters()
 )
 }
 \arguments{
@@ -38,13 +39,21 @@ returns a data frame with all columns for the relevant lookup sheet from
 (\href{https://biobank.ndph.ox.ac.uk/ukb/refer.cgi?id=592}{UK Biobank
 resource 592}).}
 
-\item{quiet}{bool. Warning message if any of \code{codes} are not found for
-the code type being mapped from.}
+\item{unrecognised_codes}{Either 'error' (default) or 'warning'. If any input
+\code{codes} are unrecognised for the coding system being mapped from, then
+either an error or warning will be raised.}
 
 \item{preferred_description_only}{bool. Return only preferred descriptions
 for clinical codes with synonyms. Can only be \code{TRUE} if
 \code{standardise_output} is also \code{TRUE}. Default value is
 \code{NULL}.}
+
+\item{col_filters}{A named list where each name in the list refers to the
+name of a lookup or mapping table. Each item is also a named list, where
+the names refer to column names in the corresponding table, and the items
+are vectors of values to filter for. For example, \verb{list(my_lookup_table = list(colA = c("A", "B"))} will result in \code{my_lookup_table} being filtered
+for rows where \code{colA} is either 'A' or 'B'. Uses \code{default_col_filters()} by
+default. Set to \code{NULL} to remove all filters.}
 }
 \description{
 Uses the code mapping file provided by UK Biobank
@@ -58,6 +67,7 @@ The values for arguments \code{from} and \code{to} must be one of
 \seealso{
 Other Clinical code lookups and mappings: 
 \code{\link{codes_starting_with}()},
+\code{\link{default_col_filters}()},
 \code{\link{get_mapping_df}()},
 \code{\link{lookup_codes}()},
 \code{\link{reformat_icd10_codes}()}

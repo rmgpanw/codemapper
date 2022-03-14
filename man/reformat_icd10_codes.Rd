@@ -6,9 +6,10 @@
 \usage{
 reformat_icd10_codes(
   icd10_codes,
-  all_lkps_maps,
+  all_lkps_maps = "all_lkps_maps.db",
   input_icd10_format = "ICD10_CODE",
   output_icd10_format = "ALT_CODE",
+  unrecognised_codes = "error",
   strip_x = FALSE
 )
 }
@@ -27,9 +28,11 @@ containing these tables (see also \code{\link[=build_all_lkps_maps]{build_all_lk
 \item{output_icd10_format}{character. Must be either "ICD10_CODE" or
 "ALT_CODE".}
 
-\item{strip_x}{logical. If \code{TRUE}, any 3 character ICD10 codes in
-'ALT_CODE' format with no children (e.g. 'A38X', Scarlet fever) will have
-the last 'X' removed. Default value is \code{FALSE}.}
+\item{unrecognised_codes}{Either 'error' (default) or 'warning'. If any input
+\code{codes} are unrecognised, then either an error or warning will be raised.}
+
+\item{strip_x}{If \code{TRUE} and converting to \code{ALT_CODE} format, 'X' is removed
+from the end of undivided 3 character codes (default is \code{FALSE}).}
 }
 \value{
 character vector of ICD-10 codes, reformatted as specified by
@@ -38,15 +41,20 @@ character vector of ICD-10 codes, reformatted as specified by
 \description{
 The lookup sheet in
 \href{https://biobank.ndph.ox.ac.uk/ukb/refer.cgi?id=592}{UKB resource 592}
-for ICD-10 ("icd10_lkp") has a column called "ALT_CODE", which is an
+for ICD-10 ("icd10_lkp") has a column called \code{ALT_CODE}, which is an
 alternative format for ICD-10 codes. This is the format used in the mapping
 sheets for this resource, as well as in
 \href{https://biobank.ndph.ox.ac.uk/ukb/field.cgi?id=41270}{Field ID 41270}.
-This function converts from one format to the other.
+\emph{Note however that in contrast to the ICD10 lookup and mapping sheets,
+undivided 3 character codes do not have an 'X' appended in the UK Biobank
+dataset}. This function converts from one format to the other, with the
+option to strip the final 'X' from undivided 3 character codes if converting
+to \code{ALT_CODE} format.
 }
 \seealso{
 Other Clinical code lookups and mappings: 
 \code{\link{codes_starting_with}()},
+\code{\link{default_col_filters}()},
 \code{\link{get_mapping_df}()},
 \code{\link{lookup_codes}()},
 \code{\link{map_codes}()}

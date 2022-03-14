@@ -568,3 +568,39 @@ test_that("`filter_cols` raises error if class of df column to be filtered does 
     "classes do not match"
   )
 })
+
+# `rm_footer_rows_all_lkps_maps()` ----------------------------------------
+
+# TODO - convert to function, add test
+df <- data.frame(
+  col1 = c("A", NA, "C", "D", NA, "Footer text"),
+  col2 = c(letters[1:4], NA, NA)
+)
+
+# get colname for column 1
+col1_colname <- names(df)[1]
+
+# get rowids for rows with `NA` in column 1
+df <- df %>%
+  tibble::rowid_to_column() %>%
+  dplyr::mutate("rowid" = ifelse(
+    !is.na(.data[[col1_colname]]),
+    yes = NA_character_,
+    no = rowid
+  ))
+
+# get max rowid (for rows with `NA` in column 1)
+max_rowid <- max(df$rowid, na.rm = TRUE)
+
+# convert rowid col to NA, unless rowid equals `max_rowid`. Then, fill
+# downwards, and remove these rows
+df %>%
+  dplyr::mutate("rowid" = ifelse(
+    .data[["rowid"]] == !!max_rowid,
+    yes = .data[["rowid"]],
+    no = NA_character_
+  )) %>%
+  tidyr::fill(.data[["rowid"]],
+              .direction = "down") %>%
+  dplyr::filter(is.na(.data[["rowid"]])) %>%
+  dplyr::select(-.data[["rowid"]])

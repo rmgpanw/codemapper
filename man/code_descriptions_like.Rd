@@ -11,7 +11,8 @@ code_descriptions_like(
   ignore_case = TRUE,
   codes_only = FALSE,
   preferred_description_only = TRUE,
-  standardise_output = TRUE
+  standardise_output = TRUE,
+  col_filters = default_col_filters()
 )
 }
 \arguments{
@@ -41,6 +42,13 @@ frame with columns named 'code', 'description' and 'code_type'. Otherwise
 returns a data frame with all columns for the relevant lookup sheet from
 (\href{https://biobank.ndph.ox.ac.uk/ukb/refer.cgi?id=592}{UK Biobank
 resource 592}).}
+
+\item{col_filters}{A named list where each name in the list refers to the
+name of a lookup or mapping table. Each item is also a named list, where
+the names refer to column names in the corresponding table, and the items
+are vectors of values to filter for. For example, \verb{list(my_lookup_table = list(colA = c("A", "B"))} will result in \code{my_lookup_table} being filtered
+for rows where \code{colA} is either 'A' or 'B'. Uses \code{default_col_filters()} by
+default. Set to \code{NULL} to remove all filters.}
 }
 \value{
 data frame by default, or a character vector of codes if

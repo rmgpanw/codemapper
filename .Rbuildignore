@@ -18,3 +18,4 @@
 ^_gitlab-ci\.dependencies\.R$
 ^_pkgdown\.yml$
 ^temp_tests/*
+^all_lkps_maps\.db\.gz$

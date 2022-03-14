@@ -9,7 +9,8 @@ get_mapping_df(
   to,
   all_lkps_maps = "all_lkps_maps.db",
   rename_from_to = NULL,
-  na.rm = TRUE
+  na.rm = TRUE,
+  col_filters = default_col_filters()
 )
 }
 \arguments{
@@ -30,6 +31,13 @@ and 'to' columns. For example \code{c(from = "original_codes", to = "new_codes")
 \item{na.rm}{If \code{TRUE} (default), remove any rows with \code{NA} from the returned
 mapping data frame. The mapping tables may sometimes include \code{NA} values to
 explicitly show which 'from' codes have not been mapped.}
+
+\item{col_filters}{A named list where each name in the list refers to the
+name of a lookup or mapping table. Each item is also a named list, where
+the names refer to column names in the corresponding table, and the items
+are vectors of values to filter for. For example, \verb{list(my_lookup_table = list(colA = c("A", "B"))} will result in \code{my_lookup_table} being filtered
+for rows where \code{colA} is either 'A' or 'B'. Uses \code{default_col_filters()} by
+default. Set to \code{NULL} to remove all filters.}
 }
 \value{
 A data frame with column names 'from' and 'to'.
@@ -41,6 +49,7 @@ coding systems.
 \seealso{
 Other Clinical code lookups and mappings: 
 \code{\link{codes_starting_with}()},
+\code{\link{default_col_filters}()},
 \code{\link{lookup_codes}()},
 \code{\link{map_codes}()},
 \code{\link{reformat_icd10_codes}()}

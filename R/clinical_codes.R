@@ -735,7 +735,7 @@ reformat_icd10_codes <- function(icd10_codes,
 #'
 #' @family Clinical code lookups and mappings
 #' @examples
-#' default_filter_cols()
+#' default_col_filters()
 default_col_filters <- function() {
   list(
     read_ctv3_icd10 = list(

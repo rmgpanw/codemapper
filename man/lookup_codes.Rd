@@ -10,7 +10,8 @@ lookup_codes(
   all_lkps_maps = "all_lkps_maps.db",
   preferred_description_only = TRUE,
   standardise_output = TRUE,
-  quiet = FALSE
+  unrecognised_codes = "error",
+  col_filters = default_col_filters()
 )
 }
 \arguments{
@@ -35,8 +36,15 @@ returns a data frame with all columns for the relevant lookup sheet from
 (\href{https://biobank.ndph.ox.ac.uk/ukb/refer.cgi?id=592}{UK Biobank
 resource 592}).}
 
-\item{quiet}{bool. Warning message if any of \code{codes} are not found for
-the supplied \code{code_type}.}
+\item{unrecognised_codes}{Either 'error' (default) or 'warning'. If any input
+\code{codes} are unrecognised, then either an error or warning will be raised.}
+
+\item{col_filters}{A named list where each name in the list refers to the
+name of a lookup or mapping table. Each item is also a named list, where
+the names refer to column names in the corresponding table, and the items
+are vectors of values to filter for. For example, \verb{list(my_lookup_table = list(colA = c("A", "B"))} will result in \code{my_lookup_table} being filtered
+for rows where \code{colA} is either 'A' or 'B'. Uses \code{default_col_filters()} by
+default. Set to \code{NULL} to remove all filters.}
 }
 \value{
 data frame
@@ -47,6 +55,7 @@ Returns a data frame including descriptions for the codes of interest
 \seealso{
 Other Clinical code lookups and mappings: 
 \code{\link{codes_starting_with}()},
+\code{\link{default_col_filters}()},
 \code{\link{get_mapping_df}()},
 \code{\link{map_codes}()},
 \code{\link{reformat_icd10_codes}()}
