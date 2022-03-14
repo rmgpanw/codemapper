@@ -30,6 +30,13 @@
 #'   results including code descriptions (useful for manual validation).
 #' @param preferred_description_only bool. Return only preferred descriptions
 #'   for clinical codes with synonyms. Default value is \code{TRUE}.
+#' @param col_filters A named list where each name in the list refers to the
+#'   name of a lookup or mapping table. Each item is also a named list, where
+#'   the names refer to column names in the corresponding table, and the items
+#'   are vectors of values to filter for. For example, `list(my_lookup_table =
+#'   list(colA = c("A", "B"))` will result in `my_lookup_table` being filtered
+#'   for rows where `colA` is either 'A' or 'B'. Uses `default_col_filters()` by
+#'   default. Set to `NULL` to remove all filters.
 #'
 #' @inheritParams lookup_codes
 #' @export
@@ -39,7 +46,8 @@ codes_starting_with <- function(codes,
                             all_lkps_maps = "all_lkps_maps.db",
                             codes_only = FALSE,
                             preferred_description_only = TRUE,
-                            standardise_output = TRUE) {
+                            standardise_output = TRUE,
+                            col_filters = default_col_filters()) {
   # validate args
   match.arg(arg = code_type,
             choices = CODE_TYPE_TO_LKP_TABLE_MAP$code)
@@ -96,6 +104,13 @@ codes_starting_with <- function(codes,
     dplyr::filter(stringr::str_detect(.data[[code_col]],
                                       pattern = stringr::regex(codes,
                                                                ignore_case = FALSE)))
+
+  # filter on `filter_cols` parameters
+  if (!is.null(filter_cols)) {
+    result <- filter_cols(df = result,
+                          df_name = lkp_table,
+                          col_filters = col_filters)
+  }
 
   # filter for preferred code descriptions only if requested
   if (preferred_description_only & !is.na(preferred_description_col)) {
@@ -157,7 +172,8 @@ lookup_codes <- function(codes,
                          all_lkps_maps = "all_lkps_maps.db",
                          preferred_description_only = TRUE,
                          standardise_output = TRUE,
-                         unrecognised_codes = "error") {
+                         unrecognised_codes = "error",
+                         col_filters = default_col_filters()) {
   # validate args
   assertthat::assert_that(
     is.character(codes),
@@ -201,6 +217,13 @@ lookup_codes <- function(codes,
   result <- all_lkps_maps[[lkp_table]] %>%
     dplyr::filter(.data[[code_col]] %in% codes) %>%
     dplyr::collect()
+
+  # filter on `filter_cols` parameters
+  if (!is.null(filter_cols)) {
+    result <- filter_cols(df = result,
+                          df_name = lkp_table,
+                          col_filters = col_filters)
+  }
 
   # check for unrecognised codes
   missing_codes <- subset(codes,
@@ -257,7 +280,8 @@ code_descriptions_like <- function(reg_expr,
                                       ignore_case = TRUE,
                                       codes_only = FALSE,
                                       preferred_description_only = TRUE,
-                                      standardise_output = TRUE) {
+                                      standardise_output = TRUE,
+                                   col_filters = default_col_filters()) {
   # validate args
   match.arg(arg = code_type,
             choices = CODE_TYPE_TO_LKP_TABLE_MAP$code)
@@ -299,6 +323,13 @@ code_descriptions_like <- function(reg_expr,
       pattern = stringr::regex(pattern = reg_expr,
                                ignore_case = ignore_case)
     ))
+
+  # filter on `filter_cols` parameters
+  if (!is.null(filter_cols)) {
+    result <- filter_cols(df = result,
+                          df_name = lkp_table,
+                          col_filters = col_filters)
+  }
 
   # filter for preferred code descriptions only if requested
   if (!is.null(preferred_description_only)) {
@@ -367,7 +398,8 @@ map_codes <- function(codes,
                       codes_only = FALSE,
                       standardise_output = TRUE,
                       unrecognised_codes = "error",
-                      preferred_description_only = NULL) {
+                      preferred_description_only = NULL,
+                      col_filters = default_col_filters()) {
   # validate args
   ## connect to database file path
   if (is.character(all_lkps_maps)) {
@@ -420,6 +452,13 @@ map_codes <- function(codes,
   result <- all_lkps_maps[[mapping_table]] %>%
     dplyr::filter(.data[[from_col]] %in% codes) %>%
     dplyr::collect()
+
+  # filter on `filter_cols` parameters
+  if (!is.null(filter_cols)) {
+    result <- filter_cols(df = result,
+                          df_name = mapping_table,
+                          col_filters = col_filters)
+  }
 
   # check for unrecognised codes
   missing_codes <- subset(codes,
@@ -486,7 +525,8 @@ get_mapping_df <- function(from,
                         to,
                         all_lkps_maps = "all_lkps_maps.db",
                         rename_from_to = NULL,
-                        na.rm = TRUE) {
+                        na.rm = TRUE,
+                        col_filters = default_col_filters()) {
   # validate args
   check_mapping_args(from = from,
                      to = to)
@@ -527,6 +567,13 @@ get_mapping_df <- function(from,
     dplyr::select(tidyselect::all_of(from_to_cols)) %>%
     dplyr::distinct() %>%
     dplyr::collect()
+
+  # filter on `filter_cols` parameters
+  if (!is.null(filter_cols)) {
+    result <- filter_cols(df = result,
+                          df_name = mapping_table,
+                          col_filters = col_filters)
+  }
 
   # remove rows with `NA` values
   if (na.rm) {
@@ -673,6 +720,29 @@ reformat_icd10_codes <- function(icd10_codes,
 
   # return result
   return(result)
+}
+
+#' Default filtering parameters for lookup and mapping tables.
+#'
+#' To be used as `filter_cols` argument in 'Clinical code lookups and mappings'
+#' functions. Returns a named list where each name in the list refers to the
+#' name of a lookup or mapping table. Each item is also a named list, where the
+#' names refer to column names in the corresponding table, and the items are
+#' vectors of values to filter for.
+#'
+#' @return A named list.
+#' @export
+#'
+#' @family Clinical code lookups and mappings
+#' @examples
+#' default_filter_cols()
+default_col_filters <- function() {
+  list(
+    read_ctv3_icd10 = list(
+      mapping_status = c("E", "G", "D"),
+      refine_flag = c("C", "P")
+    )
+  )
 }
 
 # PRIVATE FUNCTIONS -------------------------------------------------------
