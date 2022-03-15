@@ -10,7 +10,7 @@ default_col_filters()
 A named list.
 }
 \description{
-To be used as \code{filter_cols} argument in 'Clinical code lookups and mappings'
+To be used as \code{col_filters} argument in 'Clinical code lookups and mappings'
 functions. Returns a named list where each name in the list refers to the
 name of a lookup or mapping table. Each item is also a named list, where the
 names refer to column names in the corresponding table, and the items are

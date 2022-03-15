@@ -1,7 +1,10 @@
 
 # CONSTANTS ---------------------------------------------------------------
 
-all_lkps_maps <- get_ukb_code_mappings()
+all_lkps_maps <- get_ukb_code_mappings() %>%
+  purrr::map(rm_footer_rows_all_lkps_maps_df) %>%
+  purrr::map(~ tibble::rowid_to_column(.data = .x,
+                                       var = ".rowid"))
 
 # TODO - add tests for ICD10 (A38X, I70)
 
@@ -276,14 +279,14 @@ test_that("`get_mapping_df()` returns the expected output", {
 
   expect_equal(
     read2_icd10_df,
-    tibble::tibble(read2 = "A0...",
-                   icd10 = "A00-A09")
+    tibble::tibble(read2 = "A00..",
+                   icd10 = "A00")
   )
 
   expect_equal(
     read2_icd10_df_renamed,
-    tibble::tibble(from = "A0...",
-                   to = "A00-A09")
+    tibble::tibble(from = "A00..",
+                   to = "A00")
   )
 
   # should be the same as above
@@ -294,8 +297,8 @@ test_that("`get_mapping_df()` returns the expected output", {
 
   expect_equal(
     icd10_read2_df,
-    tibble::tibble(icd10 = "A00-A09",
-                   read2 = "A0...")
+    tibble::tibble(icd10 = "A00",
+                   read2 = "A00..")
   )
 })
 
@@ -569,38 +572,219 @@ test_that("`filter_cols` raises error if class of df column to be filtered does 
   )
 })
 
-# `rm_footer_rows_all_lkps_maps()` ----------------------------------------
+# `rm_footer_rows_all_lkps_maps_df()` ----------------------------------------
 
-# TODO - convert to function, add test
-df <- data.frame(
-  col1 = c("A", NA, "C", "D", NA, "Footer text"),
-  col2 = c(letters[1:4], NA, NA)
-)
+test_that("`rm_footer_rows_all_lkps_maps_df()` removes footer rows as expected", {
+  df <- data.frame(
+    col1 = c("A", NA, "C", "D", NA, "Footer text"),
+    col2 = c(letters[1:4], NA, NA)
+  )
 
-# get colname for column 1
-col1_colname <- names(df)[1]
+  expect_equal(
+    rm_footer_rows_all_lkps_maps_df(df),
+    data.frame(
+      col1 = c("A", NA, "C", "D"),
+      col2 = c(letters[1:4])
+    )
+  )
+})
 
-# get rowids for rows with `NA` in column 1
-df <- df %>%
-  tibble::rowid_to_column() %>%
-  dplyr::mutate("rowid" = ifelse(
-    !is.na(.data[[col1_colname]]),
-    yes = NA_character_,
-    no = rowid
-  ))
 
-# get max rowid (for rows with `NA` in column 1)
-max_rowid <- max(df$rowid, na.rm = TRUE)
+# `get_icd10_code_range()` ------------------------------------------------
 
-# convert rowid col to NA, unless rowid equals `max_rowid`. Then, fill
-# downwards, and remove these rows
-df %>%
-  dplyr::mutate("rowid" = ifelse(
-    .data[["rowid"]] == !!max_rowid,
-    yes = .data[["rowid"]],
-    no = NA_character_
-  )) %>%
-  tidyr::fill(.data[["rowid"]],
-              .direction = "down") %>%
-  dplyr::filter(is.na(.data[["rowid"]])) %>%
-  dplyr::select(-.data[["rowid"]])
+test_that("`get_icd10_code_range()` returns expected codes", {
+
+  # 4 character ICD10 code range
+  expect_equal(
+    get_icd10_code_range(
+      start_icd10_code = "E100",
+      end_icd10_code = "E109",
+      icd10_lkp = all_lkps_maps$icd10_lkp
+    ),
+    c(
+      "E100",
+      "E101",
+      "E102",
+      "E103",
+      "E104",
+      "E105",
+      "E106",
+      "E107",
+      "E108",
+      "E109"
+    )
+  )
+
+  # 'D' appended - expect error
+  expect_error(
+    get_icd10_code_range(
+      start_icd10_code = "A170D",
+      end_icd10_code = "A179D",
+      icd10_lkp = all_lkps_maps$icd10_lkp
+    ),
+    regexp = "were not found for icd10"
+  )
+
+  # 3 character ICD10 code range
+  expect_equal(
+    get_icd10_code_range(
+      start_icd10_code = "A80",
+      end_icd10_code = "A81",
+      icd10_lkp = all_lkps_maps$icd10_lkp
+    ),
+    c(
+      "A80",
+      "A800",
+      "A801",
+      "A802",
+      "A803",
+      "A804",
+      "A809",
+      "A81",
+      "A810",
+      "A811",
+      "A812",
+      "A818",
+      "A819"
+    )
+  )
+
+  # 3 character ICD10 code range, including final 'X' character
+  expect_equal(
+    get_icd10_code_range(
+      start_icd10_code = "A56",
+      end_icd10_code = "A58X",
+      icd10_lkp = all_lkps_maps$icd10_lkp
+    ),
+    c(
+      "A56",
+      "A560",
+      "A561",
+      "A562",
+      "A563",
+      "A564",
+      "A568",
+      "A57X",
+      "A58X"
+    )
+  )
+})
+
+# `reformat_read_v2_icd10()` ------------------------------------------------
+
+test_that("`reformat_read_v2_icd10()` works as expected", {
+  df <- tibble::tribble(
+    ~read_code, ~icd10_code, ~icd10_code_def,
+    "C10E.",     "E100-E109",        "2",
+    "A13..",     "A170D-A179D",      "2",
+    "A00..",     "A00",              "1",
+    "A0221",     "A022D G01XA",      "7",
+    "A13y.",     "A178D",            "8",
+    "A34..",     "J020,A38X",        "3",
+    "A365.",     "A390D G01XA+A392", "15",
+    "A3805",     "A408+U830",        "15",
+    "Cyu8Q",     "E90XA",            "5",
+    "F0073",     "A022D G01XA",      "7"
+  )
+
+  expected_result <- tibble::tribble(
+    ~read_code, ~icd10_code, ~icd10_code_def, ~icd10_dagger_asterisk,
+    "C10E.",      "E100",             "2",                     NA,
+    "C10E.",      "E101",             "2",                     NA,
+    "C10E.",      "E102",             "2",                     NA,
+    "C10E.",      "E103",             "2",                     NA,
+    "C10E.",      "E104",             "2",                     NA,
+    "C10E.",      "E105",             "2",                     NA,
+    "C10E.",      "E106",             "2",                     NA,
+    "C10E.",      "E107",             "2",                     NA,
+    "C10E.",      "E108",             "2",                     NA,
+    "C10E.",      "E109",             "2",                     NA,
+    "A13..",      "A170",             "2",                    "D",
+    "A13..",      "A171",             "2",                    "D",
+    "A13..",      "A178",             "2",                    "D",
+    "A13..",      "A179",             "2",                    "D",
+    "A00..",       "A00",             "1",                     NA,
+    "A0221",      "A022",             "7",                    "D",
+    "A0221",      "G01X",             "7",                    "A",
+    "A13y.",      "A178",             "8",                    "D",
+    "A34..",      "J020",             "3",                     NA,
+    "A34..",      "A38X",             "3",                     NA,
+    "A365.",      "A390",            "15",                    "D",
+    "A365.",      "G01X",            "15",                    "A",
+    "A365.",      "A392",            "15",                     NA,
+    "A3805",      "A408",            "15",                     NA,
+    "A3805",      "U830",            "15",                     NA,
+    "Cyu8Q",      "E90X",             "5",                    "A",
+    "F0073",      "A022",             "7",                    "D",
+    "F0073",      "G01X",             "7",                    "A"
+  )
+
+  expect_equal(reformat_read_v2_icd10(read_v2_icd10 = df,
+                                      icd10_lkp = all_lkps_maps$icd10_lkp),
+               expected_result)
+})
+
+# `rm_or_extract_appended_icd10_dxa()` -----------------------------
+
+test_that("`rm_or_extract_appended_icd10_dxa()` works", {
+  icd10_codes <- c("A00",
+                   "A408",
+                   "A390D",
+                   "A38X",
+                   "G01XA")
+
+  # remove
+  rm_expected_result <- c("A00",
+                          "A408",
+                          "A390",
+                          "A38X",
+                          "G01X")
+
+  rm_expected_result_x_rm <- c("A00",
+                               "A408",
+                               "A390",
+                               "A38",
+                               "G01")
+
+  expect_equal(
+    rm_or_extract_appended_icd10_dxa(icd10_codes),
+    rm_expected_result
+  )
+
+  # remove twice - should return the same result
+  expect_equal(
+    rm_or_extract_appended_icd10_dxa(icd10_codes) %>%
+      rm_or_extract_appended_icd10_dxa(),
+    rm_expected_result
+  )
+
+  # remove 'X'
+  expect_equal(
+    rm_or_extract_appended_icd10_dxa(icd10_codes,
+                                     keep_x = FALSE),
+    rm_expected_result_x_rm
+  )
+
+  # extract
+  expect_equal(
+    rm_or_extract_appended_icd10_dxa(icd10_codes,
+                                         rm_extract = "extract"),
+    c(NA,
+      NA,
+      "D",
+      NA,
+      "A")
+  )
+
+  # extract 'X'
+  expect_equal(
+    rm_or_extract_appended_icd10_dxa(icd10_codes,
+                                     keep_x = FALSE,
+                                     rm_extract = "extract"),
+    c(NA,
+      NA,
+      "D",
+      "X",
+      "XA")
+  )
+})

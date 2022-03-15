@@ -1,4 +1,6 @@
 
+
+
 # OVERVIEW ----------------------------------------------------------------
 
 # Functions to map between different clinical codes e.g. between Read2 and
@@ -42,12 +44,12 @@
 #' @export
 #' @family Clinical code lookups and mappings
 codes_starting_with <- function(codes,
-                            code_type,
-                            all_lkps_maps = "all_lkps_maps.db",
-                            codes_only = FALSE,
-                            preferred_description_only = TRUE,
-                            standardise_output = TRUE,
-                            col_filters = default_col_filters()) {
+                                code_type,
+                                all_lkps_maps = "all_lkps_maps.db",
+                                codes_only = FALSE,
+                                preferred_description_only = TRUE,
+                                standardise_output = TRUE,
+                                col_filters = default_col_filters()) {
   # validate args
   match.arg(arg = code_type,
             choices = CODE_TYPE_TO_LKP_TABLE_MAP$code)
@@ -59,10 +61,8 @@ codes_starting_with <- function(codes,
     on.exit(DBI::dbDisconnect(con))
   }
 
-  assertthat::assert_that(
-    is.character(codes),
-    msg = "Error! `codes` must be a character vector"
-  )
+  assertthat::assert_that(is.character(codes),
+                          msg = "Error! `codes` must be a character vector")
 
   assertthat::assert_that(is.logical(codes_only),
                           msg = "`code_only` must be either 'TRUE' or 'FALSE'")
@@ -88,11 +88,13 @@ codes_starting_with <- function(codes,
 
   # get preferred code, if appropriate
   if (!is.na(preferred_description_col)) {
-    preferred_description_code <- get_preferred_description_code_for_lookup_sheet(lookup_sheet = lkp_table)
+    preferred_description_code <-
+      get_preferred_description_code_for_lookup_sheet(lookup_sheet = lkp_table)
   }
 
   # reformat codes - escape '.', prefix with anchor and append '.*'
-  codes <- stringr::str_replace_all(codes, pattern = "\\.", replacement = "\\\\.")
+  codes <-
+    stringr::str_replace_all(codes, pattern = "\\.", replacement = "\\\\.")
   codes <-  paste0("^", codes, ".*")
 
   # combine into single string, separated by "|"
@@ -105,15 +107,16 @@ codes_starting_with <- function(codes,
                                       pattern = stringr::regex(codes,
                                                                ignore_case = FALSE)))
 
-  # filter on `filter_cols` parameters
-  if (!is.null(filter_cols)) {
+  # filter on `col_filters` parameters
+  if (!is.null(col_filters)) {
     result <- filter_cols(df = result,
                           df_name = lkp_table,
                           col_filters = col_filters)
   }
 
   # filter for preferred code descriptions only if requested
-  if (preferred_description_only & !is.na(preferred_description_col)) {
+  if (preferred_description_only &
+      !is.na(preferred_description_col)) {
     result <- result %>%
       dplyr::filter(.data[[preferred_description_col]] == preferred_description_code)
   }
@@ -125,7 +128,6 @@ codes_starting_with <- function(codes,
   }
 
   else {
-
     # return either unique codes only, or df including code descriptions
     if (codes_only) {
       return(unique(result[[code_col]]))
@@ -175,10 +177,8 @@ lookup_codes <- function(codes,
                          unrecognised_codes = "error",
                          col_filters = default_col_filters()) {
   # validate args
-  assertthat::assert_that(
-    is.character(codes),
-    msg = "Error! `codes` must be a character vector"
-  )
+  assertthat::assert_that(is.character(codes),
+                          msg = "Error! `codes` must be a character vector")
 
   match.arg(arg = code_type,
             choices = CODE_TYPE_TO_LKP_TABLE_MAP$code)
@@ -200,17 +200,20 @@ lookup_codes <- function(codes,
                                        column = "code_col")
 
   # determine description column for lookup sheet
-  description_col <- get_col_for_lookup_sheet(lookup_sheet = lkp_table,
-                                             column = "description_col")
+  description_col <-
+    get_col_for_lookup_sheet(lookup_sheet = lkp_table,
+                             column = "description_col")
 
   # determine relevant column indicating whether code description is preferred
   # (for code types with synonymous code descriptions like read 2 and read 3)
-  preferred_description_col <- get_col_for_lookup_sheet(lookup_sheet = lkp_table,
-                                                        column = "preferred_synonym_col")
+  preferred_description_col <-
+    get_col_for_lookup_sheet(lookup_sheet = lkp_table,
+                             column = "preferred_synonym_col")
 
   # get preferred code, if appropriate
   if (!is.na(preferred_description_col)) {
-    preferred_description_code <- get_preferred_description_code_for_lookup_sheet(lookup_sheet = lkp_table)
+    preferred_description_code <-
+      get_preferred_description_code_for_lookup_sheet(lookup_sheet = lkp_table)
   }
 
   # lookup - filter lookup sheet for codes
@@ -218,20 +221,21 @@ lookup_codes <- function(codes,
     dplyr::filter(.data[[code_col]] %in% codes) %>%
     dplyr::collect()
 
-  # filter on `filter_cols` parameters
-  if (!is.null(filter_cols)) {
+  # filter on `col_filters` parameters
+  if (!is.null(col_filters)) {
     result <- filter_cols(df = result,
                           df_name = lkp_table,
                           col_filters = col_filters)
   }
 
   # check for unrecognised codes
-  missing_codes <- subset(codes,
-                          !codes %in% result[[code_col]])
+  missing_codes <- subset(codes, !codes %in% result[[code_col]])
 
-  handle_unrecognised_codes(unrecognised_codes = unrecognised_codes,
-                            missing_codes = missing_codes,
-                            code_type = code_type)
+  handle_unrecognised_codes(
+    unrecognised_codes = unrecognised_codes,
+    missing_codes = missing_codes,
+    code_type = code_type
+  )
 
   # filter for preferred code descriptions only if requested
   if (!is.null(preferred_description_only)) {
@@ -244,11 +248,13 @@ lookup_codes <- function(codes,
 
   # standardise output if requested
   if (standardise_output) {
-    result <- standardise_output_fn(result,
-                                    lkp_table = lkp_table,
-                                    code_col = code_col,
-                                    description_col = description_col,
-                                    code_type = code_type)
+    result <- standardise_output_fn(
+      result,
+      lkp_table = lkp_table,
+      code_col = code_col,
+      description_col = description_col,
+      code_type = code_type
+    )
   }
 
   # return result
@@ -275,12 +281,12 @@ lookup_codes <- function(codes,
 #'   \code{codes_only} is \code{TRUE}.
 #' @export
 code_descriptions_like <- function(reg_expr,
-                                      code_type,
-                                      all_lkps_maps = "all_lkps_maps.db",
-                                      ignore_case = TRUE,
-                                      codes_only = FALSE,
-                                      preferred_description_only = TRUE,
-                                      standardise_output = TRUE,
+                                   code_type,
+                                   all_lkps_maps = "all_lkps_maps.db",
+                                   ignore_case = TRUE,
+                                   codes_only = FALSE,
+                                   preferred_description_only = TRUE,
+                                   standardise_output = TRUE,
                                    col_filters = default_col_filters()) {
   # validate args
   match.arg(arg = code_type,
@@ -300,19 +306,22 @@ code_descriptions_like <- function(reg_expr,
 
   # determine code and description columns for lookup sheet
   code_col <- get_col_for_lookup_sheet(lookup_sheet = lkp_table,
-                                              column = "code_col")
+                                       column = "code_col")
 
-  description_col <- get_col_for_lookup_sheet(lookup_sheet = lkp_table,
-                                       column = "description_col")
+  description_col <-
+    get_col_for_lookup_sheet(lookup_sheet = lkp_table,
+                             column = "description_col")
 
   # determine relevant column indicating whether code description is preferred
   # (for code types with synonymous code descriptions like read 2 and read 3)
-  preferred_description_col <- get_col_for_lookup_sheet(lookup_sheet = lkp_table,
-                                                        column = "preferred_synonym_col")
+  preferred_description_col <-
+    get_col_for_lookup_sheet(lookup_sheet = lkp_table,
+                             column = "preferred_synonym_col")
 
   # get preferred code, if appropriate
   if (!is.na(preferred_description_col)) {
-    preferred_description_code <- get_preferred_description_code_for_lookup_sheet(lookup_sheet = lkp_table)
+    preferred_description_code <-
+      get_preferred_description_code_for_lookup_sheet(lookup_sheet = lkp_table)
   }
 
   # search for codes
@@ -324,8 +333,8 @@ code_descriptions_like <- function(reg_expr,
                                ignore_case = ignore_case)
     ))
 
-  # filter on `filter_cols` parameters
-  if (!is.null(filter_cols)) {
+  # filter on `col_filters` parameters
+  if (!is.null(col_filters)) {
     result <- filter_cols(df = result,
                           df_name = lkp_table,
                           col_filters = col_filters)
@@ -342,11 +351,13 @@ code_descriptions_like <- function(reg_expr,
 
   # standardise output, if requested
   if (standardise_output) {
-    result <- standardise_output_fn(result,
-                                    lkp_table = lkp_table,
-                                    code_col = code_col,
-                                    description_col = description_col,
-                                    code_type = code_type)
+    result <- standardise_output_fn(
+      result,
+      lkp_table = lkp_table,
+      code_col = code_col,
+      description_col = description_col,
+      code_type = code_type
+    )
 
     code_col <- "code"
   }
@@ -357,9 +368,7 @@ code_descriptions_like <- function(reg_expr,
     return(NULL)
   } else {
     if (codes_only) {
-      return(
-        unique(result[[code_col]])
-      )
+      return(unique(result[[code_col]]))
     } else {
       return(result)
     }
@@ -410,10 +419,8 @@ map_codes <- function(codes,
 
   validate_all_lkps_maps()
 
-  assertthat::assert_that(
-    is.character(codes),
-    msg = "Error! `codes` must be a character vector"
-  )
+  assertthat::assert_that(is.character(codes),
+                          msg = "Error! `codes` must be a character vector")
 
   assertthat::assert_that(is.logical(codes_only),
                           msg = "`code_only` must be either 'TRUE' or 'FALSE'")
@@ -439,13 +446,15 @@ map_codes <- function(codes,
 
   # determine relevant column indicating whether code description is preferred
   # (for code types with synonymous code descriptions like read 2 and read 3)
-  preferred_description_col <- get_value_for_mapping_sheet(mapping_table = mapping_table,
-                                                        value = "preferred_synonym_col")
+  preferred_description_col <-
+    get_value_for_mapping_sheet(mapping_table = mapping_table,
+                                value = "preferred_synonym_col")
 
   # get preferred code, if appropriate
   if (!is.na(preferred_description_col)) {
-    preferred_description_code <- get_value_for_mapping_sheet(mapping_table = mapping_table,
-                                                              value = "preferred_code")
+    preferred_description_code <-
+      get_value_for_mapping_sheet(mapping_table = mapping_table,
+                                  value = "preferred_code")
   }
 
   # do mapping
@@ -453,27 +462,27 @@ map_codes <- function(codes,
     dplyr::filter(.data[[from_col]] %in% codes) %>%
     dplyr::collect()
 
-  # filter on `filter_cols` parameters
-  if (!is.null(filter_cols)) {
+  # filter on `col_filters` parameters
+  if (!is.null(col_filters)) {
     result <- filter_cols(df = result,
                           df_name = mapping_table,
                           col_filters = col_filters)
   }
 
   # check for unrecognised codes
-  missing_codes <- subset(codes,
-                          !codes %in% result[[from_col]])
+  missing_codes <- subset(codes, !codes %in% result[[from_col]])
 
-  handle_unrecognised_codes(unrecognised_codes = unrecognised_codes,
-                            missing_codes = missing_codes,
-                            code_type = from)
+  handle_unrecognised_codes(
+    unrecognised_codes = unrecognised_codes,
+    missing_codes = missing_codes,
+    code_type = from
+  )
 
   # return result
   if (nrow(result) == 0) {
     message("\nNo codes found after mapping. Returning `NULL`")
     return(NULL)
   } else {
-
     # return either unique codes only, or df including descriptions
     if (codes_only) {
       result <- unique(result[[to_col]])
@@ -522,16 +531,17 @@ map_codes <- function(codes,
 #'
 #' @family Clinical code lookups and mappings
 get_mapping_df <- function(from,
-                        to,
-                        all_lkps_maps = "all_lkps_maps.db",
-                        rename_from_to = NULL,
-                        na.rm = TRUE,
-                        col_filters = default_col_filters()) {
+                           to,
+                           all_lkps_maps = "all_lkps_maps.db",
+                           rename_from_to = NULL,
+                           na.rm = TRUE,
+                           col_filters = default_col_filters()) {
   # validate args
   check_mapping_args(from = from,
                      to = to)
 
-  rename_from_to_error_msg <- "Error! `rename_from_to` should be a named character vector of length 2, with names 'from' and 'to'"
+  rename_from_to_error_msg <-
+    "Error! `rename_from_to` should be a named character vector of length 2, with names 'from' and 'to'"
 
   if (!is.null(rename_from_to)) {
     assertthat::assert_that(is.character(rename_from_to) &&
@@ -558,22 +568,25 @@ get_mapping_df <- function(from,
   mapping_table <- mapping_params$mapping_table
 
   # get just distinct combinations of from_col and to_col for mapping_table
-  from_to_cols <- c(
-    from_col,
-    to_col
-  )
+  from_to_cols <- c(from_col,
+                    to_col)
 
   result <- all_lkps_maps[[mapping_table]] %>%
-    dplyr::select(tidyselect::all_of(from_to_cols)) %>%
-    dplyr::distinct() %>%
+    dplyr::distinct(dplyr::across(tidyselect::all_of(from_to_cols)),
+                    .keep_all = TRUE) %>%
     dplyr::collect()
 
-  # filter on `filter_cols` parameters
-  if (!is.null(filter_cols)) {
+
+  # filter on `col_filters` parameters
+  if (!is.null(col_filters)) {
     result <- filter_cols(df = result,
                           df_name = mapping_table,
                           col_filters = col_filters)
   }
+
+  # keep required columns only
+  result <- result %>%
+    dplyr::select(tidyselect::all_of(from_to_cols))
 
   # remove rows with `NA` values
   if (na.rm) {
@@ -582,16 +595,16 @@ get_mapping_df <- function(from,
 
   # rename
   if (!is.null(rename_from_to)) {
-    new_from_to_cols <- c(rename_from_to['from'], rename_from_to['to'])
+    new_from_to_cols <- c(rename_from_to['from'],
+                          rename_from_to['to'])
   } else {
-    new_from_to_cols <- c(from, to)
+    new_from_to_cols <- c(from,
+                          to)
   }
 
   result <- result %>%
-    ukbwranglr:::rename_cols(
-      old_colnames = from_to_cols,
-      new_colnames = new_from_to_cols
-    )
+    ukbwranglr:::rename_cols(old_colnames = from_to_cols,
+                             new_colnames = new_from_to_cols)
 
   return(result)
 }
@@ -658,25 +671,25 @@ reformat_icd10_codes <- function(icd10_codes,
 
   icd10_mapping_df <- all_lkps_maps$icd10_lkp %>%
     dplyr::filter(.data[[input_icd10_format]] %in% icd10_codes) %>%
-    dplyr::select(tidyselect::all_of(c(
-      "ICD10_CODE",
-      "ALT_CODE"
-    ))) %>%
+    dplyr::select(tidyselect::all_of(c("ICD10_CODE",
+                                       "ALT_CODE"))) %>%
     dplyr::collect()
 
   # handle any unrecognised codes
-  missing_codes <- subset(icd10_codes,
-                          !icd10_codes %in% icd10_mapping_df[[input_icd10_format]])
+  missing_codes <-
+    subset(icd10_codes, !icd10_codes %in% icd10_mapping_df[[input_icd10_format]])
 
-  handle_unrecognised_codes(unrecognised_codes = unrecognised_codes,
-                            missing_codes = missing_codes,
-                            code_type = input_icd10_format)
+  handle_unrecognised_codes(
+    unrecognised_codes = unrecognised_codes,
+    missing_codes = missing_codes,
+    code_type = input_icd10_format
+  )
 
-    # Note: some ICD10_CODE values have multiple associated ALT_CODEs - these
-    # include a modifier description in `MODIFIER_5` (e.g. ICD-10 codes M00,
-    # M77, M07, M72, M65, S52 or S72). The number of output codes may therefore
-    # be larger/smaller than the input number. Raise informative message if this
-    # is is the case.
+  # Note: some ICD10_CODE values have multiple associated ALT_CODEs - these
+  # include a modifier description in `MODIFIER_5` (e.g. ICD-10 codes M00,
+  # M77, M07, M72, M65, S52 or S72). The number of output codes may therefore
+  # be larger/smaller than the input number. Raise informative message if this
+  # is is the case.
 
   non_unique_icd10_codes <- icd10_mapping_df %>%
     dplyr::count(.data[["ICD10_CODE"]]) %>%
@@ -689,9 +702,10 @@ reformat_icd10_codes <- function(icd10_codes,
       dplyr::pull(.data[[input_icd10_format]]) %>%
       unique()
 
-    more_or_fewer_returned_codes <- ifelse(input_icd10_format == "ICD10_CODE",
-                                        yes = "*more*",
-                                        no = "*fewer*")
+    more_or_fewer_returned_codes <-
+      ifelse(input_icd10_format == "ICD10_CODE",
+             yes = "*more*",
+             no = "*fewer*")
 
     message(
       "The following ",
@@ -714,9 +728,9 @@ reformat_icd10_codes <- function(icd10_codes,
   # optionally remove appended 'X' for undivided 3 character codes in `ALT_CODE` format
   if (strip_x & (output_icd10_format == "ALT_CODE")) {
     message("Removing 'X' from any undivided 3 character ICD10 codes")
-      result <- stringr::str_remove(result,
-                                    "X$")
-    }
+    result <- stringr::str_remove(result,
+                                  "X$")
+  }
 
   # return result
   return(result)
@@ -724,7 +738,7 @@ reformat_icd10_codes <- function(icd10_codes,
 
 #' Default filtering parameters for lookup and mapping tables.
 #'
-#' To be used as `filter_cols` argument in 'Clinical code lookups and mappings'
+#' To be used as `col_filters` argument in 'Clinical code lookups and mappings'
 #' functions. Returns a named list where each name in the list refers to the
 #' name of a lookup or mapping table. Each item is also a named list, where the
 #' names refer to column names in the corresponding table, and the items are
@@ -741,7 +755,8 @@ default_col_filters <- function() {
     read_ctv3_icd10 = list(
       mapping_status = c("E", "G", "D"),
       refine_flag = c("C", "P")
-    )
+    ),
+    read_v2_icd10 = list(icd10_code_def = c("1", "15", "3", "5", "7", "8"))
   )
 }
 
@@ -761,12 +776,8 @@ default_col_filters <- function() {
 #' @noRd
 #' @family Clinical code lookups and mappings
 get_from_to_mapping_sheet <- function(from, to) {
-  CLINICAL_CODE_MAPPINGS_MAP[
-    (
-      CLINICAL_CODE_MAPPINGS_MAP[["from"]] == from &
-        CLINICAL_CODE_MAPPINGS_MAP[["to"]] == to
-    ),
-  ][["mapping_table"]]
+  CLINICAL_CODE_MAPPINGS_MAP[(CLINICAL_CODE_MAPPINGS_MAP[["from"]] == from &
+                                CLINICAL_CODE_MAPPINGS_MAP[["to"]] == to), ][["mapping_table"]]
 }
 
 #' Helper function for \code{\link{map_codes}}
@@ -784,25 +795,18 @@ get_from_to_mapping_sheet <- function(from, to) {
 #' @family Clinical code lookups and mappings
 get_value_for_mapping_sheet <- function(mapping_table,
                                         value) {
-
   # validate args
-  match.arg(
-    arg = mapping_table,
-    choices = CLINICAL_CODE_MAPPINGS_MAP[["mapping_table"]]
-  )
+  match.arg(arg = mapping_table,
+            choices = CLINICAL_CODE_MAPPINGS_MAP[["mapping_table"]])
 
-  match.arg(
-    arg = value,
-    choices = subset(
-      names(CLINICAL_CODE_MAPPINGS_MAP),
-      subset = names(CLINICAL_CODE_MAPPINGS_MAP) != "mapping_table"
-    )
-  )
+  match.arg(arg = value,
+            choices = subset(
+              names(CLINICAL_CODE_MAPPINGS_MAP),
+              subset = names(CLINICAL_CODE_MAPPINGS_MAP) != "mapping_table"
+            ))
 
   # return specified `value`
-  CLINICAL_CODE_MAPPINGS_MAP[
-    CLINICAL_CODE_MAPPINGS_MAP[["mapping_table"]] == mapping_table,
-  ][[value]]
+  CLINICAL_CODE_MAPPINGS_MAP[CLINICAL_CODE_MAPPINGS_MAP[["mapping_table"]] == mapping_table, ][[value]]
 }
 
 #' Get name of lookup sheet for a clinical code system
@@ -838,13 +842,14 @@ get_lookup_sheet <- function(code_type) {
 #' @noRd
 get_col_for_lookup_sheet <- function(lookup_sheet,
                                      column) {
-
   # validate args
   match.arg(arg = lookup_sheet,
             choices = CODE_TYPE_TO_LKP_TABLE_MAP$lkp_table)
 
-  match.arg(arg = column,
-            choices = c("code_col", "description_col", "preferred_synonym_col"))
+  match.arg(
+    arg = column,
+    choices = c("code_col", "description_col", "preferred_synonym_col")
+  )
 
   # get column name for lookup sheet
   CODE_TYPE_TO_LKP_TABLE_MAP %>%
@@ -862,16 +867,17 @@ get_col_for_lookup_sheet <- function(lookup_sheet,
 #'
 #' @family Clinical code lookups and mappings
 #' @noRd
-get_preferred_description_code_for_lookup_sheet <- function(lookup_sheet) {
-  # validate args
-  match.arg(arg = lookup_sheet,
-            choices = CODE_TYPE_TO_LKP_TABLE_MAP$lkp_table)
+get_preferred_description_code_for_lookup_sheet <-
+  function(lookup_sheet) {
+    # validate args
+    match.arg(arg = lookup_sheet,
+              choices = CODE_TYPE_TO_LKP_TABLE_MAP$lkp_table)
 
-  # get preferred description code for lookup sheet
-  CODE_TYPE_TO_LKP_TABLE_MAP %>%
-    dplyr::filter(.data[["lkp_table"]] == lookup_sheet) %>%
-    .[["preferred_code"]]
-}
+    # get preferred description code for lookup sheet
+    CODE_TYPE_TO_LKP_TABLE_MAP %>%
+      dplyr::filter(.data[["lkp_table"]] == lookup_sheet) %>%
+      .[["preferred_code"]]
+  }
 
 #' Helper function - raise error or warning if unrecognised codes are present
 #'
@@ -908,6 +914,37 @@ handle_unrecognised_codes <-
              warning = warning(missing_codes_message))
     }
   }
+
+#' Utility function - check if all of a set of codes are recognised
+#'
+#' @param codes Codes being checked
+#' @param lkp_codes Character vector of lookup codes. Any `codes` not present in
+#'   `lkp_codes` are considered to be unrecognised.
+#' @param code_type String
+#' @param return_unrecognised_codes If `TRUE`, return a character vector of
+#'   unrecognised codes. Default is `FALSE`.
+#'
+#' @return Return vector of unrecognised codes if `return_missing_codes` is
+#'   `TRUE`, otherwise called for side effect (error if any unrecognised codes)
+check_codes_exist <- function(codes,
+                              lkp_codes,
+                              code_type,
+                              return_unrecognised_codes = FALSE) {
+  # check for unrecognised('missing') codes
+  missing_codes <- subset(codes, !codes %in% lkp_codes)
+
+  # return missing codes, if requested
+  if (return_unrecognised_codes) {
+    return(missing_codes)
+  }
+
+  # ...otherwise return error
+  handle_unrecognised_codes(
+    unrecognised_codes = "error",
+    missing_codes = missing_codes,
+    code_type = code_type
+  )
+}
 
 #' Reformat a dataframe of clinical codes to work with
 #' \code{\link[ukbwranglr]{extract_phenotypes}}
@@ -983,33 +1020,38 @@ reformat_standardised_codelist <- function(standardised_codelist,
   return(standardised_codelist)
 }
 
-standardise_output_fn <- function(df, lkp_table, code_col, description_col, code_type) {
-  names(df)[which(names(df) == code_col)] <- "code"
-  names(df)[which(names(df) == description_col)] <- "description"
+standardise_output_fn <-
+  function(df,
+           lkp_table,
+           code_col,
+           description_col,
+           code_type) {
+    names(df)[which(names(df) == code_col)] <- "code"
+    names(df)[which(names(df) == description_col)] <- "description"
 
-  # Some ICD-10 descriptions include a modifier e.g. "E10" = "Type 1 diabetes
-  # mellitus", whereas "E10.0" = "Type 1 diabetes mellitus with coma". "With
-  # coma" is contained in the modifier columns "MODIFIER-4". See 'S27' for an
-  # example code where additional description is contained in the "MODIFER-5"
-  # column. The returned "description" column from `standardise_output == TRUE`
-  # therefore combines the 'DESCRIPTION' column with one of these 2 columns
-  # (whichever is not NA). There are no codes with a modifier description in
-  # both "MODIFIER_4" and "MODIFIER_5".
+    # Some ICD-10 descriptions include a modifier e.g. "E10" = "Type 1 diabetes
+    # mellitus", whereas "E10.0" = "Type 1 diabetes mellitus with coma". "With
+    # coma" is contained in the modifier columns "MODIFIER-4". See 'S27' for an
+    # example code where additional description is contained in the "MODIFER-5"
+    # column. The returned "description" column from `standardise_output == TRUE`
+    # therefore combines the 'DESCRIPTION' column with one of these 2 columns
+    # (whichever is not NA). There are no codes with a modifier description in
+    # both "MODIFIER_4" and "MODIFIER_5".
 
-  if (lkp_table == "icd10_lkp") {
-    df$description <- dplyr::case_when(
-      !is.na(df$MODIFIER_4) ~ paste(df$description, df$MODIFIER_4),
-      !is.na(df$MODIFIER_5) ~ paste(df$description, df$MODIFIER_5),
-      TRUE ~ df$description
-    )
+    if (lkp_table == "icd10_lkp") {
+      df$description <- dplyr::case_when(
+        !is.na(df$MODIFIER_4) ~ paste(df$description, df$MODIFIER_4),
+        !is.na(df$MODIFIER_5) ~ paste(df$description, df$MODIFIER_5),
+        TRUE ~ df$description
+      )
+    }
+
+    # return code, description and code_type cols only
+    df <- df[c("code", "description")]
+    df[["code_type"]] <- code_type
+
+    return(df)
   }
-
-  # return code, description and code_type cols only
-  df <- df[c("code", "description")]
-  df[["code_type"]] <- code_type
-
-  return(df)
-}
 
 #' Filter lookup/mapping table for specified values in columns
 #'
@@ -1061,8 +1103,8 @@ filter_cols <- function(df,
                           msg = "Each item in `col_filters` must be a vector")
 
   # check that column names exist in df. Raise error is any are unrecognised.
-  unrecognised_colnames <- subset(names(col_filters),
-                                  !names(col_filters) %in% names(df))
+  unrecognised_colnames <-
+    subset(names(col_filters), !names(col_filters) %in% names(df))
 
   if (length(unrecognised_colnames) > 0) {
     stop(
@@ -1072,9 +1114,11 @@ filter_cols <- function(df,
         " column names specified by `col_filters` are not present in `",
         df_name,
         "`: ",
-        stringr::str_c(unrecognised_colnames,
-                       sep = "",
-                       collapse = ", ")
+        stringr::str_c(
+          unrecognised_colnames,
+          sep = "",
+          collapse = ", "
+        )
       ),
       call. = FALSE
     )
@@ -1087,17 +1131,21 @@ filter_cols <- function(df,
     # check that type matches
     df_col_class <- class(df[[i]])
     col_filter_values_class <- class(col_filter_values)
-    assertthat::assert_that(df_col_class %in% col_filter_values_class,
-                            msg = paste0("Cannot filter column ",
-                                         i,
-                                         " in ",
-                                         df_name,
-                                         " as classes do not match. Column `",
-                                         i,
-                                         "`` is class ",
-                                         df_col_class,
-                                         ", but filter values specified by `col_filters` are of class ",
-                                         col_filter_values_class))
+    assertthat::assert_that(
+      df_col_class %in% col_filter_values_class,
+      msg = paste0(
+        "Cannot filter column ",
+        i,
+        " in ",
+        df_name,
+        " as classes do not match. Column `",
+        i,
+        "`` is class ",
+        df_col_class,
+        ", but filter values specified by `col_filters` are of class ",
+        col_filter_values_class
+      )
+    )
 
     df <- df %>%
       dplyr::filter(.data[[i]] %in% !!col_filter_values)
@@ -1105,6 +1153,287 @@ filter_cols <- function(df,
 
   # return result
   return(df)
+}
+
+#' Remove or extract appended ICD10 letters
+#'
+#' @param icd10_codes Character vector of ICD10 codes
+#' @param rm_extract Either 'rm' (remove 'D'/'X'/'A' from end of codes) or
+#'   'extract' (return these characters only, or `NA` if the code does not end
+#'   with letter characters).
+#'
+#' @return Character vector
+#' @noRd
+#' @examples
+#' rm_or_extract_appended_icd10_letters(c(
+#'  "A00",
+#'  "A408",
+#'  "A390D",
+#'  "A38X",
+#'  "G01XA"
+#' ))
+rm_or_extract_appended_icd10_dxa <- function(icd10_codes,
+                                             keep_x = TRUE,
+                                             rm_extract = "rm") {
+  # validate args
+  match.arg(rm_extract,
+            choices = c("rm", "extract"))
+
+  stopifnot(is.character(icd10_codes))
+
+  # either remove or extract appended 'D'/'X'/'A' from `icd10_codes`
+  pattern <- ifelse(keep_x,
+                    yes = "[D|A]*$",
+                    no = "[D|X|A]*$")
+
+  switch(
+    rm_extract,
+    rm =  stringr::str_remove(icd10_codes,
+                              pattern = pattern),
+    extract = stringr::str_extract(icd10_codes,
+                                   pattern = pattern) %>%
+      ifelse(. == "",
+             yes = NA_character_,
+             no = .)
+  )
+}
+
+#' Get a mapping table for ICD10 codes in ALT_CODE format, with and without 'X'
+#' appended for undivided 3 character codes
+#'
+#' @param icd10_lkp The lookup table for ICD10 codes, `icd10_lkp` .
+#'
+#' @return A data frame with columns `ALT_CODE` and `ALT_CODE_minus_x`
+get_icd10_code_alt_code_x_map <- function(icd10_lkp) {
+  icd10_lkp_alt_x_map <- icd10_lkp %>%
+    dplyr::select(.data[["ALT_CODE"]]) %>%
+    dplyr::filter(!is.na(.data[["ALT_CODE"]])) %>%
+    dplyr::mutate("ALT_CODE_minus_x" = stringr::str_remove(.data[["ALT_CODE"]],
+                                                           pattern = "X$"))
+
+  # check that all codes are unique
+  stopifnot(
+    length(icd10_lkp_alt_x_map$ALT_CODE) == dplyr::n_distinct(icd10_lkp_alt_x_map$ALT_CODE)
+  )
+  stopifnot(
+    length(icd10_lkp_alt_x_map$ALT_CODE_minus_x) == dplyr::n_distinct(icd10_lkp_alt_x_map$ALT_CODE_minus_x)
+  )
+
+  # return result
+  return(icd10_lkp_alt_x_map)
+}
+
+#' Get a vector of ICD10 codes in ALT_CODE format for a specified start/end
+#' range of ICD10 codes
+#'
+#' Note that `start_icd10_code` and `end_icd10_code` must be of the same length,
+#' unless one ends with 'X'. For example, expanding the range 'A80-A81' is
+#' equivalent to expanding both 'A800-A809' and 'A810-A819'.
+#'
+#' @param start_icd10_code String
+#' @param end_icd10_code String
+#' @param icd10_lkp The ICD10 lookup table. Must have a `.rowid` column.
+#'
+#' @return A character vector of
+get_icd10_code_range <- function(start_icd10_code,
+                                 end_icd10_code,
+                                 icd10_lkp) {
+  # validate args
+  stopifnot(is.character(start_icd10_code))
+  stopifnot(is.character(end_icd10_code))
+
+  assertthat::assert_that(
+    stringr::str_length(stringr::str_remove(start_icd10_code,
+                                            "X$")) == stringr::str_length(stringr::str_remove(end_icd10_code,
+                                                                                              "X$")),
+    msg = paste0(
+      "`start_icd10_code` and `end_icd10_code` must have the same number of characters. Start/end values provided: ",
+      start_icd10_code,
+      " and ",
+      end_icd10_code
+    )
+  )
+
+  check_rowid_col_present(df = icd10_lkp,
+                          df_name = "icd10_lkp")
+
+  check_codes_exist(
+    codes = c(start_icd10_code, end_icd10_code),
+    lkp_codes = icd10_lkp$ALT_CODE,
+    code_type = "icd10",
+    return_unrecognised_codes = FALSE
+  )
+
+  # get start and end row indices
+  start_rowid <- icd10_lkp %>%
+    dplyr::filter(.data[["ALT_CODE"]] == !!start_icd10_code) %>%
+    dplyr::pull(.data[[".rowid"]])
+
+  end_rowid <- icd10_lkp %>%
+    dplyr::filter(.data[["ALT_CODE"]] == !!end_icd10_code) %>%
+    dplyr::pull(.data[[".rowid"]])
+
+  # check start/end row indices are scalar, and create range of row index integers
+  assertthat::is.number(start_rowid)
+  assertthat::is.number(end_rowid)
+
+  icd10_lkp_rowids <- start_rowid:end_rowid
+
+  # filter for selected row index integers
+  result <- icd10_lkp %>%
+    dplyr::filter(.data[[".rowid"]] %in% icd10_lkp_rowids) %>%
+    dplyr::pull(.data[["ALT_CODE"]])
+
+  pattern <- stringr::str_c(paste0("^", result),
+                            sep = "",
+                            collapse = "|")
+
+  # expand (e.g. for 'A80-A81', at this stage all 'A80' should be present
+  # ('A800-A809'), but for 'A81', only 'A81' wil be present - needs expanding
+  # to 'A801-A819')
+  result <- icd10_lkp %>%
+    dplyr::filter(stringr::str_detect(.data[["ALT_CODE"]],
+                                      pattern = pattern)) %>%
+    dplyr::pull(.data[["ALT_CODE"]])
+
+  return(result)
+}
+
+#' Expand a `read_v2_icd10` data frame containing code ranges in the
+#' `icd10_code` column
+#'
+#' To be used within `reformat_read_v2_icd10()`.
+#'
+#' @param read_v2_icd10 Data frame
+#' @param icd10_lkp Data frame
+#'
+#' @return A data frame
+#' @noRd
+expand_icd10_ranges <- function(read_v2_icd10,
+                                icd10_lkp) {
+  # validate args
+  assertthat::assert_that(all(
+    c("read_code",
+      "icd10_code",
+      "icd10_code_def") %in% names(read_v2_icd10)
+  ),
+  msg = "Unexpected column names in `read_v2_icd10`")
+
+  # separate by '-'
+  read_v2_icd10 <- read_v2_icd10 %>%
+    tidyr::separate(
+      .data[["icd10_code"]],
+      into = c("start_icd10_code", "end_icd10_code"),
+      sep = "-",
+      remove = FALSE,
+      fill = "right"
+    )
+
+  read_v2_icd10 <- read_v2_icd10 %>%
+    dplyr::mutate("start_icd10_code" = ifelse(is.na(.data[["end_icd10_code"]]),
+                                              yes = NA_character_,
+                                              no = .data[["start_icd10_code"]]))
+
+  # strip any appended 'D/X/A' (last character(s) e.g. 'A89X' and 'A170D' become
+  # 'A89' and 'A170'. 'G01XA' would become 'G01', although note that this code
+  # does not appear together with a '-')
+  read_v2_icd10 <- read_v2_icd10 %>%
+    dplyr::mutate(dplyr::across(
+      tidyselect::all_of(c("start_icd10_code",
+                           "end_icd10_code")),
+      ~ rm_or_extract_appended_icd10_dxa(
+        icd10_codes = .x,
+        keep_x = TRUE,
+        rm_extract = "rm"
+      )
+    ))
+
+  # expand range
+  read_v2_icd10 %>%
+    dplyr::rowwise() %>%
+    dplyr::mutate(icd10_range_new = ifelse(
+      is.na(.data[["start_icd10_code"]]),
+      yes = list(NA_character_),
+      no = list(
+        get_icd10_code_range(
+          start_icd10_code = .data[["start_icd10_code"]],
+          end_icd10_code = .data[["end_icd10_code"]],
+          icd10_lkp = icd10_lkp
+        )
+      )
+    )) %>%
+    dplyr::ungroup() %>%
+    tidyr::unnest(cols = "icd10_range_new") %>%
+    dplyr::mutate("icd10_code" = ifelse(is.na(.data[["icd10_range_new"]]),
+                                        yes = .data[["icd10_code"]],
+                                        no = .data[["icd10_range_new"]])) %>%
+    dplyr::select(-tidyselect::all_of(c(
+      "start_icd10_code",
+      "end_icd10_code",
+      "icd10_range_new"
+    )))
+}
+
+#' Reformat the Read 2 to ICD10 mapping table
+#'
+#' Converts values in the `icd10_code` column to 'ALT_CODE' format ICD10 codes
+#' that are recognised in the `icd10_lkp` lookup table. This involves converting
+#' cells containing more than one ICD10 code over multiple rows (e.g.
+#' 'A414+J038' becomes 2 rows), and removing appended 'D'/'A' characters (which
+#' indicate dagger/asterisk codes) to a separate column called
+#' `icd10_dagger_asterisk` (e.g.'A010D I398A' becomes 'A010' and 'I398' under
+#' `icd10_code`, with 'D' and 'A' recorded under  under
+#' `icd10_dagger_asterisk`).
+#'
+#' @param read_v2_icd10 The Read 2 to ICD10 mapping table.
+#' @param icd10_lkp Data frame. ICD10 lookup table (note, must have a '.rowid'
+#'   column).
+#'
+#' @return A data frame.
+#' @noRd
+reformat_read_v2_icd10 <- function(read_v2_icd10,
+                                   icd10_lkp) {
+  read_v2_icd10 <- read_v2_icd10 %>%
+    # replace spaces and '+' with commas
+    dplyr::mutate("icd10_code" = stringr::str_replace_all(.data[["icd10_code"]],
+                                                          pattern = "[\\s|\\+]",
+                                                          replacement = ","))
+
+  # split by comma, then unnest
+  read_v2_icd10 <- read_v2_icd10 %>%
+    dplyr::mutate("icd10_code" = stringr::str_split(.data[["icd10_code"]],
+                                                    pattern = ",")) %>%
+    tidyr::unnest(cols = "icd10_code")
+
+  # remove 'D' and 'A' final characters from ICD10 codes, and place in separate
+  # column `icd10_dagger_asterisk`
+  read_v2_icd10 <- read_v2_icd10 %>%
+    dplyr::mutate(
+      "icd10_dagger_asterisk" = rm_or_extract_appended_icd10_dxa(
+        icd10_codes = .data[["icd10_code"]],
+        keep_x = TRUE,
+        rm_extract = "extract"
+      )
+    ) %>%
+    dplyr::mutate("icd10_code" = rm_or_extract_appended_icd10_dxa(
+      icd10_codes = .data[["icd10_code"]],
+      keep_x = TRUE,
+      rm_extract = "rm"
+    ))
+
+  # expand icd10 code ranges, which are flagged as '2' under `icd10_code_def` (e.g. 'E100-E109')
+  read_v2_icd10 <- read_v2_icd10 %>%
+    expand_icd10_ranges(icd10_lkp = icd10_lkp)
+
+  # check all ICD10 codes now exist in `icd10_lkp`
+  check_codes_exist(
+    codes = read_v2_icd10$icd10_code,
+    lkp_codes = icd10_lkp$ALT_CODE,
+    code_type = "icd10"
+  )
+
+  # return result
+  return(read_v2_icd10)
 }
 
 ## Validation helpers ---------------------------
@@ -1136,7 +1465,10 @@ check_mapping_args <- function(from,
   if (rlang::is_empty(mapping_table)) {
     stop("Error! Invalid (or unavailable) code mapping request")
   } else if (swap_mapping_cols) {
-    warning("Warning! No mapping sheet available for this request. Attempting to map anyway using: ", mapping_table)
+    warning(
+      "Warning! No mapping sheet available for this request. Attempting to map anyway using: ",
+      mapping_table
+    )
   }
 
   # get from_col and to_col column names for mapping sheet
@@ -1177,4 +1509,22 @@ check_all_lkps_maps_path <- function(file_path) {
 
   # return con object if tests pass
   DBI::dbConnect(RSQLite::SQLite(), file_path)
+}
+
+check_rowid_col_present <- function(df,
+                                    df_name) {
+  assertthat::assert_that(".rowid" %in% names(df),
+                          msg = paste0("'.rowid' column not present in `",
+                                       df_name,
+                                       "`"))
+  assertthat::assert_that(
+    class(df[[".rowid"]]) == "integer",
+    msg = paste0(
+      "'.rowid' column in `",
+      df_name,
+      "should be class 'integer', not '",
+      class(df[[".rowid"]]),
+      "'"
+    )
+  )
 }

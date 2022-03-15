@@ -28,6 +28,7 @@ read_ctv3_icd10 <- all_lkps_maps_raw$read_ctv3_icd10
 ```
 
 ```{r}
+# utility functions
 append_read3_icd10_descriptions <- function(df) {
   # get read3 and icd10 descriptions
   read3_df <- df$read_code %>%
@@ -53,8 +54,9 @@ append_read3_icd10_descriptions <- function(df) {
 }
 ```
 
-# Summary
+# Key points
 
+-   Dagger/asterisk ICD10 codes have 'D'/'A' appended respectively in the `read_ctv3_icd10` mapping table. These characters need removing to obtain the actual ICD10 codes that appear in the `icd10_lkp` table and UK Biobank data.
 -   Inaccurate mapping of read3 to ICD10 codes when codes with `mapping_status` 'R' are mapped without referring to codes with mapping status 'D'.
 
 # Unrecognised ICD10 codes
@@ -70,6 +72,45 @@ assertthat::are_equal(unrecognised_read3_codes,
 ```
 
 All Read 3 codes in the `read_ctv3_icd10` mapping table are present in the `read_ctv3_lkp` lookup table.
+
+```{r}
+# identify unrecognised ICD10 codes
+unrecognised_icd10_codes <- subset(read_ctv3_icd10$icd10_code,
+       !read_ctv3_icd10$icd10_code %in% all_lkps_maps_raw$icd10_lkp$ALT_CODE) %>% 
+  unique()
+```
+
+There are `r length(unrecognised_icd10_codes)` ICD10 codes in the `read_ctv3_icd10` mapping table that are *not* present in the `icd10_lkp` table (`ALT_CODE` format).
+
+```{r}
+# do these all end in 'A' or 'D'? (i.e. 'asterisk' or 'dagger')
+assertthat::are_equal(length(unrecognised_icd10_codes),
+                      (read_ctv3_icd10 %>% 
+                        filter(str_detect(icd10_code,
+                                          pattern = "[A|D]$")) %>% 
+                        pull(icd10_code) %>% 
+                        unique() %>% 
+                        length()))
+```
+
+These are all either 'asterisk' or 'dagger' codes, which have been appended with 'A' or 'D' respectively. 
+
+```{r}
+# remove 'D'/'A' appendices from dagger/asterisk ICD10 codes
+read_ctv3_icd10_icd10_codes_modified <- read_ctv3_icd10 %>% 
+  reformat_read_ctv3_icd10() %>% 
+  pull(icd10_code) %>% 
+  unique()
+
+# see if any 'unrecognised' ICD10 codes remain
+unrecognised_icd10_codes <- subset(read_ctv3_icd10_icd10_codes_modified,
+       !read_ctv3_icd10_icd10_codes_modified %in% all_lkps_maps_raw$icd10_lkp$ALT_CODE)
+
+assertthat::are_equal(length(unrecognised_icd10_codes),
+                      0)
+```
+
+After removing 'A' or 'D' from the ICD10 codes in mapping table `read_ctv3_icd10`, all ICD10 codes are also present in lookup table `icd10_lkp`.
 
 # Mapping status and refine flag
 

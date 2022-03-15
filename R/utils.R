@@ -134,21 +134,19 @@ build_all_lkps_maps <-
            icd10_phecode_1_2 = NULL,
            icd9_phecode_1_2 = NULL) {
     # ukb resource 592 ----------------
-    all_lkps_maps <- all_lkps_maps
-    all_lkps_maps <- all_lkps_maps %>%
-      remove_irrelevant_rows_all_lkps_maps()
 
-    ## amend tables ---------------
+    ## remove metadata footer rows and add row index column -------------------
+    all_lkps_maps <- all_lkps_maps %>%
+      purrr::map(rm_footer_rows_all_lkps_maps_df) %>%
+      purrr::map(~ tibble::rowid_to_column(.data = .x,
+                                           var = ".rowid"))
+
+    ## reformat tables individually ---------------
 
     ### read3_icd10 ------------------------
 
-    # remove keep `mapping_status` 'R', 'A' and 'U'
-    all_lkps_maps$read_ctv3_icd10 <- all_lkps_maps$read_ctv3_icd10 %>%
-      dplyr::filter(!.data[["mapping_status"]] %in% c(
-        "R",
-        "A",
-        "U"
-      ))
+    # remove 'D'/'A' from ICD10 codes
+    all_lkps_maps$read_ctv3_icd10 <- reformat_read_ctv3_icd10(all_lkps_maps$read_ctv3_icd10)
 
     ## extend tables -----------------
     message("Extending tables in UKB resource 592")
@@ -392,96 +390,48 @@ read_all_lkps_maps_raw <- function(path) {
   )
 }
 
-remove_irrelevant_rows_all_lkps_maps <-
-  function(all_lkps_maps_raw) {
-    nrows_to_remove <- tibble::tribble(
-      ~ sheet,
-      ~ n_to_remove,
-      ~ nrow_before,
-      'bnf_lkp',
-      2,
-      79829,
-      'dmd_lkp',
-      2,
-      434951,
-      'icd9_lkp',
-      2,
-      7973,
-      'icd10_lkp',
-      2,
-      17936,
-      'icd9_icd10',
-      3,
-      16163,
-      'read_v2_lkp',
-      2,
-      101883,
-      'read_v2_drugs_lkp',
-      2,
-      67614,
-      'read_v2_drugs_bnf',
-      3,
-      67615,
-      'read_v2_icd9',
-      3,
-      35664,
-      'read_v2_icd10',
-      3,
-      36667,
-      'read_v2_opcs4',
-      3,
-      14927,
-      'read_v2_read_ctv3',
-      2,
-      108245,
-      'read_ctv3_lkp',
-      2,
-      419098,
-      'read_ctv3_icd9',
-      3,
-      67155,
-      'read_ctv3_icd10',
-      3,
-      116377,
-      'read_ctv3_opcs4',
-      3,
-      54321,
-      'read_ctv3_read_v2',
-      2,
-      777522
-    )
+#' Remove footer rows from a table in UKB resource 592
+#'
+#' Metadata for each table in UKB resource 592 is recorded in one or more footer
+#' rows (in column 1), separated from the main table by an empty row. This
+#' function removes these rows for a single table.
+#'
+#' @param df A data frame from UK Biobank resource 592 frames.
+#' @param footer_metadata_col_idx Integer. Index for column containing footer
+#'   metadata.
+#'
+#' @return
+#' @noRd
+rm_footer_rows_all_lkps_maps_df <- function(df,
+                                            footer_metadata_col_idx = 1) {
+  # get colname for column containing footer metadata (column 1 by default)
+  footer_metadata_col_colname <- names(df)[footer_metadata_col_idx]
 
-    # check expected number of rows are present
-    expected_nrows_all_tables <- all_lkps_maps_raw %>%
-      names() %>%
-      purrr::set_names() %>%
-      purrr::map_lgl(~ nrow(all_lkps_maps_raw[[.x]]) == nrows_to_remove[nrows_to_remove$sheet == .x, ][["nrow_before"]])
+  # get rowids for rows with `NA` in column containing footer metadata
+  df <- df %>%
+    tibble::rowid_to_column() %>%
+    dplyr::mutate("rowid" = ifelse(
+      !is.na(.data[[footer_metadata_col_colname]]),
+      yes = NA_character_,
+      no = .data[["rowid"]]
+    ))
 
-    unexpected_nrows_tables <- subset(expected_nrows_all_tables,!expected_nrows_all_tables)
+  # get max rowid (for rows with `NA` in column 1)
+  max_rowid <- max(df$rowid, na.rm = TRUE)
 
-    assertthat::assert_that(
-      rlang::is_empty(unexpected_nrows_tables),
-      msg = paste0(
-        "Error! Unexpected number of rows for the following UKB resource 592 tables: ",
-        stringr::str_c(
-          unexpected_nrows_tables,
-          sep = "",
-          collapse = ", "
-        )
-      )
-    )
-
-    # remove unnecessary rows
-    result <- purrr::pmap(nrows_to_remove,
-                          function(sheet, n_to_remove, ...) {
-                            all_lkps_maps_raw[[sheet]][1:(nrow(all_lkps_maps_raw[[sheet]]) - n_to_remove), ]
-                          })
-
-    names(result) <- names(all_lkps_maps_raw)
-
-    return(result)
-  }
-
+  # convert rowid col to NA, unless rowid equals `max_rowid`. Then, fill
+  # downwards, and remove these rows
+  df %>%
+    dplyr::mutate("rowid" = ifelse(
+      .data[["rowid"]] == !!max_rowid,
+      yes = .data[["rowid"]],
+      no = NA_character_
+    )) %>%
+    tidyr::fill(.data[["rowid"]],
+                .direction = "down") %>%
+    dplyr::filter(is.na(.data[["rowid"]])) %>%
+    dplyr::select(-.data[["rowid"]])
+}
 
 make_lkp_from_ukb_codings <- function(ukb_codings,
                                       Coding,
@@ -569,6 +519,32 @@ update_code_selection <- function(current_selection,
                                                   (.data[["category"]] != "") ~ "Yes",
                                                 TRUE ~ "")) %>%
     dplyr::select(-tidyselect::ends_with("_TOREMOVE"))
+}
+
+#' Reformat mapping table `read_ctv3_icd10`
+#'
+#' Removes 'D' and 'A' from the ends of ICD10 codes, and separates these into a
+#' separate column called `icd10_dagger_asterisk`. The 'D' and 'A' indicate
+#' whether the code is a 'dagger' or 'asterisk' respectively. However, these
+#' codes are listed without the appended 'D'/'A' in the `icd10_lkp` table.
+#'
+#' @param read_ctv3_icd10 A data frame.
+#'
+#' @return
+#' @noRd
+reformat_read_ctv3_icd10 <- function(read_ctv3_icd10) {
+  read_ctv3_icd10 %>%
+    dplyr::mutate(
+      "icd10_dagger_asterisk" = dplyr::case_when(
+        stringr::str_detect(.data[["icd10_code"]],
+                            pattern = "D$") ~ "D",
+        stringr::str_detect(.data[["icd10_code"]],
+                            pattern = "A$") ~ "A",
+        TRUE ~ NA_character_
+      )
+    ) %>%
+    dplyr::mutate("icd10_code" = stringr::str_remove(.data[["icd10_code"]],
+                                            pattern = "[A|D]$"))
 }
 
 # TODO --------------------------------------------------------------------
