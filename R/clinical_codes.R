@@ -1201,10 +1201,25 @@ rm_or_extract_appended_icd10_dxa <- function(icd10_codes,
 #' Get a mapping table for ICD10 codes in ALT_CODE format, with and without 'X'
 #' appended for undivided 3 character codes
 #'
-#' @param icd10_lkp The lookup table for ICD10 codes, `icd10_lkp` .
+#' @param icd10_lkp The lookup table for ICD10 codes, `icd10_lkp`.
+#' @param undivided_3char_only If `TRUE` return only undivided 3 character ICD10
+#'   codes. Default is `FALSE`.
+#' @param as_named_list. If `NULL`, returns a data frame with columns `ALT_CODE`
+#'   and `ALT_CODE_minus_x`. If 'names_no_x' or 'names_with_x', returns a named
+#'   list with either `ALT_CODE` or `ALT_CODE_minus_x` set as names (and the
+#'   other as values) respectively.
 #'
-#' @return A data frame with columns `ALT_CODE` and `ALT_CODE_minus_x`
-get_icd10_code_alt_code_x_map <- function(icd10_lkp) {
+#' @return A data frame or a named list (see argument `as_named_list`).
+#' @noRd
+get_icd10_code_alt_code_x_map <- function(icd10_lkp,
+                                          undivided_3char_only = FALSE,
+                                          as_named_list = NULL) {
+
+  # validate args
+  match.arg(as_named_list,
+            choices = c("names_no_x", "names_with_x"))
+
+  # make mapping df
   icd10_lkp_alt_x_map <- icd10_lkp %>%
     dplyr::select(.data[["ALT_CODE"]]) %>%
     dplyr::filter(!is.na(.data[["ALT_CODE"]])) %>%
@@ -1218,6 +1233,33 @@ get_icd10_code_alt_code_x_map <- function(icd10_lkp) {
   stopifnot(
     length(icd10_lkp_alt_x_map$ALT_CODE_minus_x) == dplyr::n_distinct(icd10_lkp_alt_x_map$ALT_CODE_minus_x)
   )
+
+  # check that all codes are the same comparing `ALT_CODE` and
+  # `ALT_CODE_minus_x`, after removing the X in `ALT_CODE`
+  stopifnot(all(
+    icd10_lkp_alt_x_map$ALT_CODE_minus_x == stringr::str_remove(icd10_lkp_alt_x_map$ALT_CODE,
+                                                                pattern = "X$")
+  ))
+
+  if (undivided_3char_only) {
+    icd10_lkp_alt_x_map <- icd10_lkp_alt_x_map %>%
+      dplyr::filter(.data[["ALT_CODE_minus_x"]] != .data[["ALT_CODE"]])
+  }
+
+  # convert to named list
+  if (!is.null(as_named_list)) {
+    icd10_lkp_alt_x_map <- switch(
+      as_named_list,
+      names_no_x = icd10_lkp_alt_x_map %>%
+        tidyr::pivot_wider(names_from = "ALT_CODE_minus_x",
+                           values_from = "ALT_CODE") %>%
+        as.list(),
+      names_with_x = icd10_lkp_alt_x_map %>%
+        tidyr::pivot_wider(names_from = "ALT_CODE",
+                           values_from = "ALT_CODE_minus_x") %>%
+        as.list()
+    )
+  }
 
   # return result
   return(icd10_lkp_alt_x_map)
@@ -1306,11 +1348,14 @@ get_icd10_code_range <- function(start_icd10_code,
 #'
 #' @param read_v2_icd10 Data frame
 #' @param icd10_lkp Data frame
+#' @param icd10_lkp_alt_x_map A named list of undivided 3 character ICD10 codes,
+#'   where the names do not have an 'X' appended and the values do.
 #'
 #' @return A data frame
 #' @noRd
 expand_icd10_ranges <- function(read_v2_icd10,
-                                icd10_lkp) {
+                                icd10_lkp,
+                                icd10_lkp_alt_x_map) {
   # validate args
   assertthat::assert_that(all(
     c("read_code",
@@ -1348,6 +1393,17 @@ expand_icd10_ranges <- function(read_v2_icd10,
       )
     ))
 
+  # Make sure undivided 3 character ICD10 codes have an 'X' appended
+  read_v2_icd10 <- read_v2_icd10 %>%
+    dplyr::mutate(dplyr::across(
+      tidyselect::all_of(c("start_icd10_code",
+                           "end_icd10_code")),
+      ~ dplyr::recode(
+        .x,
+        !!!icd10_lkp_alt_x_map
+      )
+    ))
+
   # expand range
   read_v2_icd10 %>%
     dplyr::rowwise() %>%
@@ -1372,68 +1428,6 @@ expand_icd10_ranges <- function(read_v2_icd10,
       "end_icd10_code",
       "icd10_range_new"
     )))
-}
-
-#' Reformat the Read 2 to ICD10 mapping table
-#'
-#' Converts values in the `icd10_code` column to 'ALT_CODE' format ICD10 codes
-#' that are recognised in the `icd10_lkp` lookup table. This involves converting
-#' cells containing more than one ICD10 code over multiple rows (e.g.
-#' 'A414+J038' becomes 2 rows), and removing appended 'D'/'A' characters (which
-#' indicate dagger/asterisk codes) to a separate column called
-#' `icd10_dagger_asterisk` (e.g.'A010D I398A' becomes 'A010' and 'I398' under
-#' `icd10_code`, with 'D' and 'A' recorded under  under
-#' `icd10_dagger_asterisk`).
-#'
-#' @param read_v2_icd10 The Read 2 to ICD10 mapping table.
-#' @param icd10_lkp Data frame. ICD10 lookup table (note, must have a '.rowid'
-#'   column).
-#'
-#' @return A data frame.
-#' @noRd
-reformat_read_v2_icd10 <- function(read_v2_icd10,
-                                   icd10_lkp) {
-  read_v2_icd10 <- read_v2_icd10 %>%
-    # replace spaces and '+' with commas
-    dplyr::mutate("icd10_code" = stringr::str_replace_all(.data[["icd10_code"]],
-                                                          pattern = "[\\s|\\+]",
-                                                          replacement = ","))
-
-  # split by comma, then unnest
-  read_v2_icd10 <- read_v2_icd10 %>%
-    dplyr::mutate("icd10_code" = stringr::str_split(.data[["icd10_code"]],
-                                                    pattern = ",")) %>%
-    tidyr::unnest(cols = "icd10_code")
-
-  # remove 'D' and 'A' final characters from ICD10 codes, and place in separate
-  # column `icd10_dagger_asterisk`
-  read_v2_icd10 <- read_v2_icd10 %>%
-    dplyr::mutate(
-      "icd10_dagger_asterisk" = rm_or_extract_appended_icd10_dxa(
-        icd10_codes = .data[["icd10_code"]],
-        keep_x = TRUE,
-        rm_extract = "extract"
-      )
-    ) %>%
-    dplyr::mutate("icd10_code" = rm_or_extract_appended_icd10_dxa(
-      icd10_codes = .data[["icd10_code"]],
-      keep_x = TRUE,
-      rm_extract = "rm"
-    ))
-
-  # expand icd10 code ranges, which are flagged as '2' under `icd10_code_def` (e.g. 'E100-E109')
-  read_v2_icd10 <- read_v2_icd10 %>%
-    expand_icd10_ranges(icd10_lkp = icd10_lkp)
-
-  # check all ICD10 codes now exist in `icd10_lkp`
-  check_codes_exist(
-    codes = read_v2_icd10$icd10_code,
-    lkp_codes = icd10_lkp$ALT_CODE,
-    code_type = "icd10"
-  )
-
-  # return result
-  return(read_v2_icd10)
 }
 
 ## Validation helpers ---------------------------

@@ -132,6 +132,19 @@ list(
   ),
 
   tar_target(
+    READ2_ICD10_MAPPING_RMD,
+    command = {
+      !!tar_knitr_deps_expr(file.path("analysis", "read2_icd10_mapping.Rmd"))
+      suppressMessages(workflowr::wflow_build(file.path("analysis", "read2_icd10_mapping.Rmd"), verbose = FALSE))
+      c(
+        file.path("analysis", "read2_icd10_mapping.Rmd"),
+        file.path("public", "read2_icd10_mapping.html")
+      )
+    },
+    format = "file"
+  ),
+
+  tar_target(
     READ3_ICD10_MAPPING_RMD,
     command = {
       !!tar_knitr_deps_expr(file.path("analysis", "read3_icd10_mapping.Rmd"))

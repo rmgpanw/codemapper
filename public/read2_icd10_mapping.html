@@ -1,0 +1,979 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+<meta name="author" content="A Warwick and CY Ung" />
+
+
+<title>Read 2 to ICD10 mapping</title>
+
+<script src="site_libs/header-attrs-2.11/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script src="site_libs/navigation-1.1/codefolding.js"></script>
+<link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<link href="site_libs/tabwid-1.0.0/tabwid.css" rel="stylesheet" />
+<script src="site_libs/core-js-2.5.3/shim.min.js"></script>
+<script src="site_libs/react-17.0.0/react.min.js"></script>
+<script src="site_libs/react-17.0.0/react-dom.min.js"></script>
+<script src="site_libs/reactwidget-1.0.0/react-tools.js"></script>
+<script src="site_libs/htmlwidgets-1.5.4/htmlwidgets.js"></script>
+<script src="site_libs/reactable-binding-0.2.3/reactable.js"></script>
+<link href="site_libs/font-awesome-5.1.0/css/all.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-5.1.0/css/v4-shims.css" rel="stylesheet" />
+
+<link rel="icon" href="https://github.com/workflowr/workflowr-assets/raw/master/img/reproducible.png">
+<!-- Add a small amount of space between sections. -->
+<style type="text/css">
+div.section {
+  padding-top: 12px;
+}
+</style>
+
+
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.tab('show');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">codemapper</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="about.html">About</a>
+</li>
+<li>
+  <a href="license.html">License</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+  <a href="https://gitlab.com/rmgpanw/codemapper">
+    <span class="fa fa-gitlab"></span>
+     
+    Source code
+  </a>
+</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+<div class="btn-group pull-right float-right">
+<button type="button" class="btn btn-default btn-xs btn-secondary btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
+<ul class="dropdown-menu dropdown-menu-right" style="min-width: 50px;">
+<li><a id="rmd-show-all-code" href="#">Show All Code</a></li>
+<li><a id="rmd-hide-all-code" href="#">Hide All Code</a></li>
+</ul>
+</div>
+
+
+
+<h1 class="title toc-ignore">Read 2 to ICD10 mapping</h1>
+<h4 class="author">A Warwick and CY Ung</h4>
+<h4 class="date">16 March, 2022</h4>
+
+</div>
+
+
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-report" data-toggle="collapse" data-target="#workflowr-report">
+<span class="glyphicon glyphicon-list" aria-hidden="true"></span> workflowr <span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span>
+</button>
+</p>
+<div id="workflowr-report" class="collapse">
+<ul class="nav nav-tabs">
+<li class="active">
+<a data-toggle="tab" href="#summary">Summary</a>
+</li>
+<li>
+<a data-toggle="tab" href="#checks"> Checks <span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span> </a>
+</li>
+<li>
+<a data-toggle="tab" href="#versions">Past versions</a>
+</li>
+</ul>
+<div class="tab-content">
+<div id="summary" class="tab-pane fade in active">
+<p>
+<strong>Last updated:</strong> 2022-03-16
+</p>
+<p>
+<strong>Checks:</strong> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> 5 <span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span> 2
+</p>
+<p>
+<strong>Knit directory:</strong> <code>codemapper/</code> <span class="glyphicon glyphicon-question-sign" aria-hidden="true" title="This is the local directory in which the code in this file was executed."> </span>
+</p>
+<p>
+This reproducible <a href="http://rmarkdown.rstudio.com">R Markdown</a> analysis was created with <a
+  href="https://github.com/jdblischak/workflowr">workflowr</a> (version 1.6.2). The <em>Checks</em> tab describes the reproducibility checks that were applied when the results were created. The <em>Past versions</em> tab lists the development history.
+</p>
+<hr>
+</div>
+<div id="checks" class="tab-pane fade">
+<div id="workflowr-checks" class="panel-group">
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRMarkdownfilestronguncommittedchanges"> <span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span> <strong>R Markdown file:</strong> uncommitted changes </a>
+</p>
+</div>
+<div id="strongRMarkdownfilestronguncommittedchanges" class="panel-collapse collapse">
+<div class="panel-body">
+<p>The R Markdown file has unstaged changes. To know which version of the R Markdown file created these results, you’ll want to first commit it to the Git repo. If you’re still working on the analysis, you can ignore this warning. When you’re finished, you can run <code>wflow_publish</code> to commit the R Markdown file and build the HTML.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongEnvironmentstrongobjectspresent"> <span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span> <strong>Environment:</strong> objects present </a>
+</p>
+</div>
+<div id="strongEnvironmentstrongobjectspresent" class="panel-collapse collapse">
+<div class="panel-body">
+<p>
+The global environment had objects present when the code in the R Markdown file was run. These objects can affect the analysis in your R Markdown file in unknown ways. For reproduciblity it’s best to always run the code in an empty environment. Use <code>wflow_publish</code> or <code>wflow_build</code> to ensure that the code is always run in an empty environment.
+</p>
+<p>
+The following objects were defined in the global environment when these results were created:
+</p>
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th style="text-align:left;">
+Name
+</th>
+<th style="text-align:left;">
+Class
+</th>
+<th style="text-align:left;">
+Size
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+install_codemapper
+</td>
+<td style="text-align:left;">
+function
+</td>
+<td style="text-align:left;">
+1.2 Kb
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSeedstrongcodesetseed20210923code"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Seed:</strong> <code>set.seed(20210923)</code> </a>
+</p>
+</div>
+<div id="strongSeedstrongcodesetseed20210923code" class="panel-collapse collapse">
+<div class="panel-body">
+<p>The command <code>set.seed(20210923)</code> was run prior to running the code in the R Markdown file. Setting a seed ensures that any results that rely on randomness, e.g. subsampling or permutations, are reproducible.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSessioninformationstrongrecorded"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Session information:</strong> recorded </a>
+</p>
+</div>
+<div id="strongSessioninformationstrongrecorded" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! Recording the operating system, R version, and package versions is critical for reproducibility.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongCachestrongnone"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Cache:</strong> none </a>
+</p>
+</div>
+<div id="strongCachestrongnone" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Nice! There were no cached chunks for this analysis, so you can be confident that you successfully produced the results during this run.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongFilepathsstrongrelative"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>File paths:</strong> relative </a>
+</p>
+</div>
+<div id="strongFilepathsstrongrelative" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! Using relative paths to the files within your workflowr project makes it easier to run your code on other machines.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgitlabcomrmgpanwcodemappertreeb4253045e47a1d2c96dca4bc27dba999ffd06a45targetblankb425304a"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Repository version:</strong> <a href="https://gitlab.com/rmgpanw/codemapper/tree/b4253045e47a1d2c96dca4bc27dba999ffd06a45" target="_blank">b425304</a> </a>
+</p>
+</div>
+<div id="strongRepositoryversionstrongahrefhttpsgitlabcomrmgpanwcodemappertreeb4253045e47a1d2c96dca4bc27dba999ffd06a45targetblankb425304a" class="panel-collapse collapse">
+<div class="panel-body">
+<p>
+Great! You are using Git for version control. Tracking code development and connecting the code version to the results is critical for reproducibility.
+</p>
+<p>
+The results in this page were generated with repository version <a href="https://gitlab.com/rmgpanw/codemapper/tree/b4253045e47a1d2c96dca4bc27dba999ffd06a45" target="_blank">b425304</a>. See the <em>Past versions</em> tab to see a history of the changes made to the R Markdown and HTML files.
+</p>
+<p>
+Note that you need to be careful to ensure that all relevant files for the analysis have been committed to Git prior to generating the results (you can use <code>wflow_publish</code> or <code>wflow_git_commit</code>). workflowr only checks the R Markdown file, but you know if there are other scripts or data files that it depends on. Below is the status of the Git repository when the results were generated:
+</p>
+<pre><code>
+Ignored files:
+    Ignored:    .Renviron
+    Ignored:    .Rhistory
+    Ignored:    .Rproj.user/
+    Ignored:    _targets/
+    Ignored:    all_lkps_maps.db
+    Ignored:    all_lkps_maps.db.gz
+    Ignored:    renv/library/
+    Ignored:    renv/staging/
+    Ignored:    tar_make.R
+
+Unstaged changes:
+    Modified:   R/clinical_codes.R
+    Modified:   R/lookups_and_mappings.R
+    Modified:   R/utils.R
+    Modified:   _targets.R
+    Modified:   analysis/read2_icd10_mapping.Rmd
+    Modified:   analysis/read3_icd10_mapping.Rmd
+
+</code></pre>
+<p>
+Note that any generated files, e.g. HTML, png, CSS, etc., are not included in this status report because it is ok for generated content to have uncommitted changes.
+</p>
+</div>
+</div>
+</div>
+</div>
+<hr>
+</div>
+<div id="versions" class="tab-pane fade">
+
+<p>
+These are the previous versions of the repository in which changes were made to the R Markdown (<code>analysis/read2_icd10_mapping.Rmd</code>) and HTML (<code>public/read2_icd10_mapping.html</code>) files. If you’ve configured a remote Git repository (see <code>?wflow_git_remote</code>), click on the hyperlinks in the table below to view the files as they were in that past version.
+</p>
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+File
+</th>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+<th>
+Message
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://gitlab.com/rmgpanw/codemapper/blob/b4253045e47a1d2c96dca4bc27dba999ffd06a45/analysis/read2_icd10_mapping.Rmd" target="_blank">b425304</a>
+</td>
+<td>
+rmgpanw
+</td>
+<td>
+2022-03-15
+</td>
+<td>
+add code and tests to reformat read2 to icd10 mapping table
+</td>
+</tr>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://gitlab.com/rmgpanw/codemapper/blob/dfbc621185a9168c675bb0c4545ae5a015dbcf9b/analysis/read2_icd10_mapping.Rmd" target="_blank">dfbc621</a>
+</td>
+<td>
+Chuin Ying Ung
+</td>
+<td>
+2022-02-22
+</td>
+<td>
+add mapping notes
+</td>
+</tr>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://gitlab.com/rmgpanw/codemapper/blob/5b80a79b382d5745bb8de69f3f8d8f50d7334197/analysis/read2_icd10_mapping.Rmd" target="_blank">5b80a79</a>
+</td>
+<td>
+Chuin Ying Ung
+</td>
+<td>
+2022-02-22
+</td>
+<td>
+update notes
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<hr>
+</div>
+</div>
+</div>
+<pre class="r"><code>library(tidyverse)
+library(reactable)
+library(readxl)
+library(crosstalk)
+library(targets)
+library(codemapper)
+library(flextable)
+
+all_lkps_maps &lt;- tar_read(all_lkps_maps_raw) %&gt;% 
+  purrr::map(codemapper:::rm_footer_rows_all_lkps_maps_df) %&gt;%
+  purrr::map(~ tibble::rowid_to_column(.data = .x,
+                                       var = &quot;.rowid&quot;))
+
+read_v2_icd10 &lt;- all_lkps_maps$read_v2_icd10
+icd10_lkp &lt;- all_lkps_maps$icd10_lkp</code></pre>
+<pre class="r"><code># utility functions
+append_read_icd10_descriptions &lt;- function(df,
+                                            read_type = &quot;read2&quot;) {
+  match.arg(read_type,
+            c(&quot;read2&quot;, &quot;read3&quot;))
+  
+  # get read and icd10 descriptions
+  read_df &lt;- df$read_code %&gt;%
+    lookup_codes(code_type = read_type, 
+                 unrecognised_codes = &quot;warning&quot;) %&gt;%
+    select(read_code = code,
+           description_read3 = description)
+  
+  icd10_df &lt;- df$icd10_code %&gt;%
+    lookup_codes(code_type = &quot;icd10&quot;,
+                 unrecognised_codes = &quot;warning&quot;) %&gt;%
+    select(icd10_code = code,
+           description_icd10 = description)
+  
+  # append descriptions
+  list(df,
+       read_df,
+       icd10_df) %&gt;%
+    reduce(full_join) %&gt;%
+    select(contains(&quot;read&quot;),
+           contains(&quot;icd10&quot;),
+           everything())
+}</code></pre>
+<div id="key-points" class="section level1">
+<h1>Key points</h1>
+<ul>
+<li><p>Where a Read 2 code maps to multiple ICD10 codes, a range of ICD10 codes is presented in the <code>icd10_code</code> column. This needs reformatting (to allow programmatic mapping from Read 2 to ICD10) so that each ICD10 code appears on a separate row.</p></li>
+<li><p>The following additional reformatting operations are also required to ensure that the ICD10 codes in this mapping table match the <code>ALT_CODE</code> format in lookup table <code>icd10_lkp</code>:</p>
+<ul>
+<li><p>Remove appended ‘D’/‘A’ characters from dagger/asterisk ICD10 codes, and create a separate indicator column for these instead.</p></li>
+<li><p>Some undivided 3 character ICD10 codes appear inconsistently without an appended ‘X’. For example, ‘A64X’ appears as ‘A50-A64’, ‘A65X’ appears as ‘A65-A69’, ‘A70X’ as ‘A70-A74’, ‘A89X’ as ‘A80-A89’ and ‘A99X’ as ‘A92-A99’. The ‘X’ is re-appended to these codes during reformatting to match the <code>ALT_CODE</code> format in lookup table <code>icd10_lkp</code>.</p></li>
+<li><p>ICD10 code “C836” (“Diffuse non-Hodgkin’s lymphoma - Undifferentiated (diffuse)”) has been removed from ICD10 and does not exist in the <code>icd10_lkp</code> table. It is therefore also removed from the reformatted <code>read_v2_icd10</code> mapping table.</p></li>
+</ul></li>
+<li><p>It is often appropriate to map a single Read 2 code to multiple ICD10 codes, where more than one ICD10 code is required to define a single specific Read 2 cod (see examples below). However, it may not be desirable to map a single Read 2 code with a non-specific description to multiple specific ICD10 codes. For example, the Read 2 code for ‘Diabetes mellitus’, ‘C10..’, is mapped to ICD10 codes ‘E10-E14’, which include both type 1 and type 2 diabetes as well as all their potential complications (e.g. renal and ophthalmic complications). The <code>map_codes</code> function in <code>codemapper</code> excludes this category of mappings (flagged as <code>icd10_code_def</code> ‘2’ in the <code>read_v2_icd10</code> mapping table) by default.</p></li>
+</ul>
+</div>
+<div id="unrecognised-icd10-codes" class="section level1">
+<h1>Unrecognised ICD10 codes</h1>
+<pre><code>[1] TRUE</code></pre>
+<p>All Read 2 codes in the <code>read_v2_icd10</code> mapping table are present in the <code>read_v2_lkp</code> lookup table.</p>
+<pre class="r"><code># identify unrecognised ICD10 codes
+unrecognised_icd10_codes &lt;- subset(read_v2_icd10$icd10_code,
+       !read_v2_icd10$icd10_code %in% all_lkps_maps$icd10_lkp$ALT_CODE) %&gt;% 
+  unique()</code></pre>
+<p>There are 1438 ICD10 codes in the <code>read_v2_icd10</code> mapping table that are <em>not</em> present in the <code>icd10_lkp</code> table (<code>ALT_CODE</code> format). These are mostly flagged by values in column <code>icd10_code_def</code>, with two exceptions:</p>
+<ol style="list-style-type: decimal">
+<li>ICD10 code ‘C836’ has been removed from ICD10 and does not appear in the lookup <code>icd10_lkp</code>table.</li>
+<li>Several undivided 3 character ICD10 codes appear inconsistently without an appended ‘X’ in the <code>read_v2_icd10</code> mapping table.</li>
+</ol>
+<p>Some examples, ‘C836’ and ‘A64’ (the latter should appear as ‘A64X’):</p>
+<pre class="r"><code>read_v2_icd10 %&gt;% 
+  filter(str_detect(icd10_code,
+                    pattern = &quot;A64|C836&quot;)) %&gt;% 
+  append_read_icd10_descriptions() %&gt;% 
+  select(-.rowid) %&gt;% 
+  flextable()</code></pre>
+<template id="8f654129-81a2-42c5-9ba9-e8b03adf8ca9"><style>
+.tabwid table{
+  border-spacing:0px !important;
+  border-collapse:collapse;
+  line-height:1;
+  margin-left:auto;
+  margin-right:auto;
+  border-width: 0;
+  display: table;
+  margin-top: 1.275em;
+  margin-bottom: 1.275em;
+  border-color: transparent;
+}
+.tabwid_left table{
+  margin-left:0;
+}
+.tabwid_right table{
+  margin-right:0;
+}
+.tabwid td {
+    padding: 0;
+}
+.tabwid a {
+  text-decoration: none;
+}
+.tabwid thead {
+    background-color: transparent;
+}
+.tabwid tfoot {
+    background-color: transparent;
+}
+.tabwid table tr {
+background-color: transparent;
+}
+</style><div class="tabwid"><style>.cl-7f609f92{}.cl-7f5a6f3c{font-family:'Helvetica';font-size:11pt;font-weight:normal;font-style:normal;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;}.cl-7f5a82c4{margin:0;text-align:left;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:5pt;padding-top:5pt;padding-left:5pt;padding-right:5pt;line-height: 1;background-color:transparent;}.cl-7f5ab91a{width:54pt;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-7f5ab92e{width:54pt;background-color:transparent;vertical-align: middle;border-bottom: 2pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-7f5ab938{width:54pt;background-color:transparent;vertical-align: middle;border-bottom: 2pt solid rgba(102, 102, 102, 1.00);border-top: 2pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}</style><table class='cl-7f609f92'>
+<thead><tr style="overflow-wrap:break-word;"><td class="cl-7f5ab938"><p class="cl-7f5a82c4"><span class="cl-7f5a6f3c">read_code</span></p></td><td class="cl-7f5ab938"><p class="cl-7f5a82c4"><span class="cl-7f5a6f3c">description_read3</span></p></td><td class="cl-7f5ab938"><p class="cl-7f5a82c4"><span class="cl-7f5a6f3c">icd10_code</span></p></td><td class="cl-7f5ab938"><p class="cl-7f5a82c4"><span class="cl-7f5a6f3c">icd10_code_def</span></p></td><td class="cl-7f5ab938"><p class="cl-7f5a82c4"><span class="cl-7f5a6f3c">description_icd10</span></p></td></tr></thead><tbody><tr style="overflow-wrap:break-word;"><td class="cl-7f5ab91a"><p class="cl-7f5a82c4"><span class="cl-7f5a6f3c">A9...</span></p></td><td class="cl-7f5ab91a"><p class="cl-7f5a82c4"><span class="cl-7f5a6f3c">Syphilis and other venereal diseases</span></p></td><td class="cl-7f5ab91a"><p class="cl-7f5a82c4"><span class="cl-7f5a6f3c">A50-A64X</span></p></td><td class="cl-7f5ab91a"><p class="cl-7f5a82c4"><span class="cl-7f5a6f3c">2</span></p></td><td class="cl-7f5ab91a"><p class="cl-7f5a82c4"><span class="cl-7f5a6f3c"></span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-7f5ab91a"><p class="cl-7f5a82c4"><span class="cl-7f5a6f3c">A99..</span></p></td><td class="cl-7f5ab91a"><p class="cl-7f5a82c4"><span class="cl-7f5a6f3c">Other venereal diseases</span></p></td><td class="cl-7f5ab91a"><p class="cl-7f5a82c4"><span class="cl-7f5a6f3c">A55X-A64X</span></p></td><td class="cl-7f5ab91a"><p class="cl-7f5a82c4"><span class="cl-7f5a6f3c">2</span></p></td><td class="cl-7f5ab91a"><p class="cl-7f5a82c4"><span class="cl-7f5a6f3c"></span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-7f5ab91a"><p class="cl-7f5a82c4"><span class="cl-7f5a6f3c">A99z.</span></p></td><td class="cl-7f5ab91a"><p class="cl-7f5a82c4"><span class="cl-7f5a6f3c">Venereal disease NOS</span></p></td><td class="cl-7f5ab91a"><p class="cl-7f5a82c4"><span class="cl-7f5a6f3c">A64X</span></p></td><td class="cl-7f5ab91a"><p class="cl-7f5a82c4"><span class="cl-7f5a6f3c">1</span></p></td><td class="cl-7f5ab91a"><p class="cl-7f5a82c4"><span class="cl-7f5a6f3c">Unspecified sexually transmitted disease</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-7f5ab91a"><p class="cl-7f5a82c4"><span class="cl-7f5a6f3c">A9z..</span></p></td><td class="cl-7f5ab91a"><p class="cl-7f5a82c4"><span class="cl-7f5a6f3c">Syphilis or venereal disease NOS</span></p></td><td class="cl-7f5ab91a"><p class="cl-7f5a82c4"><span class="cl-7f5a6f3c">A50-A64</span></p></td><td class="cl-7f5ab91a"><p class="cl-7f5a82c4"><span class="cl-7f5a6f3c">2</span></p></td><td class="cl-7f5ab91a"><p class="cl-7f5a82c4"><span class="cl-7f5a6f3c"></span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-7f5ab91a"><p class="cl-7f5a82c4"><span class="cl-7f5a6f3c">Ayu4.</span></p></td><td class="cl-7f5ab91a"><p class="cl-7f5a82c4"><span class="cl-7f5a6f3c">[X]Infections with a predominantly sexual mode of transmission</span></p></td><td class="cl-7f5ab91a"><p class="cl-7f5a82c4"><span class="cl-7f5a6f3c">A50-A64X</span></p></td><td class="cl-7f5ab91a"><p class="cl-7f5a82c4"><span class="cl-7f5a6f3c">2</span></p></td><td class="cl-7f5ab91a"><p class="cl-7f5a82c4"><span class="cl-7f5a6f3c"></span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-7f5ab91a"><p class="cl-7f5a82c4"><span class="cl-7f5a6f3c">Ayu4J</span></p></td><td class="cl-7f5ab91a"><p class="cl-7f5a82c4"><span class="cl-7f5a6f3c">[X]Unspecified sexually transmitted disease</span></p></td><td class="cl-7f5ab91a"><p class="cl-7f5a82c4"><span class="cl-7f5a6f3c">A64X</span></p></td><td class="cl-7f5ab91a"><p class="cl-7f5a82c4"><span class="cl-7f5a6f3c">1</span></p></td><td class="cl-7f5ab91a"><p class="cl-7f5a82c4"><span class="cl-7f5a6f3c">Unspecified sexually transmitted disease</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-7f5ab91a"><p class="cl-7f5a82c4"><span class="cl-7f5a6f3c">Ayu4N</span></p></td><td class="cl-7f5ab91a"><p class="cl-7f5a82c4"><span class="cl-7f5a6f3c">[X]Sexually transmitted infectious disease</span></p></td><td class="cl-7f5ab91a"><p class="cl-7f5a82c4"><span class="cl-7f5a6f3c">A50-A64</span></p></td><td class="cl-7f5ab91a"><p class="cl-7f5a82c4"><span class="cl-7f5a6f3c">2</span></p></td><td class="cl-7f5ab91a"><p class="cl-7f5a82c4"><span class="cl-7f5a6f3c"></span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-7f5ab92e"><p class="cl-7f5a82c4"><span class="cl-7f5a6f3c">B6278</span></p></td><td class="cl-7f5ab92e"><p class="cl-7f5a82c4"><span class="cl-7f5a6f3c">Diffuse non-Hodgkin's lymphoma undifferentiated (diffuse)</span></p></td><td class="cl-7f5ab92e"><p class="cl-7f5a82c4"><span class="cl-7f5a6f3c">C836</span></p></td><td class="cl-7f5ab92e"><p class="cl-7f5a82c4"><span class="cl-7f5a6f3c">1</span></p></td><td class="cl-7f5ab92e"><p class="cl-7f5a82c4"><span class="cl-7f5a6f3c"></span></p></td></tr></tbody></table></div></template>
+<div class="flextable-shadow-host" id="420b4e92-0288-4ad5-bd3c-6dddc94683f8"></div>
+<script>
+var dest = document.getElementById("420b4e92-0288-4ad5-bd3c-6dddc94683f8");
+var template = document.getElementById("8f654129-81a2-42c5-9ba9-e8b03adf8ca9");
+var caption = template.content.querySelector("caption");
+if(caption) {
+  caption.style.cssText = "display:block;text-align:center;";
+  var newcapt = document.createElement("p");
+  newcapt.appendChild(caption)
+  dest.parentNode.insertBefore(newcapt, dest.previousSibling);
+}
+var fantome = dest.attachShadow({mode: 'open'});
+var templateContent = template.content;
+fantome.appendChild(templateContent);
+</script>
+
+</div>
+<div id="mapping-types-icd10_code_def" class="section level1">
+<h1>Mapping types: <code>icd10_code_def</code></h1>
+<p>Column <code>icd10_code_def</code> signifies, for example, whether or not the Read 2 code matches to a single ICD-10 code, if the ICD-10 code is a parent code that links to several child codes, if the ICD-10 code is asterisk or dagger code, a dagger-asterisk combination, etc.</p>
+<p>Below are some example codes for each value in <code>icd10_code_def</code>:</p>
+<pre class="r"><code>read_v2_icd10 %&gt;%
+  filter(!is.na(icd10_code_def)) %&gt;%
+  mutate(
+    icd10_contains_dash = ifelse(str_detect(icd10_code,
+                                        &quot;-&quot;),
+                             yes = &quot;dash&quot;,
+                             no = NA_character_),
+    icd10_contains_comma = ifelse(str_detect(icd10_code,
+                                         &quot;,&quot;),
+                              yes = &quot;comma&quot;,
+                              no = NA_character_),
+    icd10_contains_space = ifelse(str_detect(icd10_code,
+                                         &quot;\\s&quot;),
+                              yes = &quot;space&quot;,
+                              no = NA_character_),
+    icd10_contains_plus = ifelse(str_detect(icd10_code,
+                                        &quot;\\+&quot;),
+                             yes = &quot;plus&quot;,
+                             no = NA_character_),
+    icd10_contains_da_ending = ifelse(str_detect(icd10_code,
+                                        &quot;[D|A]$&quot;),
+                             yes = &quot;DAending&quot;,
+                             no = NA_character_)
+  ) %&gt;% 
+  unite(col = &quot;icd10_pattern&quot;, 
+        starts_with(&quot;icd10_contains_&quot;), 
+        sep = &quot;_&quot;, 
+        remove = TRUE, 
+        na.rm = TRUE) %&gt;% 
+  group_by(icd10_code_def,
+           icd10_pattern) %&gt;%
+  slice(1L) %&gt;%
+  ungroup() %&gt;% 
+  append_read_icd10_descriptions() %&gt;% 
+  arrange(description_icd10) %&gt;% 
+  select(icd10_code_def,
+         icd10_pattern,
+         everything()) %&gt;% 
+  select(-.rowid) %&gt;% 
+  flextable::as_grouped_data(&quot;icd10_code_def&quot;) %&gt;% 
+  flextable() %&gt;% 
+  suppressWarnings()</code></pre>
+<template id="b289f1d2-d321-4915-bb0a-991d208de4e3"><style>
+.tabwid table{
+  border-spacing:0px !important;
+  border-collapse:collapse;
+  line-height:1;
+  margin-left:auto;
+  margin-right:auto;
+  border-width: 0;
+  display: table;
+  margin-top: 1.275em;
+  margin-bottom: 1.275em;
+  border-color: transparent;
+}
+.tabwid_left table{
+  margin-left:0;
+}
+.tabwid_right table{
+  margin-right:0;
+}
+.tabwid td {
+    padding: 0;
+}
+.tabwid a {
+  text-decoration: none;
+}
+.tabwid thead {
+    background-color: transparent;
+}
+.tabwid tfoot {
+    background-color: transparent;
+}
+.tabwid table tr {
+background-color: transparent;
+}
+</style><div class="tabwid"><style>.cl-8021dacc{}.cl-801c9abc{font-family:'Helvetica';font-size:11pt;font-weight:normal;font-style:normal;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;}.cl-801ca7be{margin:0;text-align:left;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:5pt;padding-top:5pt;padding-left:5pt;padding-right:5pt;line-height: 1;background-color:transparent;}.cl-801ce1ca{width:54pt;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-801ce1de{width:54pt;background-color:transparent;vertical-align: middle;border-bottom: 2pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-801ce1f2{width:54pt;background-color:transparent;vertical-align: middle;border-bottom: 2pt solid rgba(102, 102, 102, 1.00);border-top: 2pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}</style><table class='cl-8021dacc'>
+<thead><tr style="overflow-wrap:break-word;"><td class="cl-801ce1f2"><p class="cl-801ca7be"><span class="cl-801c9abc">icd10_code_def</span></p></td><td class="cl-801ce1f2"><p class="cl-801ca7be"><span class="cl-801c9abc">icd10_pattern</span></p></td><td class="cl-801ce1f2"><p class="cl-801ca7be"><span class="cl-801c9abc">read_code</span></p></td><td class="cl-801ce1f2"><p class="cl-801ca7be"><span class="cl-801c9abc">description_read3</span></p></td><td class="cl-801ce1f2"><p class="cl-801ca7be"><span class="cl-801c9abc">icd10_code</span></p></td><td class="cl-801ce1f2"><p class="cl-801ca7be"><span class="cl-801c9abc">description_icd10</span></p></td></tr></thead><tbody><tr style="overflow-wrap:break-word;"><td class="cl-801ce1ca"><p class="cl-801ca7be"><span class="cl-801c9abc">1</span></p></td><td class="cl-801ce1ca"><p class="cl-801ca7be"><span class="cl-801c9abc"></span></p></td><td class="cl-801ce1ca"><p class="cl-801ca7be"><span class="cl-801c9abc"></span></p></td><td class="cl-801ce1ca"><p class="cl-801ca7be"><span class="cl-801c9abc"></span></p></td><td class="cl-801ce1ca"><p class="cl-801ca7be"><span class="cl-801c9abc"></span></p></td><td class="cl-801ce1ca"><p class="cl-801ca7be"><span class="cl-801c9abc"></span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-801ce1ca"><p class="cl-801ca7be"><span class="cl-801c9abc"></span></p></td><td class="cl-801ce1ca"><p class="cl-801ca7be"><span class="cl-801c9abc"></span></p></td><td class="cl-801ce1ca"><p class="cl-801ca7be"><span class="cl-801c9abc">A00..</span></p></td><td class="cl-801ce1ca"><p class="cl-801ca7be"><span class="cl-801c9abc">Cholera</span></p></td><td class="cl-801ce1ca"><p class="cl-801ca7be"><span class="cl-801c9abc">A00</span></p></td><td class="cl-801ce1ca"><p class="cl-801ca7be"><span class="cl-801c9abc">Cholera</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-801ce1ca"><p class="cl-801ca7be"><span class="cl-801c9abc">15</span></p></td><td class="cl-801ce1ca"><p class="cl-801ca7be"><span class="cl-801c9abc"></span></p></td><td class="cl-801ce1ca"><p class="cl-801ca7be"><span class="cl-801c9abc"></span></p></td><td class="cl-801ce1ca"><p class="cl-801ca7be"><span class="cl-801c9abc"></span></p></td><td class="cl-801ce1ca"><p class="cl-801ca7be"><span class="cl-801c9abc"></span></p></td><td class="cl-801ce1ca"><p class="cl-801ca7be"><span class="cl-801c9abc"></span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-801ce1ca"><p class="cl-801ca7be"><span class="cl-801c9abc"></span></p></td><td class="cl-801ce1ca"><p class="cl-801ca7be"><span class="cl-801c9abc">plus</span></p></td><td class="cl-801ce1ca"><p class="cl-801ca7be"><span class="cl-801c9abc">A3805</span></p></td><td class="cl-801ce1ca"><p class="cl-801ca7be"><span class="cl-801c9abc">Vancomycin resistant enterococcal septicaemia</span></p></td><td class="cl-801ce1ca"><p class="cl-801ca7be"><span class="cl-801c9abc">A408+U830</span></p></td><td class="cl-801ce1ca"><p class="cl-801ca7be"><span class="cl-801c9abc"></span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-801ce1ca"><p class="cl-801ca7be"><span class="cl-801c9abc"></span></p></td><td class="cl-801ce1ca"><p class="cl-801ca7be"><span class="cl-801c9abc">space_plus</span></p></td><td class="cl-801ce1ca"><p class="cl-801ca7be"><span class="cl-801c9abc">A365.</span></p></td><td class="cl-801ce1ca"><p class="cl-801ca7be"><span class="cl-801c9abc">Meningococcal meningitis with acute meningococcal septicaemia</span></p></td><td class="cl-801ce1ca"><p class="cl-801ca7be"><span class="cl-801c9abc">A390D G01XA+A392</span></p></td><td class="cl-801ce1ca"><p class="cl-801ca7be"><span class="cl-801c9abc"></span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-801ce1ca"><p class="cl-801ca7be"><span class="cl-801c9abc">2</span></p></td><td class="cl-801ce1ca"><p class="cl-801ca7be"><span class="cl-801c9abc"></span></p></td><td class="cl-801ce1ca"><p class="cl-801ca7be"><span class="cl-801c9abc"></span></p></td><td class="cl-801ce1ca"><p class="cl-801ca7be"><span class="cl-801c9abc"></span></p></td><td class="cl-801ce1ca"><p class="cl-801ca7be"><span class="cl-801c9abc"></span></p></td><td class="cl-801ce1ca"><p class="cl-801ca7be"><span class="cl-801c9abc"></span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-801ce1ca"><p class="cl-801ca7be"><span class="cl-801c9abc"></span></p></td><td class="cl-801ce1ca"><p class="cl-801ca7be"><span class="cl-801c9abc">dash</span></p></td><td class="cl-801ce1ca"><p class="cl-801ca7be"><span class="cl-801c9abc">A0...</span></p></td><td class="cl-801ce1ca"><p class="cl-801ca7be"><span class="cl-801c9abc">Intestinal infectious diseases</span></p></td><td class="cl-801ce1ca"><p class="cl-801ca7be"><span class="cl-801c9abc">A00-A09</span></p></td><td class="cl-801ce1ca"><p class="cl-801ca7be"><span class="cl-801c9abc"></span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-801ce1ca"><p class="cl-801ca7be"><span class="cl-801c9abc"></span></p></td><td class="cl-801ce1ca"><p class="cl-801ca7be"><span class="cl-801c9abc">dash_DAending</span></p></td><td class="cl-801ce1ca"><p class="cl-801ca7be"><span class="cl-801c9abc">A13..</span></p></td><td class="cl-801ce1ca"><p class="cl-801ca7be"><span class="cl-801c9abc">Tuberculosis of meninges and central nervous system</span></p></td><td class="cl-801ce1ca"><p class="cl-801ca7be"><span class="cl-801c9abc">A170D-A179D</span></p></td><td class="cl-801ce1ca"><p class="cl-801ca7be"><span class="cl-801c9abc"></span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-801ce1ca"><p class="cl-801ca7be"><span class="cl-801c9abc">3</span></p></td><td class="cl-801ce1ca"><p class="cl-801ca7be"><span class="cl-801c9abc"></span></p></td><td class="cl-801ce1ca"><p class="cl-801ca7be"><span class="cl-801c9abc"></span></p></td><td class="cl-801ce1ca"><p class="cl-801ca7be"><span class="cl-801c9abc"></span></p></td><td class="cl-801ce1ca"><p class="cl-801ca7be"><span class="cl-801c9abc"></span></p></td><td class="cl-801ce1ca"><p class="cl-801ca7be"><span class="cl-801c9abc"></span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-801ce1ca"><p class="cl-801ca7be"><span class="cl-801c9abc"></span></p></td><td class="cl-801ce1ca"><p class="cl-801ca7be"><span class="cl-801c9abc">comma</span></p></td><td class="cl-801ce1ca"><p class="cl-801ca7be"><span class="cl-801c9abc">A34..</span></p></td><td class="cl-801ce1ca"><p class="cl-801ca7be"><span class="cl-801c9abc">Streptococcal sore throat and scarlatina</span></p></td><td class="cl-801ce1ca"><p class="cl-801ca7be"><span class="cl-801c9abc">J020,A38X</span></p></td><td class="cl-801ce1ca"><p class="cl-801ca7be"><span class="cl-801c9abc"></span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-801ce1ca"><p class="cl-801ca7be"><span class="cl-801c9abc">5</span></p></td><td class="cl-801ce1ca"><p class="cl-801ca7be"><span class="cl-801c9abc"></span></p></td><td class="cl-801ce1ca"><p class="cl-801ca7be"><span class="cl-801c9abc"></span></p></td><td class="cl-801ce1ca"><p class="cl-801ca7be"><span class="cl-801c9abc"></span></p></td><td class="cl-801ce1ca"><p class="cl-801ca7be"><span class="cl-801c9abc"></span></p></td><td class="cl-801ce1ca"><p class="cl-801ca7be"><span class="cl-801c9abc"></span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-801ce1ca"><p class="cl-801ca7be"><span class="cl-801c9abc"></span></p></td><td class="cl-801ce1ca"><p class="cl-801ca7be"><span class="cl-801c9abc">DAending</span></p></td><td class="cl-801ce1ca"><p class="cl-801ca7be"><span class="cl-801c9abc">Cy0..</span></p></td><td class="cl-801ce1ca"><p class="cl-801ca7be"><span class="cl-801c9abc">Nutritional and metabolic disorders in diseases classified elsewhere</span></p></td><td class="cl-801ce1ca"><p class="cl-801ca7be"><span class="cl-801c9abc">E90XA</span></p></td><td class="cl-801ce1ca"><p class="cl-801ca7be"><span class="cl-801c9abc"></span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-801ce1ca"><p class="cl-801ca7be"><span class="cl-801c9abc">7</span></p></td><td class="cl-801ce1ca"><p class="cl-801ca7be"><span class="cl-801c9abc"></span></p></td><td class="cl-801ce1ca"><p class="cl-801ca7be"><span class="cl-801c9abc"></span></p></td><td class="cl-801ce1ca"><p class="cl-801ca7be"><span class="cl-801c9abc"></span></p></td><td class="cl-801ce1ca"><p class="cl-801ca7be"><span class="cl-801c9abc"></span></p></td><td class="cl-801ce1ca"><p class="cl-801ca7be"><span class="cl-801c9abc"></span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-801ce1ca"><p class="cl-801ca7be"><span class="cl-801c9abc"></span></p></td><td class="cl-801ce1ca"><p class="cl-801ca7be"><span class="cl-801c9abc">space_DAending</span></p></td><td class="cl-801ce1ca"><p class="cl-801ca7be"><span class="cl-801c9abc">A0221</span></p></td><td class="cl-801ce1ca"><p class="cl-801ca7be"><span class="cl-801c9abc">Salmonella meningitis</span></p></td><td class="cl-801ce1ca"><p class="cl-801ca7be"><span class="cl-801c9abc">A022D G01XA</span></p></td><td class="cl-801ce1ca"><p class="cl-801ca7be"><span class="cl-801c9abc"></span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-801ce1ca"><p class="cl-801ca7be"><span class="cl-801c9abc">8</span></p></td><td class="cl-801ce1ca"><p class="cl-801ca7be"><span class="cl-801c9abc"></span></p></td><td class="cl-801ce1ca"><p class="cl-801ca7be"><span class="cl-801c9abc"></span></p></td><td class="cl-801ce1ca"><p class="cl-801ca7be"><span class="cl-801c9abc"></span></p></td><td class="cl-801ce1ca"><p class="cl-801ca7be"><span class="cl-801c9abc"></span></p></td><td class="cl-801ce1ca"><p class="cl-801ca7be"><span class="cl-801c9abc"></span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-801ce1de"><p class="cl-801ca7be"><span class="cl-801c9abc"></span></p></td><td class="cl-801ce1de"><p class="cl-801ca7be"><span class="cl-801c9abc">DAending</span></p></td><td class="cl-801ce1de"><p class="cl-801ca7be"><span class="cl-801c9abc">A13y.</span></p></td><td class="cl-801ce1de"><p class="cl-801ca7be"><span class="cl-801c9abc">Other specified tuberculosis of central nervous system</span></p></td><td class="cl-801ce1de"><p class="cl-801ca7be"><span class="cl-801c9abc">A178D</span></p></td><td class="cl-801ce1de"><p class="cl-801ca7be"><span class="cl-801c9abc"></span></p></td></tr></tbody></table></div></template>
+<div class="flextable-shadow-host" id="ea4d8de1-0753-4e93-8018-39e4388df503"></div>
+<script>
+var dest = document.getElementById("ea4d8de1-0753-4e93-8018-39e4388df503");
+var template = document.getElementById("b289f1d2-d321-4915-bb0a-991d208de4e3");
+var caption = template.content.querySelector("caption");
+if(caption) {
+  caption.style.cssText = "display:block;text-align:center;";
+  var newcapt = document.createElement("p");
+  newcapt.appendChild(caption)
+  dest.parentNode.insertBefore(newcapt, dest.previousSibling);
+}
+var fantome = dest.attachShadow({mode: 'open'});
+var templateContent = template.content;
+fantome.appendChild(templateContent);
+</script>
+
+<p>Mappings categorised as <code>icd10_code_def</code> ‘1’, ‘5’ or ‘8’ are one-to-one, whereas the other categories are one-to-many. Read codes in category ‘2’ have non-specific descriptions and map to multiple specific ICD10 codes, which may be conflicting. The examples above are re-shown below with ICD10 code descriptions appended.</p>
+<pre class="r"><code>read_v2_icd10 %&gt;%
+  filter(!is.na(icd10_code_def)) %&gt;%
+  mutate(
+    icd10_contains_dash = ifelse(str_detect(icd10_code,
+                                        &quot;-&quot;),
+                             yes = &quot;dash&quot;,
+                             no = NA_character_),
+    icd10_contains_comma = ifelse(str_detect(icd10_code,
+                                         &quot;,&quot;),
+                              yes = &quot;comma&quot;,
+                              no = NA_character_),
+    icd10_contains_space = ifelse(str_detect(icd10_code,
+                                         &quot;\\s&quot;),
+                              yes = &quot;space&quot;,
+                              no = NA_character_),
+    icd10_contains_plus = ifelse(str_detect(icd10_code,
+                                        &quot;\\+&quot;),
+                             yes = &quot;plus&quot;,
+                             no = NA_character_),
+    icd10_contains_da_ending = ifelse(str_detect(icd10_code,
+                                        &quot;[D|A]$&quot;),
+                             yes = &quot;DAending&quot;,
+                             no = NA_character_)
+  ) %&gt;% 
+  unite(col = &quot;icd10_pattern&quot;, 
+        starts_with(&quot;icd10_contains_&quot;), 
+        sep = &quot;_&quot;, 
+        remove = TRUE, 
+        na.rm = TRUE) %&gt;% 
+  group_by(icd10_code_def,
+           icd10_pattern) %&gt;%
+  slice(1L) %&gt;%
+  ungroup() %&gt;% 
+  codemapper:::reformat_read_v2_icd10(icd10_lkp = all_lkps_maps$icd10_lkp) %&gt;% 
+  append_read_icd10_descriptions() %&gt;% 
+  arrange(description_icd10) %&gt;% 
+  select(icd10_code_def,
+         icd10_pattern,
+         everything()) %&gt;% 
+  select(-.rowid) %&gt;% 
+  reactable(filterable = TRUE,
+            searchable = TRUE,
+            showPageSizeOptions = TRUE,
+            pageSizeOptions = c(10, 25, 50, 10),
+            groupBy = &quot;icd10_code_def&quot;)</code></pre>
+<div id="htmlwidget-6a1abf7af6f62b6c84d5" class="reactable html-widget" style="width:auto;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-6a1abf7af6f62b6c84d5">{"x":{"tag":{"name":"Reactable","attribs":{"data":{"icd10_code_def":["2","2","15","2","2","2","2","2","2","2","2","2","2","2","2","2","2","1","2","2","2","2","2","2","2","2","2","2","2","2","2","2","2","2","2","2","2","2","2","7","2","15","7","15","5","2","2","2","2","2","2","2","2","2","2","2","2","2","15","2","8","2","2","2","2","2","2","15","2","2","2","2","3","2","2","2","2","2","2","3","2","2","2","2","2","2"],"icd10_pattern":["dash","dash","space_plus","dash","dash","dash","dash","dash","dash","dash","dash","dash","dash","dash","dash","dash","dash","","dash","dash","dash","dash","dash","dash","dash","dash","dash","dash","dash","dash","dash","dash","dash","dash","dash","dash","dash","dash","dash","space_DAending","dash_DAending","space_plus","space_DAending","space_plus","DAending","dash","dash","dash","dash","dash","dash","dash","dash","dash","dash","dash","dash","dash","plus","dash_DAending","DAending","dash","dash","dash","dash","dash","dash","plus","dash","dash","dash","dash","comma","dash","dash","dash","dash","dash","dash","comma","dash_DAending","dash_DAending","dash","dash","dash","dash"],"read_code":["A0...","A0...","A365.","A0...","A0...","A0...","A0...","A0...","A0...","A0...","A0...","A0...","A0...","A0...","A0...","A0...","A0...","A00..","A0...","A0...","A0...","A0...","A0...","A0...","A0...","A0...","A0...","A0...","A0...","A0...","A0...","A0...","A0...","A0...","A0...","A0...","A0...","A0...","A0...","A0221","A13..","A365.","A0221","A365.","Cy0..","A0...","A0...","A0...","A0...","A0...","A0...","A0...","A0...","A0...","A0...","A0...","A0...","A0...","A3805","A13..","A13y.","A0...","A0...","A0...","A0...","A0...","A0...","A3805","A0...","A0...","A0...","A0...","A34..","A0...","A0...","A0...","A0...","A0...","A0...","A34..","A13..","A13..","A0...","A0...","A0...","A0..."],"description_read3":["Intestinal infectious diseases","Intestinal infectious diseases","Meningococcal meningitis with acute meningococcal septicaemia","Intestinal infectious diseases","Intestinal infectious diseases","Intestinal infectious diseases","Intestinal infectious diseases","Intestinal infectious diseases","Intestinal infectious diseases","Intestinal infectious diseases","Intestinal infectious diseases","Intestinal infectious diseases","Intestinal infectious diseases","Intestinal infectious diseases","Intestinal infectious diseases","Intestinal infectious diseases","Intestinal infectious diseases","Cholera","Intestinal infectious diseases","Intestinal infectious diseases","Intestinal infectious diseases","Intestinal infectious diseases","Intestinal infectious diseases","Intestinal infectious diseases","Intestinal infectious diseases","Intestinal infectious diseases","Intestinal infectious diseases","Intestinal infectious diseases","Intestinal infectious diseases","Intestinal infectious diseases","Intestinal infectious diseases","Intestinal infectious diseases","Intestinal infectious diseases","Intestinal infectious diseases","Intestinal infectious diseases","Intestinal infectious diseases","Intestinal infectious diseases","Intestinal infectious diseases","Intestinal infectious diseases","Salmonella meningitis","Tuberculosis of meninges and central nervous system","Meningococcal meningitis with acute meningococcal septicaemia","Salmonella meningitis","Meningococcal meningitis with acute meningococcal septicaemia","Nutritional and metabolic disorders in diseases classified elsewhere","Intestinal infectious diseases","Intestinal infectious diseases","Intestinal infectious diseases","Intestinal infectious diseases","Intestinal infectious diseases","Intestinal infectious diseases","Intestinal infectious diseases","Intestinal infectious diseases","Intestinal infectious diseases","Intestinal infectious diseases","Intestinal infectious diseases","Intestinal infectious diseases","Intestinal infectious diseases","Vancomycin resistant enterococcal septicaemia","Tuberculosis of meninges and central nervous system","Other specified tuberculosis of central nervous system","Intestinal infectious diseases","Intestinal infectious diseases","Intestinal infectious diseases","Intestinal infectious diseases","Intestinal infectious diseases","Intestinal infectious diseases","Vancomycin resistant enterococcal septicaemia","Intestinal infectious diseases","Intestinal infectious diseases","Intestinal infectious diseases","Intestinal infectious diseases","Streptococcal sore throat and scarlatina","Intestinal infectious diseases","Intestinal infectious diseases","Intestinal infectious diseases","Intestinal infectious diseases","Intestinal infectious diseases","Intestinal infectious diseases","Streptococcal sore throat and scarlatina","Tuberculosis of meninges and central nervous system","Tuberculosis of meninges and central nervous system","Intestinal infectious diseases","Intestinal infectious diseases","Intestinal infectious diseases","Intestinal infectious diseases"],"icd10_code":["A060","A081","A392","A082","A06","A069","A066","A068","A064","A065","A062","A063","A059","A049","A070","A051","A045","A00","A00","A000","A001","A009","A061","A072","A067","A046","A047","A043","A042","A040","A041","A054","A052","A050","A053","A099","A071","A073","A022","A022","A171","G01X","G01X","A390","E90X","A090","A05","A04","A09","A044","A07","A02","A038","A058","A048","A085","A078","A028","A408","A178","A178","A083","A011","A012","A013","A014","A079","U830","A080","A020","A029","A021","A38X","A03","A032","A030","A031","A033","A039","J020","A179","A170","A01","A010","A08","A084"],"icd10_dagger_asterisk":[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,"D","D","A","A","D","A",null,null,null,null,null,null,null,null,null,null,null,null,null,null,"D","D",null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,"D","D",null,null,null,null],"description_icd10":["Acute amoebic dysentery","Acute gastroenteropathy due to Norwalk agent","Acute meningococcaemia","Adenoviral enteritis","Amoebiasis","Amoebiasis, unspecified","Amoebic brain abscess","Amoebic infection of other sites","Amoebic liver abscess","Amoebic lung abscess","Amoebic nondysenteric colitis","Amoeboma of intestine","Bacterial foodborne intoxication, unspecified","Bacterial intestinal infection, unspecified","Balantidiasis","Botulism","Campylobacter enteritis","Cholera","Cholera","Cholera due to Vibrio cholerae 01, biovar cholerae","Cholera due to Vibrio cholerae 01, biovar eltor","Cholera, unspecified","Chronic intestinal amoebiasis","Cryptosporidiosis","Cutaneous amoebiasis","Enteritis due to Yersinia enterocolitica","Enterocolitis due to Clostridium difficile","Enterohaemorrhagic Escherichia coli infection","Enteroinvasive Escherichia coli infection","Enteropathogenic Escherichia coli infection","Enterotoxigenic Escherichia coli infection","Foodborne Bacillus cereus intoxication","Foodborne Clostridium perfringens [Clostridium welchii] intoxication","Foodborne staphylococcal intoxication","Foodborne Vibrio parahaemolyticus intoxication","Gastroenteritis and colitis of unspecified origin","Giardiasis [lambliasis]","Isosporiasis","Localized salmonella infections","Localized salmonella infections","Meningeal tuberculoma","Meningitis in bacterial diseases classified elsewhere","Meningitis in bacterial diseases classified elsewhere","Meningococcal meningitis","Nutritional and metabolic disorders in diseases classified elsewhere","Other and unspecified gastroenteritis and colitis of infectious origin","Other bacterial foodborne intoxications, not elsewhere classified","Other bacterial intestinal infections","Other gastroenteritis and colitis of infectious and unspecified origin","Other intestinal Escherichia coli infections","Other protozoal intestinal diseases","Other salmonella infections","Other shigellosis","Other specified bacterial foodborne intoxications","Other specified bacterial intestinal infections","Other specified intestinal infections","Other specified protozoal intestinal diseases","Other specified salmonella infections","Other streptococcal sepsis","Other tuberculosis of nervous system","Other tuberculosis of nervous system","Other viral enteritis","Paratyphoid fever A","Paratyphoid fever B","Paratyphoid fever C","Paratyphoid fever, unspecified","Protozoal intestinal disease, unspecified","Resistance to vancomycin","Rotaviral enteritis","Salmonella enteritis","Salmonella infection, unspecified","Salmonella sepsis","Scarlet fever","Shigellosis","Shigellosis due to Shigella boydii","Shigellosis due to Shigella dysenteriae","Shigellosis due to Shigella flexneri","Shigellosis due to Shigella sonnei","Shigellosis, unspecified","Streptococcal pharyngitis","Tuberculosis of nervous system, unspecified","Tuberculous meningitis","Typhoid and paratyphoid fevers","Typhoid fever","Viral and other specified intestinal infections","Viral intestinal infection, unspecified"]},"columns":[{"accessor":"icd10_code_def","name":"icd10_code_def","type":"character"},{"accessor":"icd10_pattern","name":"icd10_pattern","type":"character"},{"accessor":"read_code","name":"read_code","type":"character"},{"accessor":"description_read3","name":"description_read3","type":"character"},{"accessor":"icd10_code","name":"icd10_code","type":"character"},{"accessor":"icd10_dagger_asterisk","name":"icd10_dagger_asterisk","type":"character"},{"accessor":"description_icd10","name":"description_icd10","type":"character"}],"pivotBy":["icd10_code_def"],"filterable":true,"searchable":true,"defaultPageSize":10,"showPageSizeOptions":true,"pageSizeOptions":[10,25,50,10],"paginationType":"numbers","showPageInfo":true,"minRows":1,"dataKey":"ad483188cf853dc489fb5847f060fc0e","key":"ad483188cf853dc489fb5847f060fc0e"},"children":[]},"class":"reactR_markup"},"evals":[],"jsHooks":[]}</script>
+<br>
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-sessioninfo" data-toggle="collapse" data-target="#workflowr-sessioninfo" style="display: block;">
+<span class="glyphicon glyphicon-wrench" aria-hidden="true"></span> Session information
+</button>
+</p>
+<div id="workflowr-sessioninfo" class="collapse">
+<pre class="r"><code>sessionInfo()</code></pre>
+<pre><code>R version 4.1.0 (2021-05-18)
+Platform: x86_64-apple-darwin17.0 (64-bit)
+Running under: macOS Big Sur 10.16
+
+Matrix products: default
+BLAS:   /Library/Frameworks/R.framework/Versions/4.1/Resources/lib/libRblas.dylib
+LAPACK: /Library/Frameworks/R.framework/Versions/4.1/Resources/lib/libRlapack.dylib
+
+locale:
+[1] en_GB.UTF-8/en_GB.UTF-8/en_GB.UTF-8/C/en_GB.UTF-8/en_GB.UTF-8
+
+attached base packages:
+[1] stats     graphics  grDevices datasets  utils     methods   base     
+
+other attached packages:
+ [1] flextable_0.6.10      codemapper_0.0.0.9000 ukbwranglr_0.0.0.9000
+ [4] targets_0.8.0         crosstalk_1.1.1       readxl_1.3.1         
+ [7] reactable_0.2.3       forcats_0.5.1         stringr_1.4.0        
+[10] dplyr_1.0.7           purrr_0.3.4           readr_2.0.2          
+[13] tidyr_1.1.4           tibble_3.1.4          ggplot2_3.3.5        
+[16] tidyverse_1.3.1       workflowr_1.6.2      
+
+loaded via a namespace (and not attached):
+ [1] fs_1.5.0          bit64_4.0.5       lubridate_1.7.10  httr_1.4.2       
+ [5] rprojroot_2.0.2   tools_4.1.0       backports_1.2.1   bslib_0.3.1      
+ [9] utf8_1.2.2        R6_2.5.1          DBI_1.1.1         colorspace_2.0-2 
+[13] withr_2.4.3       tidyselect_1.1.1  processx_3.5.2    bit_4.0.4        
+[17] compiler_4.1.0    git2r_0.28.0      cli_3.0.1         rvest_1.0.1      
+[21] xml2_1.3.2        officer_0.4.1     sass_0.4.0        scales_1.1.1     
+[25] callr_3.7.0       systemfonts_1.0.4 digest_0.6.28     rmarkdown_2.11   
+[29] base64enc_0.1-3   pkgconfig_2.0.3   htmltools_0.5.2   dbplyr_2.1.1     
+[33] fastmap_1.1.0     highr_0.9         htmlwidgets_1.5.4 rlang_0.4.11     
+[37] RSQLite_2.2.9     rstudioapi_0.13   shiny_1.7.0       jquerylib_0.1.4  
+[41] generics_0.1.0    jsonlite_1.7.2    zip_2.2.0         magrittr_2.0.1   
+[45] Rcpp_1.0.7        munsell_0.5.0     fansi_0.5.0       gdtools_0.2.4    
+[49] lifecycle_1.0.1   stringi_1.7.4     whisker_0.4       yaml_2.2.1       
+[53] blob_1.2.2        grid_4.1.0        promises_1.2.0.1  crayon_1.4.1     
+[57] haven_2.4.3       hms_1.1.1         knitr_1.34        ps_1.6.0         
+[61] pillar_1.6.3      uuid_0.1-4        igraph_1.2.6      codetools_0.2-18 
+[65] reprex_2.0.1      glue_1.4.2        evaluate_0.14     data.table_1.14.2
+[69] renv_0.13.2       modelr_0.1.8      vctrs_0.3.8       tzdb_0.1.2       
+[73] httpuv_1.6.3      cellranger_1.1.0  gtable_0.3.0      reactR_0.4.4     
+[77] assertthat_0.2.1  cachem_1.0.6      xfun_0.24         mime_0.12        
+[81] xtable_1.8-4      broom_0.7.9       later_1.3.0       memoise_2.0.0    
+[85] ellipsis_0.3.2   </code></pre>
+</div>
+</div>
+
+
+<!-- Adjust MathJax settings so that all math formulae are shown using
+TeX fonts only; see
+http://docs.mathjax.org/en/latest/configuration.html.  This will make
+the presentation more consistent at the cost of the webpage sometimes
+taking slightly longer to load. Note that this only works because the
+footer is added to webpages before the MathJax javascript. -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    "HTML-CSS": { availableFonts: ["TeX"] }
+  });
+</script>
+
+
+
+
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+<script>
+$(document).ready(function () {
+  window.initializeCodeFolding("hide" === "show");
+});
+</script>
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

@@ -23,16 +23,25 @@ library(targets)
 library(codemapper)
 library(flextable)
 
-tar_load(all_lkps_maps_raw)
-read_ctv3_icd10 <- all_lkps_maps_raw$read_ctv3_icd10
+all_lkps_maps <- tar_read(all_lkps_maps_raw) %>% 
+  purrr::map(codemapper:::rm_footer_rows_all_lkps_maps_df) %>%
+  purrr::map(~ tibble::rowid_to_column(.data = .x,
+                                       var = ".rowid"))
+
+read_ctv3_icd10 <- all_lkps_maps$read_ctv3_icd10
+icd10_lkp <- all_lkps_maps$icd10_lkp
 ```
 
 ```{r}
 # utility functions
-append_read3_icd10_descriptions <- function(df) {
-  # get read3 and icd10 descriptions
-  read3_df <- df$read_code %>%
-    lookup_codes(code_type = "read3", 
+append_read_icd10_descriptions <- function(df,
+                                            read_type = "read3") {
+  match.arg(read_type,
+            c("read2", "read3"))
+  
+  # get read and icd10 descriptions
+  read_df <- df$read_code %>%
+    lookup_codes(code_type = read_type, 
                  unrecognised_codes = "warning") %>%
     select(read_code = code,
            description_read3 = description)
@@ -45,7 +54,7 @@ append_read3_icd10_descriptions <- function(df) {
   
   # append descriptions
   list(df,
-       read3_df,
+       read_df,
        icd10_df) %>%
     reduce(full_join) %>%
     select(contains("read"),
@@ -56,19 +65,18 @@ append_read3_icd10_descriptions <- function(df) {
 
 # Key points
 
--   Dagger/asterisk ICD10 codes have 'D'/'A' appended respectively in the `read_ctv3_icd10` mapping table. These characters need removing to obtain the actual ICD10 codes that appear in the `icd10_lkp` table and UK Biobank data.
--   Inaccurate mapping of read3 to ICD10 codes when codes with `mapping_status` 'R' are mapped without referring to codes with mapping status 'D'.
+-   Dagger/asterisk ICD10 codes have 'D'/'A' appended respectively in the `read_ctv3_icd10` mapping table. These characters need removing to obtain the actual ICD10 codes that appear in the `icd10_lkp` table (`ALT_CODE` format) and UK Biobank data.
+-   The nature of each code mapping is categorised under `mapping_status` and `refine_flag`. The `map_codes` function in `codemapper` filters by default for only mappings categorised as `mapping_status` 'E', 'G' or 'D', with `refine_flag` 'C' or 'P'. See [UK Biobank resource 592](https://biobank.ndph.ox.ac.uk/showcase/refer.cgi?id=592) for descriptions of these categories.
 
 # Unrecognised ICD10 codes
 
-```{r}
-# only the footer note (which appears under `read_code` in the raw `read_ctv3_icd10`
-# mapping table) is not present in the `read_ctv3_lkp` lookup table)
+```{r echo=FALSE}
+# all read 3 codes appear in lookup table `read_ctv3_lkp`
 unrecognised_read3_codes <- subset(read_ctv3_icd10$read_code,
-       !read_ctv3_icd10$read_code %in% all_lkps_maps_raw$read_ctv3_lkp$read_code)
+       !read_ctv3_icd10$read_code %in% all_lkps_maps$read_ctv3_lkp$read_code)
 
-assertthat::are_equal(unrecognised_read3_codes,
-                      "ICD-10 codes, terms and text used by permission of WHO, from: International Statistical Classification of Diseases and Related Health Problems, Tenth Revision (ICD-10). Vols 1-3. Geneva, World Health Organization, 1992-2016.")
+assertthat::are_equal(length(unrecognised_read3_codes),
+                      0)
 ```
 
 All Read 3 codes in the `read_ctv3_icd10` mapping table are present in the `read_ctv3_lkp` lookup table.
@@ -76,13 +84,13 @@ All Read 3 codes in the `read_ctv3_icd10` mapping table are present in the `read
 ```{r}
 # identify unrecognised ICD10 codes
 unrecognised_icd10_codes <- subset(read_ctv3_icd10$icd10_code,
-       !read_ctv3_icd10$icd10_code %in% all_lkps_maps_raw$icd10_lkp$ALT_CODE) %>% 
+       !read_ctv3_icd10$icd10_code %in% icd10_lkp$ALT_CODE) %>% 
   unique()
 ```
 
 There are `r length(unrecognised_icd10_codes)` ICD10 codes in the `read_ctv3_icd10` mapping table that are *not* present in the `icd10_lkp` table (`ALT_CODE` format).
 
-```{r}
+```{r echo=FALSE}
 # do these all end in 'A' or 'D'? (i.e. 'asterisk' or 'dagger')
 assertthat::are_equal(length(unrecognised_icd10_codes),
                       (read_ctv3_icd10 %>% 
@@ -93,18 +101,18 @@ assertthat::are_equal(length(unrecognised_icd10_codes),
                         length()))
 ```
 
-These are all either 'asterisk' or 'dagger' codes, which have been appended with 'A' or 'D' respectively. 
+These are all either 'asterisk' or 'dagger' codes, which have been appended with 'A' or 'D' respectively.
 
-```{r}
+```{r echo=FALSE}
 # remove 'D'/'A' appendices from dagger/asterisk ICD10 codes
 read_ctv3_icd10_icd10_codes_modified <- read_ctv3_icd10 %>% 
-  reformat_read_ctv3_icd10() %>% 
+  codemapper:::reformat_read_ctv3_icd10() %>% 
   pull(icd10_code) %>% 
   unique()
 
 # see if any 'unrecognised' ICD10 codes remain
 unrecognised_icd10_codes <- subset(read_ctv3_icd10_icd10_codes_modified,
-       !read_ctv3_icd10_icd10_codes_modified %in% all_lkps_maps_raw$icd10_lkp$ALT_CODE)
+       !read_ctv3_icd10_icd10_codes_modified %in% all_lkps_maps$icd10_lkp$ALT_CODE)
 
 assertthat::are_equal(length(unrecognised_icd10_codes),
                       0)
@@ -114,17 +122,16 @@ After removing 'A' or 'D' from the ICD10 codes in mapping table `read_ctv3_icd10
 
 # Mapping status and refine flag
 
-## Mapping status
-
 The Read 3 to ICD10 mapping table has a number of columns with additional information:
 
 ```{r}
 read_ctv3_icd10 %>% 
   head() %>% 
+  select(-.rowid) %>% 
   knitr::kable(caption = "First few rows of the Read 3 to ICD10 mapping table")
 ```
 
-These are described by UK Biobank [resource 592](https://biobank.ndph.ox.ac.uk/ukb/refer.cgi?id=592). The following tables show how `refine_flag` status varies by `mapping_status`. Mappings labeled with `mapping_status` 'E', 'D' and 'G' have the lowest proportion labelled with `refine_flag` 'M' (i.e. it is mandatory to check mappings labelled with `refine_flag` 'M' against the default)
+These are described by UK Biobank [resource 592](https://biobank.ndph.ox.ac.uk/ukb/refer.cgi?id=592). The following tables show how `refine_flag` status varies by `mapping_status`. Mappings labelled with `mapping_status` 'E', 'D' and 'G' have the lowest proportion labelled with `refine_flag` 'M' (i.e. it is mandatory to check mappings labelled with `refine_flag` 'M' against the default)
 
 **Counts:**
 
@@ -159,8 +166,6 @@ refine_flag_by_mapping_status_pct <- refine_flag_by_mapping_status %>%
 knitr::kable(refine_flag_by_mapping_status_pct)
 ```
 
-## Refine flag
-
 Mappings are categorised under the following `refine_flag` labels:
 
 | `refine_flag` | Description                                  |
@@ -169,8 +174,10 @@ Mappings are categorised under the following `refine_flag` labels:
 | `M`           | Mandatory to refine further                  |
 | `P`           | Possible but not mandatory to refine further |
 
-| The `refine_flag` denotes whether or not the target code is sufficiently detailed to be acceptable. 3-character ICD codes are usually not acceptable, for example. Covers addition of 4th and 5th digit extensions in ICD, 4th character in OPCS-4.  |
-|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
++-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| The `refine_flag` denotes whether or not the target code is sufficiently detailed to be acceptable. 3-character ICD codes are usually not acceptable, for example. Covers addition of 4th and 5th digit extensions in ICD, 4th character in OPCS-4. |
++=====================================================================================================================================================================================================================================================+
++-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 
 ```{r}
 # get all possible combinations of `mapping_status`, `refine_flag` and
@@ -208,147 +215,158 @@ mapping_metadata_vars_combinations_list <-
   split(
     mapping_metadata_vars_combinations_list,
     mapping_metadata_vars_combinations_list$combination_label
-  ) %>% 
+  ) %>%
   map(~ select(.x, -combination_label))
-
-mapping_metadata_vars_combinations_list
 ```
 
 Here are some example codes for each refine flag
 
-```{r results='asis'}
-mapping_metadata_vars_combinations_list %>% 
-  map(~ right_join(.x,
-                   read_ctv3_icd10,
-                   by = mapping_metadata_vars) %>% 
-        head(1) %>% 
-        append_read3_icd10_descriptions())
-```
-
-
 ```{r}
-# for `refine_flag` 'M', get one example code mapping per `mapping_status`
-refine_flag_m_examples <- read_ctv3_icd10 %>% 
-  filter(refine_flag == "M") %>% 
-  group_by(mapping_status) %>% 
-  slice(1) %>% 
-  ungroup()
-```
-
-```{r}
-# filter for all rows that include these codes, and append descriptions
-read_ctv3_icd10 %>% 
-  filter(read_code %in% refine_flag_m_examples$read_code |
-           icd10_code %in% refine_flag_m_examples$icd10_code) %>% 
-  append_read3_icd10_descriptions() %>% 
-  reactable(filterable = TRUE,
-            searchable = TRUE,
-            showPageSizeOptions = TRUE)
-```
-
-# One-to-many Read 3-to-ICD10 mappings
-
-```{r}
-# identify read3 codes that map to more than one icd10 code
-one_to_many_read3_to_icd10_maps <- read_ctv3_icd10 %>% 
-  group_by(read_code) %>% 
-  mutate(n = n()) %>% 
-  ungroup() %>% 
-  filter(n > 1)
-```
-
-There are `r n_distinct(one_to_many_read3_to_icd10_maps$read_code)` Read 3 codes that map to more than one ICD10 code. The number of these codes per `mapping_status` is summarised below. Note that none of these have `mapping_status` `E`:
-
-```{r}
-one_to_many_read3_to_icd10_maps %>% 
-  group_by(mapping_status) %>% 
-  summarise(n_unique_read3 = n_distinct(read_code)) %>% 
-  knitr::kable()
-```
-
-The number of these codes per `refine_flag` is summarised below:
-
-```{r}
-one_to_many_read3_to_icd10_maps %>% 
-  group_by(refine_flag) %>% 
-  summarise(n_unique_read3 = n_distinct(read_code)) %>% 
-  knitr::kable()
-```
-
-Here are some example codes with their descriptions. Note that for each Read 3 code there is one marked as `D` (i.e. the 'default' mapping):
-
-```{r}
-# see some examples
-one_to_many_read3_to_icd10_maps_examples <- one_to_many_read3_to_icd10_maps %>% 
-  head(10)
-
-one_to_many_read3_to_icd10_maps %>% 
-  filter(read_code %in% one_to_many_read3_to_icd10_maps_examples$read_code) %>% 
-  append_read3_icd10_descriptions() %>% 
-  reactable(filterable = TRUE,
-            showPageSizeOptions = TRUE)
-```
-
-```{r}
-# get some example codes with more than one mapping labelled 'D'
-one_to_many_read3_to_icd10_maps_2_more_D <- one_to_many_read3_to_icd10_maps %>% 
-  group_by(read_code) %>% 
-  summarise(n_mapping_status_D = sum(mapping_status == "D")) %>% 
-  filter(n_mapping_status_D > 1) %>% 
-  head() %>% 
+# df of example mappings
+mapping_metadata_vars_combinations_list_example_codes <-
+  mapping_metadata_vars_combinations_list %>%
+  map( ~ right_join(.x,
+                    read_ctv3_icd10,
+                    by = mapping_metadata_vars) %>%
+         head(1)) %>%
+  bind_rows() %>%
   pull(read_code)
 
-# see descriptions for these codes
-read_ctv3_icd10 %>% 
-  filter(read_code %in% one_to_many_read3_to_icd10_maps_2_more_D) %>% 
-  append_read3_icd10_descriptions() %>% 
-  reactable(filterable = TRUE,
-            showPageSizeOptions = TRUE)
+mapping_metadata_vars_combinations_list_examples <-
+  read_ctv3_icd10 %>%
+  filter(read_code %in% mapping_metadata_vars_combinations_list_example_codes) %>%
+  codemapper:::reformat_read_ctv3_icd10() %>%
+  select(-.rowid) %>%
+  append_read_icd10_descriptions() %>%
+  bind_rows()
+
+# crosstalk reactable table
+mapping_metadata_vars_combinations_list_examples_crosstalk <-
+  SharedData$new(mapping_metadata_vars_combinations_list_examples)
+
+bscols(
+  widths = c(3, 9),
+  list(
+    crosstalk::filter_select(
+      "read_code",
+      "Read code",
+      mapping_metadata_vars_combinations_list_examples_crosstalk,
+      ~ read_code
+    ),
+    crosstalk::filter_checkbox(
+      "mapping_status",
+      "Mapping status",
+      mapping_metadata_vars_combinations_list_examples_crosstalk,
+      ~ mapping_status
+    ),
+    crosstalk::filter_checkbox(
+      "refine_flag",
+      "Refine flag",
+      mapping_metadata_vars_combinations_list_examples_crosstalk,
+      ~ refine_flag
+    ),
+    crosstalk::filter_checkbox(
+      "add_code_flag",
+      "Add code flag",
+      mapping_metadata_vars_combinations_list_examples_crosstalk,
+      ~ add_code_flag
+    )
+  ),
+  reactable(
+    mapping_metadata_vars_combinations_list_examples_crosstalk,
+    filterable = TRUE,
+    searchable = TRUE,
+    showPageSizeOptions = TRUE,
+    pageSizeOptions = c(5, 25, 50, 100),
+    defaultPageSize = 5,
+    resizable = TRUE,
+    paginationType = 'jump'
+  )
+)
 ```
 
-# Modified ICD10 codes
+# Examples of non-specific Read 3 to sex-specific ICD10 code mappings
 
--   Get unrecognised ICD10 codes
+The Read 3 code `XaIP9` maps 'sebaceous cyst' to various ICD10 codes, including some which are sex-specific. A similar issue arises for Read 3 `M262.`
+
+```{r}
+# df of example mappings
+non_specific_read3_to_sex_specific_icd10_examples <-
+  read_ctv3_icd10 %>%
+  filter(read_code %in% c('XaIP9', 'M262.')) %>%
+  codemapper:::reformat_read_ctv3_icd10() %>%
+  select(-.rowid) %>%
+  append_read_icd10_descriptions()
+
+# crosstalk reactable table
+non_specific_read3_to_sex_specific_icd10_examples_crosstalk <-
+  SharedData$new(non_specific_read3_to_sex_specific_icd10_examples)
+
+bscols(
+  widths = c(3, 9),
+  list(
+    crosstalk::filter_checkbox(
+      "read_code",
+      "Read code",
+      non_specific_read3_to_sex_specific_icd10_examples_crosstalk,
+      ~ read_code
+    ),
+    crosstalk::filter_checkbox(
+      "mapping_status",
+      "Mapping status",
+      non_specific_read3_to_sex_specific_icd10_examples_crosstalk,
+      ~ mapping_status
+    ),
+    crosstalk::filter_checkbox(
+      "refine_flag",
+      "Refine flag",
+      non_specific_read3_to_sex_specific_icd10_examples_crosstalk,
+      ~ refine_flag
+    ),
+    crosstalk::filter_checkbox(
+      "add_code_flag",
+      "Add code flag",
+      non_specific_read3_to_sex_specific_icd10_examples_crosstalk,
+      ~ add_code_flag
+    )
+  ),
+  reactable(
+    non_specific_read3_to_sex_specific_icd10_examples_crosstalk,
+    filterable = TRUE,
+    searchable = TRUE,
+    showPageSizeOptions = TRUE,
+    pageSizeOptions = c(5, 25, 50, 100),
+    defaultPageSize = 5,
+    resizable = TRUE,
+    paginationType = 'jump'
+  )
+)
+```
+
+# Example: type 2 diabetes
+
+The description for Read 3 code 'C10..' is 'Diabetes mellitus'. This is an example of an unspecific Read 3 code that can potentially map to multiple specific ICD10 codes. Note that the default mapping (flagged as 'D' under `mapping_status`) is the most appropriate.
 
 ```{r}
 read_ctv3_icd10 %>%
-  mutate(icd10_code_lkp =
-           str_remove(icd10_code, pattern = paste0(str_c(
-             LETTERS[-24], sep = "", collapse = "|"
-           ), "$")))
+  filter(read_code == 'C10..') %>%
+  codemapper:::reformat_read_ctv3_icd10() %>%
+  select(-.rowid) %>%
+  append_read_icd10_descriptions() %>% 
+  select(read_code:add_code_flag,
+         -icd10_dagger_asterisk) %>% 
+  flextable()
 ```
 
-# TODO
-
-The read3 code `XaIP9` mistakenly maps 'sebaceous cyst' to various ICD10 codes that code for 'Other specified disorders of eyelid' (`H028`), 'Other specified disorders of male genital organs' (`N508`), 'Other benign mammary dysplasias' (`N608`) and 'Other specified conditions associated with female genital organs...' (`N948`)
-
-These inaccurate codes are coded 'R' under 'mapping_status' in 'read_ctv3_icd10'.
-
-This field naming system is also used in read_ctv3_icd9.
+Compare also with the Read 2 to ICD10 mapping, which does not label mappings as 'default'/'alternative'/'requires checking' but simply maps to all ICD10 codes 'E10-E14':
 
 ```{r}
-mapped_codes <-map_codes(codes = "XaIP9",
-          from = "read3",
-          to = "icd10",
-          all_lkps_maps = "all_lkps_maps.db",
-          standardise_output = FALSE)
-
-icd10_descriptions <-map_codes(codes = "XaIP9",
-          from = "read3",
-          to = "icd10",
-          all_lkps_maps = "all_lkps_maps.db",
-          standardise_output = TRUE) %>% dplyr::rename("icd10_code" = "code",
-                                                       "icd10_description" = "description")
-
-joined <- dplyr::left_join(mapped_codes, icd10_descriptions)
-
-read3_descriptions<-codemapper::lookup_codes(joined$read_code, code_type = "read3") 
-
-result <- joined %>% dplyr::mutate(read_description = read3_descriptions$description) %>% dplyr::select(read_code,
-                                                                         read_description,
-                                                                         icd10_code,
-                                                                         icd10_description)
- 
+all_lkps_maps$read_v2_icd10 %>%
+  filter(read_code == 'C10..') %>%
+  codemapper:::reformat_read_v2_icd10(icd10_lkp = all_lkps_maps$icd10_lkp) %>%
+  select(-.rowid) %>%
+  append_read_icd10_descriptions(read_type = "read2") %>% 
+  select(-icd10_dagger_asterisk) %>% 
+  flextable()
 ```
 
-# Transformed table

@@ -16,6 +16,7 @@ Notes on adapting raw lookup and mapping tables for `codemapper` (see also [pkgd
 
 # Mapping tables
 
+-   [Read 2 to ICD-10](read2_icd10_mapping.html)
 -   [Read 3 to ICD-10](read3_icd10_mapping.html)
 
 # Work in progress

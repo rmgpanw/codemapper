@@ -1,5 +1,5 @@
 ---
-title: "Read 2 to ICD-10 mapping"
+title: "Read 2 to ICD10 mapping"
 author: "A Warwick and CY Ung"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
 output: 
@@ -23,19 +23,28 @@ library(targets)
 library(codemapper)
 library(flextable)
 
-tar_load(all_lkps_maps_raw)
-read_v2_icd10 <- all_lkps_maps_raw$read_v2_icd10
+all_lkps_maps <- tar_read(all_lkps_maps_raw) %>% 
+  purrr::map(codemapper:::rm_footer_rows_all_lkps_maps_df) %>%
+  purrr::map(~ tibble::rowid_to_column(.data = .x,
+                                       var = ".rowid"))
+
+read_v2_icd10 <- all_lkps_maps$read_v2_icd10
+icd10_lkp <- all_lkps_maps$icd10_lkp
 ```
 
 ```{r}
 # utility functions
-append_read2_icd10_descriptions <- function(df) {
-  # get read2 and icd10 descriptions
-  read2_df <- df$read_code %>%
-    lookup_codes(code_type = "read2", 
+append_read_icd10_descriptions <- function(df,
+                                            read_type = "read2") {
+  match.arg(read_type,
+            c("read2", "read3"))
+  
+  # get read and icd10 descriptions
+  read_df <- df$read_code %>%
+    lookup_codes(code_type = read_type, 
                  unrecognised_codes = "warning") %>%
     select(read_code = code,
-           description_read2 = description)
+           description_read3 = description)
   
   icd10_df <- df$icd10_code %>%
     lookup_codes(code_type = "icd10",
@@ -45,7 +54,7 @@ append_read2_icd10_descriptions <- function(df) {
   
   # append descriptions
   list(df,
-       read2_df,
+       read_df,
        icd10_df) %>%
     reduce(full_join) %>%
     select(contains("read"),
@@ -56,23 +65,27 @@ append_read2_icd10_descriptions <- function(df) {
 
 # Key points
 
--   
+-   Where a Read 2 code maps to multiple ICD10 codes, a range of ICD10 codes is presented in the `icd10_code` column. This needs reformatting (to allow programmatic mapping from Read 2 to ICD10) so that each ICD10 code appears on a separate row.
+
+-   The following additional reformatting operations are also required to ensure that the ICD10 codes in this mapping table match the `ALT_CODE` format in lookup table `icd10_lkp`:
+
+    -   Remove appended 'D'/'A' characters from dagger/asterisk ICD10 codes, and create a separate indicator column for these instead.
+
+    -   Some undivided 3 character ICD10 codes appear inconsistently without an appended 'X'. For example, 'A64X' appears as 'A50-A64', 'A65X' appears as 'A65-A69', 'A70X' as 'A70-A74', 'A89X' as 'A80-A89' and 'A99X' as 'A92-A99'. The 'X' is re-appended to these codes during reformatting to match the `ALT_CODE` format in lookup table `icd10_lkp`.
+
+    -   ICD10 code "C836" ("Diffuse non-Hodgkin's lymphoma - Undifferentiated (diffuse)") has been removed from ICD10 and does not exist in the `icd10_lkp` table. It is therefore also removed from the reformatted `read_v2_icd10` mapping table.
+
+-   It is often appropriate to map a single Read 2 code to multiple ICD10 codes, where more than one ICD10 code is required to define a single specific Read 2 cod (see examples below). However, it may not be desirable to map a single Read 2 code with a non-specific description to multiple specific ICD10 codes. For example, the Read 2 code for 'Diabetes mellitus', 'C10..', is mapped to ICD10 codes 'E10-E14', which include both type 1 and type 2 diabetes as well as all their potential complications (e.g. renal and ophthalmic complications). The `map_codes` function in `codemapper` excludes this category of mappings (flagged as `icd10_code_def` '2' in the `read_v2_icd10` mapping table) by default.
 
 # Unrecognised ICD10 codes
 
-```{r}
-# only the footer note (which appears under `read_code` in the raw `read_v2_icd10`
-# mapping table) is not present in the `read_v2_lkp` lookup table)
+```{r echo=FALSE}
+# all read 2 codes appear in lookup table `read_v2_lkp`
 unrecognised_read2_codes <- subset(read_v2_icd10$read_code,
-       !read_v2_icd10$read_code %in% all_lkps_maps_raw$read_v2_lkp$read_code)
+       !read_v2_icd10$read_code %in% all_lkps_maps$read_v2_lkp$read_code)
 
-assertthat::are_equal(
-  unrecognised_read2_codes,
-  c(
-    "Contains information from NHS Digital, licenced under the current version of the Open Government Licence available at www.nationalarchives.gov.uk/doc/open-government-licence/open-government-licence.htm",
-    "ICD-10 codes, terms and text used by permission of WHO, from: International Statistical Classification of Diseases and Related Health Problems, Tenth Revision (ICD-10). Vols 1-3. Geneva, World Health Organization, 1992-2016."
-  )
-)
+assertthat::are_equal(length(unrecognised_read2_codes),
+                      0)
 ```
 
 All Read 2 codes in the `read_v2_icd10` mapping table are present in the `read_v2_lkp` lookup table.
@@ -80,13 +93,27 @@ All Read 2 codes in the `read_v2_icd10` mapping table are present in the `read_v
 ```{r}
 # identify unrecognised ICD10 codes
 unrecognised_icd10_codes <- subset(read_v2_icd10$icd10_code,
-       !read_v2_icd10$icd10_code %in% all_lkps_maps_raw$icd10_lkp$ALT_CODE) %>% 
+       !read_v2_icd10$icd10_code %in% all_lkps_maps$icd10_lkp$ALT_CODE) %>% 
   unique()
 ```
 
-There are `r length(unrecognised_icd10_codes)` ICD10 codes in the `read_v2_icd10` mapping table that are *not* present in the `icd10_lkp` table (`ALT_CODE` format). These are flagged by values in column `icd10_code_def`.
+There are `r length(unrecognised_icd10_codes)` ICD10 codes in the `read_v2_icd10` mapping table that are *not* present in the `icd10_lkp` table (`ALT_CODE` format). These are mostly flagged by values in column `icd10_code_def`, with two exceptions:
 
-# Column `icd10_code_def`
+1.  ICD10 code 'C836' has been removed from ICD10 and does not appear in the lookup `icd10_lkp`table.
+2.  Several undivided 3 character ICD10 codes appear inconsistently without an appended 'X' in the `read_v2_icd10` mapping table.
+
+Some examples, 'C836' and 'A64' (the latter should appear as 'A64X'):
+
+```{r}
+read_v2_icd10 %>% 
+  filter(str_detect(icd10_code,
+                    pattern = "A64|C836")) %>% 
+  append_read_icd10_descriptions() %>% 
+  select(-.rowid) %>% 
+  flextable()
+```
+
+# Mapping types: `icd10_code_def`
 
 Column `icd10_code_def` signifies, for example, whether or not the Read 2 code matches to a single ICD-10 code, if the ICD-10 code is a parent code that links to several child codes, if the ICD-10 code is asterisk or dagger code, a dagger-asterisk combination, etc.
 
@@ -117,55 +144,72 @@ read_v2_icd10 %>%
                              yes = "DAending",
                              no = NA_character_)
   ) %>% 
-  unite(col = "icd10_pattern_dash_comma_space_plus", 
+  unite(col = "icd10_pattern", 
         starts_with("icd10_contains_"), 
         sep = "_", 
         remove = TRUE, 
         na.rm = TRUE) %>% 
   group_by(icd10_code_def,
-           icd10_pattern_dash_comma_space_plus) %>%
+           icd10_pattern) %>%
   slice(1L) %>%
   ungroup() %>% 
-  append_read2_icd10_descriptions() %>% 
+  append_read_icd10_descriptions() %>% 
   arrange(description_icd10) %>% 
   select(icd10_code_def,
-         icd10_pattern_dash_comma_space_plus,
+         icd10_pattern,
          everything()) %>% 
+  select(-.rowid) %>% 
   flextable::as_grouped_data("icd10_code_def") %>% 
-  flextable()
+  flextable() %>% 
+  suppressWarnings()
 ```
 
-The values in `icd10_code_def` may therefore be interpreted as follows (**TODO - look for official metadata document**):
-
-| `icd10_code_def` | Description          |
-|------------------|----------------------|
-| 1                | One-to-one mapping   |
-| 2                | One-to-many mapping, |
-| 3                |                      |
-| 5                |                      |
-| 7                |                      |
-| 8                |                      |
-| 15               |                      |
-
-# TODO
-
-Ranges:
+Mappings categorised as `icd10_code_def` '1', '5' or '8' are one-to-one, whereas the other categories are one-to-many. Read codes in category '2' have non-specific descriptions and map to multiple specific ICD10 codes, which may be conflicting. The examples above are re-shown below with ICD10 code descriptions appended.
 
 ```{r}
-read_v2_icd10 %>% 
-  filter(str_detect(icd10_code,
-                    "-")) %>% 
-  distinct(icd10_code) %>% 
-  # check for 5 digit ALT_CODE codes
-  reactable(filterable = TRUE)
+read_v2_icd10 %>%
+  filter(!is.na(icd10_code_def)) %>%
+  mutate(
+    icd10_contains_dash = ifelse(str_detect(icd10_code,
+                                        "-"),
+                             yes = "dash",
+                             no = NA_character_),
+    icd10_contains_comma = ifelse(str_detect(icd10_code,
+                                         ","),
+                              yes = "comma",
+                              no = NA_character_),
+    icd10_contains_space = ifelse(str_detect(icd10_code,
+                                         "\\s"),
+                              yes = "space",
+                              no = NA_character_),
+    icd10_contains_plus = ifelse(str_detect(icd10_code,
+                                        "\\+"),
+                             yes = "plus",
+                             no = NA_character_),
+    icd10_contains_da_ending = ifelse(str_detect(icd10_code,
+                                        "[D|A]$"),
+                             yes = "DAending",
+                             no = NA_character_)
+  ) %>% 
+  unite(col = "icd10_pattern", 
+        starts_with("icd10_contains_"), 
+        sep = "_", 
+        remove = TRUE, 
+        na.rm = TRUE) %>% 
+  group_by(icd10_code_def,
+           icd10_pattern) %>%
+  slice(1L) %>%
+  ungroup() %>% 
+  codemapper:::reformat_read_v2_icd10(icd10_lkp = all_lkps_maps$icd10_lkp) %>% 
+  append_read_icd10_descriptions() %>% 
+  arrange(description_icd10) %>% 
+  select(icd10_code_def,
+         icd10_pattern,
+         everything()) %>% 
+  select(-.rowid) %>% 
+  reactable(filterable = TRUE,
+            searchable = TRUE,
+            showPageSizeOptions = TRUE,
+            pageSizeOptions = c(10, 25, 50, 10),
+            groupBy = "icd10_code_def")
 ```
-
-An example, "I00X-I99X ":
-
-```{r}
-read_v2_icd10 %>% 
-  filter(icd10_code == "I00X-I99X") %>% 
-  append_read2_icd10_descriptions()
-```
-
-Another example,
