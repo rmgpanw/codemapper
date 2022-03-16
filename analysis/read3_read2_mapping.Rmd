@@ -1,0 +1,112 @@
+---
+title: "Read 3 to Read 2 mapping"
+author: "A Warwick and CY Ung"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output: 
+  workflowr::wflow_html:
+    toc: false
+    code_folding: hide
+editor_options:
+  chunk_output_type: console
+---
+
+```{r global-options, echo=FALSE}
+knitr::opts_chunk$set(warning=FALSE, message=FALSE)
+```
+
+```{r}
+library(tidyverse)
+library(reactable)
+library(readxl)
+library(crosstalk)
+library(targets)
+library(codemapper)
+library(flextable)
+
+all_lkps_maps <- tar_read(all_lkps_maps_raw) %>% 
+  purrr::map(codemapper:::rm_footer_rows_all_lkps_maps_df) %>%
+  purrr::map(~ tibble::rowid_to_column(.data = .x,
+                                       var = ".rowid"))
+
+# choose between `read2_read3` and `read3_read2`
+FROM_TO <- "read3_read2"
+
+if (FROM_TO == "read2_read3") {
+  args <- codemapper:::check_mapping_args(from = "read2",
+                                                  to = "read3")
+  from_code <- "Read 2"
+} else if (FROM_TO == "read3_read2") {
+  args <- codemapper:::check_mapping_args(from = "read3",
+                                                  to = "read2")
+  from_code <- "Read 3"
+}
+
+read_read_map <- all_lkps_maps[[args$mapping_table]]
+```
+
+# Key points
+
+- Not all mappings are 'assured', but most are.
+- The `map_codes` function in `codemapper` excludes mappings that are not assured (flagged as `IS_ASSURED` '0') by default.
+
+# Preferred terms and synonyms
+
+Read 2 and Read 3 codes have a preferred description and may additionally have synonyms. For example, diabetes (Read 2 `C10E.`) may be described as either 'Type 1 diabetes mellitus' or 'Insulin dependent diabetes mellitus'.
+
+## Overlap between preferred description and synonyms
+
+**Read 2:**
+
+```{r}
+read2_p <- read_read_map %>% 
+  filter(TERMV2_TYPE == "P")
+
+read2_s <- read_read_map %>% 
+  filter(TERMV2_TYPE == "S")
+
+list(read2_p = unique(read2_p$READV2_CODE),
+     read2_s = unique(read2_s$READV2_CODE)) %>% 
+  ggVennDiagram::ggVennDiagram()
+```
+
+**Read 3:**
+
+```{r}
+read3_p <- read_read_map %>% 
+  filter(TERMV3_TYPE == "P")
+
+read3_s <- read_read_map %>% 
+  filter(TERMV3_TYPE == "S")
+
+list(read3_p = unique(read3_p$READV3_CODE),
+     read3_s = unique(read3_s$READV3_CODE)) %>% 
+  ggVennDiagram::ggVennDiagram()
+```
+
+# Not assured mappings
+
+```{r}
+# filter for 'assured' mappings only
+read_read_map_is_assured_only <- read_read_map %>% 
+  filter(IS_ASSURED == 1)
+
+# get read codes that are do not have an 'assured' mapping
+not_assured_mappings <- read_read_map %>% 
+  filter(!.data[[args$from_col]] %in% read_read_map_is_assured_only[[args$from_col]])
+
+# numbers
+n_from_codes_not_assured <- n_distinct(not_assured_mappings[[args$from_col]])
+n_from_codes <- n_distinct(read_read_map[[args$from_col]])
+pct_from_codes_not_assured <- format(n_from_codes_not_assured/n_from_codes * 100, digits = 3)
+```
+
+The current clinical assurance status of each code mapping, where '0' = Not assured and '1' = Assured (column `IS_ASSURED`). Below is a table of all mappings that are *not* assured. This includes `r n_from_codes_not_assured` out of `r n_from_codes` `r from_code` codes in this mapping table (`r pct_from_codes_not_assured`%).
+
+```{r}
+not_assured_mappings %>% 
+  reactable(filterable = TRUE,
+            searchable = TRUE,
+            showPageSizeOptions = TRUE,
+            pageSizeOptions = c(10, 25, 50, 100, 200),
+            paginationType = 'jump')
+```

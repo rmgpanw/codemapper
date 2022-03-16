@@ -25,7 +25,7 @@ library(codemapper)
 tar_load(all_lkps_maps_raw)
 ```
 
-# Summary
+# Key points
 
 - The ICD10 lookup table includes 2 formats: `ICD10_CODE` and `ALT_CODE`.
 - In UK Biobank data, ICD10 codes are recorded in the `ALT_CODE` format (details below), *however an 'X' filler is not appended for codes where the 3 character category is undivided*. For example, the ICD10 code for Scarlet fever, `A38`, is recorded as `A38X` under `ALT_CODE` in the ICD10 lookup table, but recorded as `A38` in UK Biobank data.
@@ -154,9 +154,6 @@ icd10_alt_code_map <- all_lkps_maps_raw$icd10_lkp %>%
 icd10_dagger_asterisk_pairs <- all_lkps_maps_raw$icd10_lkp %>%
   filter(!is.na(QUALIFIERS)) 
 
-all_lkps_maps_raw$icd10_lkp %>% 
-  filter(USAGE %in% c("DAGGER", "ASTERIS"))
-
 # get descriptions for these codes
 icd10_dagger_asterisk_descriptions <- icd10_dagger_asterisk_pairs %>%
   select(ICD10_CODE,
@@ -243,6 +240,5 @@ all_lkps_maps_raw$icd10_lkp %>%
 all_lkps_maps_raw$icd10_lkp %>% 
   filter(!is.na(GENDER_MASK)) %>% 
   head() %>% 
-  flextable::flextable() %>% 
-  flextable::flextable_to_rmd()
+  flextable::flextable()
 ```

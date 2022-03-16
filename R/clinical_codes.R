@@ -1450,7 +1450,7 @@ check_codes <- function(codes) {
 
 check_mapping_args <- function(from,
                                to,
-                               reverse_mapping) {
+                               reverse_mapping = "error") {
   match.arg(reverse_mapping,
             choices = c("error", "warning"))
 

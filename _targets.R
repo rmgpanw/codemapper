@@ -11,6 +11,13 @@ tar_option_set(
 list(
   # Files ------------------------
 
+  ## Miscellaneous ---------------
+  tar_target(
+    RENVIRON,
+    ".Renviron",
+    format = "file"
+  ),
+
   ## TRUD ------------------------
   tar_target(
     CTV3SCTMAP2,
@@ -152,6 +159,32 @@ list(
       c(
         file.path("analysis", "read3_icd10_mapping.Rmd"),
         file.path("public", "read3_icd10_mapping.html")
+      )
+    },
+    format = "file"
+  ),
+
+  tar_target(
+    READ2_READ3_MAPPING_RMD,
+    command = {
+      !!tar_knitr_deps_expr(file.path("analysis", "read2_read3_mapping.Rmd"))
+      suppressMessages(workflowr::wflow_build(file.path("analysis", "read2_read3_mapping.Rmd"), verbose = FALSE))
+      c(
+        file.path("analysis", "read2_read3_mapping.Rmd"),
+        file.path("public", "read2_read3_mapping.html")
+      )
+    },
+    format = "file"
+  ),
+
+  tar_target(
+    READ3_READ2_MAPPING_RMD,
+    command = {
+      !!tar_knitr_deps_expr(file.path("analysis", "read3_read2_mapping.Rmd"))
+      suppressMessages(workflowr::wflow_build(file.path("analysis", "read3_read2_mapping.Rmd"), verbose = FALSE))
+      c(
+        file.path("analysis", "read3_read2_mapping.Rmd"),
+        file.path("public", "read3_read2_mapping.html")
       )
     },
     format = "file"
