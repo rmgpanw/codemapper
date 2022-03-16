@@ -12,12 +12,14 @@ Notes on adapting raw lookup and mapping tables for `codemapper` (see also [pkgd
 
 # Lookup tables
 
--   [ICD-10 lookup table](icd10_lkp.html)
+-   [ICD10 lookup table](icd10_lkp.html)
 
 # Mapping tables
 
--   [Read 2 to ICD-10](read2_icd10_mapping.html)
--   [Read 3 to ICD-10](read3_icd10_mapping.html)
+-   [ICD9 to ICD10](icd9_icd10_mapping.html)
+-   [Read 2 to Read 3](read2_read3_mapping.html)
+-   [Read 2 to ICD10](read2_icd10_mapping.html)
+-   [Read 3 to ICD10](read3_icd10_mapping.html)
 
 # Work in progress
 

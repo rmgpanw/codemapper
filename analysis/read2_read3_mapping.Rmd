@@ -1,0 +1,34 @@
+---
+title: "Read 2 to Read 3 mapping"
+author: "A Warwick and CY Ung"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output: 
+  workflowr::wflow_html:
+    toc: false
+    code_folding: hide
+editor_options:
+  chunk_output_type: console
+---
+
+```{r global-options, echo=FALSE}
+knitr::opts_chunk$set(warning=FALSE, message=FALSE)
+```
+
+```{r}
+library(tidyverse)
+library(reactable)
+library(readxl)
+library(crosstalk)
+library(targets)
+library(codemapper)
+library(flextable)
+
+all_lkps_maps <- tar_read(all_lkps_maps_raw) %>% 
+  purrr::map(codemapper:::rm_footer_rows_all_lkps_maps_df) %>%
+  purrr::map(~ tibble::rowid_to_column(.data = .x,
+                                       var = ".rowid"))
+
+read_v2_read_ctv3 <- all_lkps_maps$read_v2_read_ctv3
+read_v2_lkp <- all_lkps_maps$read_v2_lkp
+read_ctv3_lkp <- all_lkps_maps$read_ctv3_lkp
+```

@@ -6,8 +6,6 @@ all_lkps_maps <- get_ukb_code_mappings() %>%
   purrr::map(~ tibble::rowid_to_column(.data = .x,
                                        var = ".rowid"))
 
-# TODO - add tests for ICD10 (A38X, I70)
-
 # TESTS -------------------------------------------------------------------
 
 
@@ -216,7 +214,7 @@ test_that(
   }
 )
 
-test_that("`map_codes()` works as expected for mapping icd10 to icd9 codes (these need reformatting first)", {
+test_that("`map_codes()` works as expected for mapping icd10 to icd9 codes", {
   expect_equal(
     suppressWarnings(map_codes(
     codes = "D751",
@@ -226,7 +224,8 @@ test_that("`map_codes()` works as expected for mapping icd10 to icd9 codes (thes
     unrecognised_codes = "error",
     codes_only = FALSE,
     preferred_description_only = TRUE,
-    standardise_output = TRUE
+    standardise_output = TRUE,
+    reverse_mapping = "warning"
   )$code),
   "2890")
 })
@@ -273,7 +272,8 @@ test_that("`get_mapping_df()` returns the expected output", {
   icd10_read2_df <- suppressWarnings(get_mapping_df(
     from = "icd10",
     to = "read2",
-    all_lkps_maps = all_lkps_maps
+    all_lkps_maps = all_lkps_maps,
+    reverse_mapping = "warning"
   )) %>%
     head(n = 1)
 
@@ -670,60 +670,6 @@ test_that("`get_icd10_code_range()` returns expected codes", {
   )
 })
 
-# `reformat_read_v2_icd10()` ------------------------------------------------
-
-test_that("`reformat_read_v2_icd10()` works as expected", {
-  df <- tibble::tribble(
-    ~read_code, ~icd10_code, ~icd10_code_def,
-    "C10E.",     "E100-E109",        "2",
-    "A13..",     "A170D-A179D",      "2",
-    "A00..",     "A00",              "1",
-    "A0221",     "A022D G01XA",      "7",
-    "A13y.",     "A178D",            "8",
-    "A34..",     "J020,A38X",        "3",
-    "A365.",     "A390D G01XA+A392", "15",
-    "A3805",     "A408+U830",        "15",
-    "Cyu8Q",     "E90XA",            "5",
-    "F0073",     "A022D G01XA",      "7"
-  )
-
-  expected_result <- tibble::tribble(
-    ~read_code, ~icd10_code, ~icd10_code_def, ~icd10_dagger_asterisk,
-    "C10E.",      "E100",             "2",                     NA,
-    "C10E.",      "E101",             "2",                     NA,
-    "C10E.",      "E102",             "2",                     NA,
-    "C10E.",      "E103",             "2",                     NA,
-    "C10E.",      "E104",             "2",                     NA,
-    "C10E.",      "E105",             "2",                     NA,
-    "C10E.",      "E106",             "2",                     NA,
-    "C10E.",      "E107",             "2",                     NA,
-    "C10E.",      "E108",             "2",                     NA,
-    "C10E.",      "E109",             "2",                     NA,
-    "A13..",      "A170",             "2",                    "D",
-    "A13..",      "A171",             "2",                    "D",
-    "A13..",      "A178",             "2",                    "D",
-    "A13..",      "A179",             "2",                    "D",
-    "A00..",       "A00",             "1",                     NA,
-    "A0221",      "A022",             "7",                    "D",
-    "A0221",      "G01X",             "7",                    "A",
-    "A13y.",      "A178",             "8",                    "D",
-    "A34..",      "J020",             "3",                     NA,
-    "A34..",      "A38X",             "3",                     NA,
-    "A365.",      "A390",            "15",                    "D",
-    "A365.",      "G01X",            "15",                    "A",
-    "A365.",      "A392",            "15",                     NA,
-    "A3805",      "A408",            "15",                     NA,
-    "A3805",      "U830",            "15",                     NA,
-    "Cyu8Q",      "E90X",             "5",                    "A",
-    "F0073",      "A022",             "7",                    "D",
-    "F0073",      "G01X",             "7",                    "A"
-  )
-
-  expect_equal(reformat_read_v2_icd10(read_v2_icd10 = df,
-                                      icd10_lkp = all_lkps_maps$icd10_lkp),
-               expected_result)
-})
-
 # `rm_or_extract_appended_icd10_dxa()` -----------------------------
 
 test_that("`rm_or_extract_appended_icd10_dxa()` works", {
@@ -788,3 +734,17 @@ test_that("`rm_or_extract_appended_icd10_dxa()` works", {
       "XA")
   )
 })
+
+
+# `check_codes()` ---------------------------------------------------------
+
+test_that("`check_codes()` raises an error appropriately", {
+  # NA value
+  expect_error(check_codes(c(NA, "A")),
+               regexp = "cannot contain `NA` values")
+
+  # not character
+  expect_error(check_codes(1:2),
+               regexp = "must be a character vector")
+})
+

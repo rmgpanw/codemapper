@@ -10,6 +10,7 @@ get_mapping_df(
   all_lkps_maps = "all_lkps_maps.db",
   rename_from_to = NULL,
   na.rm = TRUE,
+  reverse_mapping = "error",
   col_filters = default_col_filters()
 )
 }
@@ -31,6 +32,12 @@ and 'to' columns. For example \code{c(from = "original_codes", to = "new_codes")
 \item{na.rm}{If \code{TRUE} (default), remove any rows with \code{NA} from the returned
 mapping data frame. The mapping tables may sometimes include \code{NA} values to
 explicitly show which 'from' codes have not been mapped.}
+
+\item{reverse_mapping}{If 'error' (default), an error raised if attempting to
+map between coding systems for which a mapping table does not exist. If
+'warning', will raise a warning and attempt to use an existing mapping
+table in the opposite direction (for example, a mapping from ICD10 to Read
+3 would be attempted using the Read 3-to-ICD10 mapping table).}
 
 \item{col_filters}{A named list where each name in the list refers to the
 name of a lookup or mapping table. Each item is also a named list, where

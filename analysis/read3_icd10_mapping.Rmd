@@ -174,10 +174,7 @@ Mappings are categorised under the following `refine_flag` labels:
 | `M`           | Mandatory to refine further                  |
 | `P`           | Possible but not mandatory to refine further |
 
-+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| The `refine_flag` denotes whether or not the target code is sufficiently detailed to be acceptable. 3-character ICD codes are usually not acceptable, for example. Covers addition of 4th and 5th digit extensions in ICD, 4th character in OPCS-4. |
-+=====================================================================================================================================================================================================================================================+
-+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+The `refine_flag` denotes whether or not the target code is sufficiently detailed to be acceptable. 3-character ICD codes are usually not acceptable, for example. Covers addition of 4th and 5th digit extensions in ICD, 4th character in OPCS-4.
 
 ```{r}
 # get all possible combinations of `mapping_status`, `refine_flag` and
@@ -369,4 +366,3 @@ all_lkps_maps$read_v2_icd10 %>%
   select(-icd10_dagger_asterisk) %>% 
   flextable()
 ```
-

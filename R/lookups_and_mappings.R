@@ -138,9 +138,17 @@ build_all_lkps_maps <-
 
     ## reformat tables individually ---------------
 
+    ### icd9_icd10 -------------------
+
+    all_lkps_maps$icd9_icd10 <- reformat_icd9_icd10(all_lkps_maps$icd9_icd10)
+
+    ### read2_icd10 ------------------------
+
+    all_lkps_maps$read_v2_icd10 <- reformat_read_v2_icd10(all_lkps_maps$read_v2_icd10,
+                                                          icd10_lkp = all_lkps_maps$icd10_lkp)
+
     ### read3_icd10 ------------------------
 
-    # remove 'D'/'A' from ICD10 codes
     all_lkps_maps$read_ctv3_icd10 <- reformat_read_ctv3_icd10(all_lkps_maps$read_ctv3_icd10)
 
     ## extend tables -----------------
@@ -457,6 +465,41 @@ reformat_read_ctv3_icd10 <- function(read_ctv3_icd10) {
       keep_x = TRUE,
       rm_extract = "rm"
     ))
+}
+
+#' Reformat mapping table `icd9_icd10`
+#'
+#' For ICD9 codes without an equivalent ICD10 code, the ICD10 code is recorded
+#' as 'UNDEF', with `NA` for the description (and vice versa). This function
+#' converts values of 'UNDEF' in the `ICD9` and `ICD10` columns to `NA`, and
+#' checks that `NA` only appears for such cases (i.e. a ICD code cannot be `NA`
+#' if it has a description and vice versa).
+#'
+#' @param icd9_icd10 The `icd9_icd10` mapping table
+#'
+#' @return A data frame
+#' @noRd
+reformat_icd9_icd10 <- function(icd9_icd10) {
+  # convert 'UNDEF' ICD9/10 codes to `NA`
+  icd9_icd10 <- icd9_icd10 %>%
+    dplyr::mutate(dplyr::across(tidyselect::all_of(c(
+      "ICD9",
+      "ICD10"
+    )),
+    ~ ifelse(.x == "UNDEF",
+             yes = NA_character_,
+             no = .x)))
+
+  # check that description and ICD code are either both `NA` or both not `NA`
+  icd9_icd10_nabular <- icd9_icd10 %>%
+    dplyr::mutate(dplyr::across(tidyselect::everything(),
+                                ~ is.na(.x)))
+
+  assertthat::assert_that(all(icd9_icd10_nabular$ICD9 == icd9_icd10_nabular$DESCRIPTION_ICD9))
+  assertthat::assert_that(all(icd9_icd10_nabular$ICD10 == icd9_icd10_nabular$DESCRIPTION_ICD10))
+
+  # return result
+  return(icd9_icd10)
 }
 
 extend_bnf_lkp <- function(all_lkps_maps) {

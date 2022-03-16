@@ -13,6 +13,7 @@ map_codes(
   standardise_output = TRUE,
   unrecognised_codes = "error",
   preferred_description_only = NULL,
+  reverse_mapping = "error",
   col_filters = default_col_filters()
 )
 }
@@ -43,10 +44,16 @@ resource 592}).}
 \code{codes} are unrecognised for the coding system being mapped from, then
 either an error or warning will be raised.}
 
-\item{preferred_description_only}{bool. Return only preferred descriptions
-for clinical codes with synonyms. Can only be \code{TRUE} if
+\item{preferred_description_only}{If \code{TRUE}, return only preferred
+descriptions for clinical codes with synonyms. Can only be \code{TRUE} if
 \code{standardise_output} is also \code{TRUE}. Default value is
 \code{NULL}.}
+
+\item{reverse_mapping}{If 'error' (default), an error raised if attempting to
+map between coding systems for which a mapping table does not exist. If
+'warning', will raise a warning and attempt to use an existing mapping
+table in the opposite direction (for example, a mapping from ICD10 to Read
+3 would be attempted using the Read 3-to-ICD10 mapping table).}
 
 \item{col_filters}{A named list where each name in the list refers to the
 name of a lookup or mapping table. Each item is also a named list, where

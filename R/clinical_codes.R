@@ -61,8 +61,7 @@ codes_starting_with <- function(codes,
     on.exit(DBI::dbDisconnect(con))
   }
 
-  assertthat::assert_that(is.character(codes),
-                          msg = "Error! `codes` must be a character vector")
+  check_codes(codes)
 
   assertthat::assert_that(is.logical(codes_only),
                           msg = "`code_only` must be either 'TRUE' or 'FALSE'")
@@ -177,8 +176,7 @@ lookup_codes <- function(codes,
                          unrecognised_codes = "error",
                          col_filters = default_col_filters()) {
   # validate args
-  assertthat::assert_that(is.character(codes),
-                          msg = "Error! `codes` must be a character vector")
+  check_codes(codes)
 
   match.arg(arg = code_type,
             choices = CODE_TYPE_TO_LKP_TABLE_MAP$code)
@@ -289,6 +287,8 @@ code_descriptions_like <- function(reg_expr,
                                    standardise_output = TRUE,
                                    col_filters = default_col_filters()) {
   # validate args
+  check_codes(reg_expr)
+
   match.arg(arg = code_type,
             choices = CODE_TYPE_TO_LKP_TABLE_MAP$code)
 
@@ -391,10 +391,15 @@ code_descriptions_like <- function(reg_expr,
 #' @param unrecognised_codes Either 'error' (default) or 'warning'. If any input
 #'   `codes` are unrecognised for the coding system being mapped from, then
 #'   either an error or warning will be raised.
-#' @param preferred_description_only bool. Return only preferred descriptions
-#'   for clinical codes with synonyms. Can only be \code{TRUE} if
+#' @param preferred_description_only If `TRUE`, return only preferred
+#'   descriptions for clinical codes with synonyms. Can only be \code{TRUE} if
 #'   \code{standardise_output} is also \code{TRUE}. Default value is
 #'   \code{NULL}.
+#' @param reverse_mapping If 'error' (default), an error raised if attempting to
+#'   map between coding systems for which a mapping table does not exist. If
+#'   'warning', will raise a warning and attempt to use an existing mapping
+#'   table in the opposite direction (for example, a mapping from ICD10 to Read
+#'   3 would be attempted using the Read 3-to-ICD10 mapping table).
 #' @inheritParams codes_starting_with
 #' @inheritParams lookup_codes
 #'
@@ -408,8 +413,11 @@ map_codes <- function(codes,
                       standardise_output = TRUE,
                       unrecognised_codes = "error",
                       preferred_description_only = NULL,
+                      reverse_mapping = "error",
                       col_filters = default_col_filters()) {
   # validate args
+  check_codes(codes)
+
   ## connect to database file path
   if (is.character(all_lkps_maps)) {
     con <- check_all_lkps_maps_path(all_lkps_maps)
@@ -418,9 +426,6 @@ map_codes <- function(codes,
   }
 
   validate_all_lkps_maps()
-
-  assertthat::assert_that(is.character(codes),
-                          msg = "Error! `codes` must be a character vector")
 
   assertthat::assert_that(is.logical(codes_only),
                           msg = "`code_only` must be either 'TRUE' or 'FALSE'")
@@ -438,7 +443,8 @@ map_codes <- function(codes,
   # check mapping args and get required details - mapping_table, from_col and
   # to_col
   mapping_params <- check_mapping_args(from = from,
-                                       to = to)
+                                       to = to,
+                                       reverse_mapping = reverse_mapping)
 
   from_col <- mapping_params$from_col
   to_col <- mapping_params$to_col
@@ -460,6 +466,7 @@ map_codes <- function(codes,
   # do mapping
   result <- all_lkps_maps[[mapping_table]] %>%
     dplyr::filter(.data[[from_col]] %in% codes) %>%
+    dplyr::filter(!is.na(.data[[to_col]])) %>%
     dplyr::collect()
 
   # filter on `col_filters` parameters
@@ -480,7 +487,7 @@ map_codes <- function(codes,
 
   # return result
   if (nrow(result) == 0) {
-    message("\nNo codes found after mapping. Returning `NULL`")
+    message("No codes found after mapping. Returning `NULL`")
     return(NULL)
   } else {
     # return either unique codes only, or df including descriptions
@@ -518,6 +525,7 @@ map_codes <- function(codes,
 #' @param from A clinical coding system to map from.
 #' @param to A clinical coding system to map to.
 #' @inheritParams codes_starting_with
+#' @inheritParams map_codes
 #' @param rename_from_to Optionally supply a named vector to rename the 'from'
 #'   and 'to' columns. For example `c(from = "original_codes", to =
 #'   "new_codes")`. By default, the columns will be named using the values for
@@ -535,11 +543,21 @@ get_mapping_df <- function(from,
                            all_lkps_maps = "all_lkps_maps.db",
                            rename_from_to = NULL,
                            na.rm = TRUE,
+                           reverse_mapping = "error",
                            col_filters = default_col_filters()) {
-  # validate args
-  check_mapping_args(from = from,
-                     to = to)
+  # validate args -----------
+  # get mapping sheet, from and to cols
+  # check mapping args and get required details - mapping_table, from_col and
+  # to_col
+  mapping_params <- check_mapping_args(from = from,
+                                       to = to,
+                                       reverse_mapping = reverse_mapping)
 
+  from_col <- mapping_params$from_col
+  to_col <- mapping_params$to_col
+  mapping_table <- mapping_params$mapping_table
+
+  # rename_from_to
   rename_from_to_error_msg <-
     "Error! `rename_from_to` should be a named character vector of length 2, with names 'from' and 'to'"
 
@@ -556,16 +574,6 @@ get_mapping_df <- function(from,
     all_lkps_maps <- ukbwranglr::db_tables_to_list(con)
     on.exit(DBI::dbDisconnect(con))
   }
-
-  # get mapping sheet, from and to cols
-  # check mapping args and get required details - mapping_table, from_col and
-  # to_col
-  mapping_params <- check_mapping_args(from = from,
-                                       to = to)
-
-  from_col <- mapping_params$from_col
-  to_col <- mapping_params$to_col
-  mapping_table <- mapping_params$mapping_table
 
   # get just distinct combinations of from_col and to_col for mapping_table
   from_to_cols <- c(from_col,
@@ -1432,8 +1440,20 @@ expand_icd10_ranges <- function(read_v2_icd10,
 
 ## Validation helpers ---------------------------
 
+check_codes <- function(codes) {
+  assertthat::assert_that(is.character(codes),
+                          msg = "Error! `codes` must be a character vector")
+
+  assertthat::assert_that(sum(is.na(codes)) == 0,
+                          msg = "Error! `codes` cannot contain `NA` values")
+}
+
 check_mapping_args <- function(from,
-                               to) {
+                               to,
+                               reverse_mapping) {
+  match.arg(reverse_mapping,
+            choices = c("error", "warning"))
+
   match.arg(arg = from,
             choices = CODE_TYPE_TO_LKP_TABLE_MAP$code)
   # choices = CLINICAL_CODE_MAPPINGS_MAP$from)
@@ -1459,10 +1479,12 @@ check_mapping_args <- function(from,
   if (rlang::is_empty(mapping_table)) {
     stop("Error! Invalid (or unavailable) code mapping request")
   } else if (swap_mapping_cols) {
-    warning(
-      "Warning! No mapping sheet available for this request. Attempting to map anyway using: ",
-      mapping_table
-    )
+    switch(reverse_mapping,
+           error = stop("No mapping sheet available for this request"),
+           warning = warning(
+             "No mapping sheet available for this request. Attempting to map anyway using: ",
+             mapping_table
+           ))
   }
 
   # get from_col and to_col column names for mapping sheet
