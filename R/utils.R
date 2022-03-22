@@ -50,7 +50,8 @@ read_all_lkps_maps_raw <- function(path) {
 #'
 #' Metadata for each table in UKB resource 592 is recorded in one or more footer
 #' rows (in column 1), separated from the main table by an empty row. This
-#' function removes these rows for a single table.
+#' function removes these rows for a single table. Raises an error if more than
+#' 3 rows would be removed.
 #'
 #' @param df A data frame from UK Biobank resource 592 frames.
 #' @param footer_metadata_col_idx Integer. Index for column containing footer
@@ -73,7 +74,15 @@ rm_footer_rows_all_lkps_maps_df <- function(df,
     ))
 
   # get max rowid (for rows with `NA` in column 1)
-  max_rowid <- max(df$rowid, na.rm = TRUE)
+  max_rowid <- as.character(max(as.integer(df$rowid), na.rm = TRUE))
+
+  # error if more than 3 rows will be removed
+  assertthat::assert_that(as.integer(max_rowid) >= (nrow(df) - 2),
+                          msg = paste0("Attempted to remove all rows after row number ",
+                                       max_rowid,
+                                       ". `df` has ",
+                                       nrow(df),
+                                       " rows"))
 
   # convert rowid col to NA, unless rowid equals `max_rowid`. Then, fill
   # downwards, and remove these rows

@@ -764,7 +764,9 @@ default_col_filters <- function() {
       mapping_status = c("E", "G", "D"),
       refine_flag = c("C", "P")
     ),
-    read_v2_icd10 = list(icd10_code_def = c("1", "15", "3", "5", "7", "8"))
+    read_v2_icd10 = list(icd10_code_def = c("1", "15", "3", "5", "7", "8")),
+    read_ctv3_read_v2 = list(IS_ASSURED = "1"),
+    read_v2_read_ctv3 = list(IS_ASSURED = "1")
   )
 }
 
