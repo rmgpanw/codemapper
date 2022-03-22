@@ -173,7 +173,7 @@ test_that(
                      codes_only = FALSE,
                      preferred_description_only = FALSE,
                      standardise_output = FALSE)),
-      4
+      3
     )
 
     # codes and preferred descriptions only - should raise an error as can miss
