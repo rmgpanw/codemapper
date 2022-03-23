@@ -194,8 +194,7 @@ map_codes_ukb_clinical_events <- function(clinical_events,
     dplyr::select(tidyselect::all_of(ukbwranglr:::CLINICAL_EVENTS_COLHEADERS)) %>%
 
     # remove duplicated rows
-    dplyr::distinct(tidyselect::all_of(ukbwranglr:::CLINICAL_EVENTS_COLHEADERS),
-                    .keep_all = TRUE)
+    dplyr::distinct()
 
   # return result
   return(result)
