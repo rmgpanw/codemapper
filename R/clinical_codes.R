@@ -580,9 +580,11 @@ get_mapping_df <- function(from,
                     to_col)
 
   result <- all_lkps_maps[[mapping_table]] %>%
+    dplyr::collect() %>%
+    # note, cannot use `distinct()` with `.keep_all = TRUE` before calling
+    # `collect()` (see https://github.com/tidyverse/dbplyr/issues/404)
     dplyr::distinct(dplyr::across(tidyselect::all_of(from_to_cols)),
-                    .keep_all = TRUE) %>%
-    dplyr::collect()
+                    .keep_all = TRUE)
 
 
   # filter on `col_filters` parameters
