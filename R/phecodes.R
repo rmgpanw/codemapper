@@ -222,7 +222,8 @@ get_clinical_events_source <- function(clinical_events,
   # check selected sources are present
   check_sources <- clinical_events %>%
     dplyr::filter(.data[["source"]] %in% !!sources) %>%
-    dplyr::distinct(.data[["source"]]) %>%
+    dplyr::distinct(.data[["source"]],
+                    .keep_all = FALSE) %>%
     dplyr::collect()
 
   # error/warning if any sources are not present
