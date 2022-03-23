@@ -5,11 +5,16 @@
 #'
 #' @inheritParams ukbwranglr::extract_phenotypes
 #' @inheritParams codes_starting_with
+#' @param min_date_only If `TRUE`, result will be filtered for only the earliest
+#'   date per eid-phecode pair (date will be recorded as `NA` for cases where
+#'   there are no dates).
 #'
-#' @return A data frame with column names 'eid', 'source', 'index', 'phecode' and 'date'.
+#' @return A data frame with column names 'eid', 'source', 'index', 'phecode'
+#'   and 'date'.
 #' @export
 map_clinical_events_to_phecodes <- function(clinical_events,
-                                            all_lkps_maps = "all_lkps_maps.db") {
+                                            all_lkps_maps = "all_lkps_maps.db",
+                                            min_date_only = FALSE) {
   message("***MAPPING clinical_events TO PHECODES***")
 
   # Self-reported non-cancer -----------------------------------------------------------
@@ -115,13 +120,17 @@ map_clinical_events_to_phecodes <- function(clinical_events,
     gp_read2,
     gp_read3
   ) %>%
-    dplyr::bind_rows() %>%
+    dplyr::bind_rows()
+
+  if (min_date_only) {
+    result <- result %>%
     # take only earliest date (or `NA` if no dates recorded) per eid-phecode
     dplyr::group_by(.data[["eid"]],
                     .data[["phecode"]]) %>%
     dplyr::arrange(.data[["date"]]) %>%
     dplyr::slice_head(n = 1) %>%
     dplyr::ungroup()
+  }
 
   return(result)
 }
