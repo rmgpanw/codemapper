@@ -6,7 +6,8 @@
 \usage{
 map_clinical_events_to_phecodes(
   clinical_events,
-  all_lkps_maps = "all_lkps_maps.db"
+  all_lkps_maps = "all_lkps_maps.db",
+  min_date_only = FALSE
 )
 }
 \arguments{
@@ -20,9 +21,14 @@ data frames or \code{tbl_dbi} objects), or the path to a SQLite database
 containing these tables (see also \code{\link[=build_all_lkps_maps]{build_all_lkps_maps()}} and
 \code{\link[=all_lkps_maps_to_db]{all_lkps_maps_to_db()}}). By default, will look for a SQLite datbase called
 \code{all_lkps_maps.db} in the current working directory.}
+
+\item{min_date_only}{If \code{TRUE}, result will be filtered for only the earliest
+date per eid-phecode pair (date will be recorded as \code{NA} for cases where
+there are no dates).}
 }
 \value{
-A data frame with column names 'eid', 'source', 'index', 'phecode' and 'date'.
+A data frame with column names 'eid', 'source', 'index', 'code',
+'icd10', 'phecode' and 'date'.
 }
 \description{
 Map UK Biobank clinical events to phecodes

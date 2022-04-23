@@ -9,12 +9,14 @@
 #'   date per eid-phecode pair (date will be recorded as `NA` for cases where
 #'   there are no dates).
 #'
-#' @return A data frame with column names 'eid', 'source', 'index', 'phecode'
-#'   and 'date'.
+#' @return A data frame with column names 'eid', 'source', 'index', 'code',
+#'   'icd10', 'phecode' and 'date'.
 #' @export
 map_clinical_events_to_phecodes <- function(clinical_events,
                                             all_lkps_maps = "all_lkps_maps.db",
                                             min_date_only = FALSE) {
+
+  start_time <- proc.time()
   message("***MAPPING clinical_events TO PHECODES***")
 
   # Self-reported non-cancer -----------------------------------------------------------
@@ -23,6 +25,9 @@ map_clinical_events_to_phecodes <- function(clinical_events,
     clinical_events = clinical_events,
     sources = c("f20002_icd10")
   )
+
+  self_reported_icd10 <- self_reported_icd10 %>%
+    dplyr::rename("icd10" = .data[["code"]])
 
   self_reported_icd10 <-
     map_icd10_to_phecode(clinical_events = self_reported_icd10,
@@ -38,6 +43,9 @@ map_clinical_events_to_phecodes <- function(clinical_events,
       clinical_events = clinical_events,
       sources = c("f41270", "f40006")
     )
+
+  hes_cancer_icd10 <- hes_cancer_icd10 %>%
+    dplyr::rename("icd10" = .data[["code"]])
 
   hes_cancer_icd10 <-
     map_icd10_to_phecode(clinical_events = hes_cancer_icd10,
@@ -67,6 +75,9 @@ map_clinical_events_to_phecodes <- function(clinical_events,
       clinical_events = clinical_events,
       sources = c("f40001", "f40002")
     )
+
+  death_icd10 <- death_icd10 %>%
+    dplyr::rename("icd10" = .data[["code"]])
 
   death_icd10 <- map_icd10_to_phecode(clinical_events = death_icd10,
                                       all_lkps_maps = all_lkps_maps)
@@ -120,7 +131,8 @@ map_clinical_events_to_phecodes <- function(clinical_events,
     gp_read2,
     gp_read3
   ) %>%
-    dplyr::bind_rows()
+    dplyr::bind_rows() %>%
+    dplyr::distinct()
 
   if (min_date_only) {
     result <- result %>%
@@ -132,6 +144,7 @@ map_clinical_events_to_phecodes <- function(clinical_events,
     dplyr::ungroup()
   }
 
+  ukbwranglr:::time_taken_message(start_time)
   return(result)
 }
 
@@ -139,28 +152,45 @@ map_clinical_events_to_phecodes <- function(clinical_events,
 #'
 #' Joins the existing `code` column to a mapping data frame created by
 #' [codemapper::get_mapping_df], then filters out any missing values for the new
-#' code type, then replaces the old `code` column with the newly mapped codes.
+#' code type. A column is appended containing the newly mapped codes.
 #'
-#' Clinical events can contain multiple sources, but these should all use the
-#' same data_coding. An error is raised otherwise.
+#' The `clinical_events` data frame can contain multiple sources, but an error
+#' is raised by default if these do not all use the same data coding (see
+#' [ukbwranglr::clinical_events_sources()] for recognised data sources and their
+#' respective dagta codings).
 #'
-#' @param clinical_events A clinical events table created by
+#' @param clinical_events A clinical events data frame created by
 #'   [ukbwranglr::tidy_clinical_events()]
 #' @param from Coding type being mapped from
 #' @param to Coding type being mapped to
+#' @param from_colname Name of column containing codes to be mapped from. If
+#'   `NULL` (default), this is assumed to be named 'code'.
+#' @param to_colname Name of new column containing mapped codes. If `NULL`
+#'   (default), this will equal the value for argument `to`.
 #' @param all_lkps_maps Named list of SQLite database with lookup/mapping tables
 #' @param strict_ukb If `TRUE`, extra checks are performed to check that
-#'   `source` and `data_coding` match [ukbwranglr::clinical_events_sources()].
+#'   `source` and `data_coding` match [ukbwranglr::clinical_events_sources()],
+#'   and that column names match those expected for a clinical events table.
 #'
-#' @return A clinical events dataframe
+#' @return A clinical events data frame.
 map_codes_ukb_clinical_events <- function(clinical_events,
                                           from,
                                           to,
+                                          from_colname = NULL,
+                                          to_colname = NULL,
                                           all_lkps_maps = "all_lkps_maps.db",
                                           strict_ukb = TRUE) {
   # validate args
   check_mapping_args(from = from,
                      to = to)
+
+  if (!is.null(to_colname)) {
+    assertthat::is.string(to_colname)
+  }
+
+  if (!is.null(from_colname)) {
+    assertthat::is.string(from_colname)
+  }
 
   if (strict_ukb) {
     ukbwranglr:::validate_clinical_events_and_check_type(clinical_events)
@@ -184,17 +214,25 @@ map_codes_ukb_clinical_events <- function(clinical_events,
                                all_lkps_maps = all_lkps_maps)
 
   # map
+  if (is.null(from_colname)) {
+    from_colname <- "code"
+  }
+
+  join_by <- from
+  names(join_by) <- from_colname
+
   result <- clinical_events %>%
     dplyr::inner_join(mapping_df,
-                     by = c("code" = from)) %>%
-
-    # rename/reformat
-    dplyr::select(-.data[["code"]]) %>%
-    dplyr::rename("code" = .data[[to]]) %>%
-    dplyr::select(tidyselect::all_of(ukbwranglr:::CLINICAL_EVENTS_COLHEADERS)) %>%
-
+                     by = join_by) %>%
     # remove duplicated rows
     dplyr::distinct()
+
+  # rename newly appended column (optionally)
+  if (!is.null(to_colname)) {
+    result <- ukbwranglr:::rename_cols(df = result,
+                                       old_colnames = to,
+                                       new_colnames = to_colname)
+  }
 
   # return result
   return(result)
@@ -318,8 +356,9 @@ map_icd10_to_phecode <- function(clinical_events,
     clinical_events = clinical_events,
     from = "icd10",
     to = "phecode",
+    from_colname = "icd10",
+    to_colname = "phecode",
     all_lkps_maps = all_lkps_maps,
     strict_ukb = FALSE
-  ) %>%
-    dplyr::rename("phecode" = .data[["code"]])
+  )
 }

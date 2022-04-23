@@ -19,3 +19,4 @@
 ^_pkgdown\.yml$
 ^temp_tests/*
 ^all_lkps_maps\.db\.gz$
+^ukbb_pan_ancestry-master/*

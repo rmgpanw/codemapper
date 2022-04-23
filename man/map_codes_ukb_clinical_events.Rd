@@ -8,32 +8,43 @@ map_codes_ukb_clinical_events(
   clinical_events,
   from,
   to,
+  from_colname = NULL,
+  to_colname = NULL,
   all_lkps_maps = "all_lkps_maps.db",
   strict_ukb = TRUE
 )
 }
 \arguments{
-\item{clinical_events}{A clinical events table created by
+\item{clinical_events}{A clinical events data frame created by
 \code{\link[ukbwranglr:tidy_clinical_events]{ukbwranglr::tidy_clinical_events()}}}
 
 \item{from}{Coding type being mapped from}
 
 \item{to}{Coding type being mapped to}
 
+\item{from_colname}{Name of column containing codes to be mapped from. If
+\code{NULL} (default), this is assumed to be named 'code'.}
+
+\item{to_colname}{Name of new column containing mapped codes. If \code{NULL}
+(default), this will equal the value for argument \code{to}.}
+
 \item{all_lkps_maps}{Named list of SQLite database with lookup/mapping tables}
 
 \item{strict_ukb}{If \code{TRUE}, extra checks are performed to check that
-\code{source} and \code{data_coding} match \code{\link[ukbwranglr:clinical_events_sources]{ukbwranglr::clinical_events_sources()}}.}
+\code{source} and \code{data_coding} match \code{\link[ukbwranglr:clinical_events_sources]{ukbwranglr::clinical_events_sources()}},
+and that column names match those expected for a clinical events table.}
 }
 \value{
-A clinical events dataframe
+A clinical events data frame.
 }
 \description{
 Joins the existing \code{code} column to a mapping data frame created by
 \link{get_mapping_df}, then filters out any missing values for the new
-code type, then replaces the old \code{code} column with the newly mapped codes.
+code type. A column is appended containing the newly mapped codes.
 }
 \details{
-Clinical events can contain multiple sources, but these should all use the
-same data_coding. An error is raised otherwise.
+The \code{clinical_events} data frame can contain multiple sources, but an error
+is raised by default if these do not all use the same data coding (see
+\code{\link[ukbwranglr:clinical_events_sources]{ukbwranglr::clinical_events_sources()}} for recognised data sources and their
+respective dagta codings).
 }
