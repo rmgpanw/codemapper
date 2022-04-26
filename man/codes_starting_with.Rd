@@ -7,7 +7,7 @@
 codes_starting_with(
   codes,
   code_type,
-  all_lkps_maps = "all_lkps_maps.db",
+  all_lkps_maps = NULL,
   codes_only = FALSE,
   preferred_description_only = TRUE,
   standardise_output = TRUE,

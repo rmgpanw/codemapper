@@ -4,7 +4,7 @@
 #'
 #' Write the output from \code{\link{build_all_lkps_maps}} to a SQLite database.
 #'
-#' @param all_lkps_maps A named list of look up and mapping tables, as created
+#' @param all_lkps_maps A named list of look up and mapping tables, created
 #'   by \code{\link{build_all_lkps_maps}}.
 #' @param db_path Where the database will be created. If an SQLite database file
 #'   already exists here, then the lookup and mapping tables will be added to
@@ -13,8 +13,9 @@
 #'   already exist. Default value is \code{FALSE}.
 #'
 #' @return Returns \code{db_path} invisibly
+#' @seealso [build_all_lkps_maps()]
 #' @export
-all_lkps_maps_to_db <- function(all_lkps_maps,
+all_lkps_maps_to_db <- function(all_lkps_maps = build_all_lkps_maps(),
                                 db_path,
                                 overwrite = FALSE) {
   # If database already exists at db_path, check if tables to be written are
@@ -119,9 +120,10 @@ all_lkps_maps_to_db <- function(all_lkps_maps,
 #'   file ("phecode_icd9_map_unrolled.csv.zip").
 #'
 #' @return Returns a named list of data frames.
+#' @seealso [all_lkps_maps_to_db()]
 #' @export
 build_all_lkps_maps <-
-  function(all_lkps_maps = get_ukb_all_lkps_maps_raw_direct(),
+  function(all_lkps_maps = read_all_lkps_maps(),
            bnf_dmd = get_nhsbsa_snomed_bnf(),
            ukb_codings = ukbwranglr::get_ukb_codings_direct(),
            ctv3sctmap2 = NULL,
@@ -310,15 +312,15 @@ get_nhsbsa_snomed_bnf <- function() {
 #'
 #' Downloads the UK Biobank code mappings file (\code{all_lkps_maps_v3.xlsx},
 #' \href{https://biobank.ndph.ox.ac.uk/ukb/refer.cgi?id=592}{resource 592})
-#' directly from the UKB website to a temporary directory at
-#' \code{\link[base]{tempdir}}. This is then read into R as a named list of data
-#' frames, one for each sheet in the original file.
+#' directly from the UKB website.
 #'
 #' \strong{Note:} This is a large object (>450 MB)
 #'
-#' @return A named list.
+#' @param dir_path Directory path to download to.
+#'
+#' @return File path to downloaded `all_lkps_maps_v3.xlsx`.
 #' @export
-get_ukb_all_lkps_maps_raw_direct <- function() {
+get_ukb_all_lkps_maps <- function(dir_path = tempdir()) {
   message("Getting UKB resource 592")
   # name of resource 592 excel file
   primarycare_codings <- "all_lkps_maps_v3.xlsx"
@@ -343,13 +345,33 @@ get_ukb_all_lkps_maps_raw_direct <- function() {
   message("Extracting all_lkps_maps_v3.xlsx from zip file to tempdir")
   utils::unzip(primarycare_codings_zip_filepath,
                files = primarycare_codings,
-               exdir = tempdir())
+               exdir = dir_path)
 
-  # reading all sheets into named list
-  message("Reading sheets from all_lkps_maps_v3.xlsx to a named list")
-  read_all_lkps_maps_raw(primarycare_codings_excel_filepath)
+  # return file path
+  return(file.path(dir_path, primarycare_codings))
 }
 
+#' Read UK Biobank resource 592 into a named list
+#'
+#' Reads the UK Biobank code mappings file (`all_lkps_maps_v3.xlsx`,
+#' \href{https://biobank.ndph.ox.ac.uk/ukb/refer.cgi?id=592}{resource 592}) into
+#' a named list of data frames.
+#'
+#' \strong{Note:} This is a large object (>450 MB)
+#'
+#' @param path Path to `all_lkps_maps_v3.xlsx`. By default, this is downloaded
+#'   from the UK Biobank website using [get_ukb_all_lkps_maps()].
+#'
+#' @return A named list of data frames.
+#' @export
+read_all_lkps_maps <- function(path = get_ukb_all_lkps_maps()) {
+  read_excel_to_named_list(
+    path = path,
+    to_include = NULL,
+    to_exclude = c("Description", "Contents"),
+    col_types = "text"
+  )
+}
 
 # PRIVATE -----------------------------------------------------------------
 

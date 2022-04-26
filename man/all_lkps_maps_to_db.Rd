@@ -4,10 +4,14 @@
 \alias{all_lkps_maps_to_db}
 \title{Build a SQLite database of clinical code look up and mapping tables}
 \usage{
-all_lkps_maps_to_db(all_lkps_maps, db_path, overwrite = FALSE)
+all_lkps_maps_to_db(
+  all_lkps_maps = build_all_lkps_maps(),
+  db_path,
+  overwrite = FALSE
+)
 }
 \arguments{
-\item{all_lkps_maps}{A named list of look up and mapping tables, as created
+\item{all_lkps_maps}{A named list of look up and mapping tables, created
 by \code{\link{build_all_lkps_maps}}.}
 
 \item{db_path}{Where the database will be created. If an SQLite database file
@@ -22,4 +26,7 @@ Returns \code{db_path} invisibly
 }
 \description{
 Write the output from \code{\link{build_all_lkps_maps}} to a SQLite database.
+}
+\seealso{
+\code{\link[=build_all_lkps_maps]{build_all_lkps_maps()}}
 }

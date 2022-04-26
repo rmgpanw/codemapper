@@ -6,7 +6,7 @@
 \usage{
 reformat_icd10_codes(
   icd10_codes,
-  all_lkps_maps = "all_lkps_maps.db",
+  all_lkps_maps = NULL,
   input_icd10_format = "ICD10_CODE",
   output_icd10_format = "ALT_CODE",
   unrecognised_codes = "error",

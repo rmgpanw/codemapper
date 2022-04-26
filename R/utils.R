@@ -36,16 +36,6 @@ read_excel_to_named_list <- function(path,
                ...)
 }
 
-
-read_all_lkps_maps_raw <- function(path) {
-  read_excel_to_named_list(
-    path = path,
-    to_include = NULL,
-    to_exclude = c("Description", "Contents"),
-    col_types = "text"
-  )
-}
-
 #' Remove footer rows from a table in UKB resource 592
 #'
 #' Metadata for each table in UKB resource 592 is recorded in one or more footer

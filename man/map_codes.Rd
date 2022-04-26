@@ -8,7 +8,7 @@ map_codes(
   codes,
   from,
   to,
-  all_lkps_maps = "all_lkps_maps.db",
+  all_lkps_maps = NULL,
   codes_only = FALSE,
   standardise_output = TRUE,
   unrecognised_codes = "error",

@@ -7,7 +7,7 @@
 get_mapping_df(
   from,
   to,
-  all_lkps_maps = "all_lkps_maps.db",
+  all_lkps_maps = NULL,
   rename_from_to = NULL,
   na.rm = TRUE,
   reverse_mapping = "error",

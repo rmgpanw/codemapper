@@ -7,7 +7,7 @@
 lookup_codes(
   codes,
   code_type,
-  all_lkps_maps = "all_lkps_maps.db",
+  all_lkps_maps = NULL,
   preferred_description_only = TRUE,
   standardise_output = TRUE,
   unrecognised_codes = "error",

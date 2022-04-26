@@ -5,7 +5,7 @@
 \title{Build named list of clinical code look up and mapping tables}
 \usage{
 build_all_lkps_maps(
-  all_lkps_maps = get_ukb_all_lkps_maps_raw_direct(),
+  all_lkps_maps = read_all_lkps_maps(),
   bnf_dmd = get_nhsbsa_snomed_bnf(),
   ukb_codings = ukbwranglr::get_ukb_codings_direct(),
   ctv3sctmap2 = NULL,
@@ -47,4 +47,7 @@ Downloads the lookup and mapping tables from
 and OPCS4, self-reported medical conditions/medications/operations from the
 UK Biobank codings file (available
 \href{https://biobank.ctsu.ox.ac.uk/crystal/exinfo.cgi?src=accessing_data_guide}{here}).
+}
+\seealso{
+\code{\link[=all_lkps_maps_to_db]{all_lkps_maps_to_db()}}
 }

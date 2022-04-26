@@ -7,7 +7,7 @@
 code_descriptions_like(
   reg_expr,
   code_type,
-  all_lkps_maps = "all_lkps_maps.db",
+  all_lkps_maps = NULL,
   ignore_case = TRUE,
   codes_only = FALSE,
   preferred_description_only = TRUE,
