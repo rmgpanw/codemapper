@@ -215,7 +215,6 @@ build_all_lkps_maps <-
       phecode_lkp <- readr::read_csv(phecode_1_2_lkp)
     }
 
-    browser()
     ## Phecode to ICD10 map ---------------------
     if (!is.null(icd10_phecode_1_2)) {
       icd10_phecode <- readr::read_csv(icd10_phecode_1_2) %>%
