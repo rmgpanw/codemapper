@@ -264,6 +264,11 @@ build_all_lkps_maps <-
                          list(icd9_phecode = icd9_phecode))
     }
 
+    # convert all to tibbles (avoids potential problems when writing to SQLite
+    # database)
+    all_lkps_maps <- all_lkps_maps %>%
+      purrr::map(tibble::as_tibble)
+
     message("Success!")
     return(all_lkps_maps)
   }
