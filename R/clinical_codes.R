@@ -1544,6 +1544,13 @@ expand_icd10_ranges <- function(read_v2_icd10,
     )))
 }
 
+# utility function to strip 'X' from undivided 3 character ICD-10 codes
+strip_x_from_3char_icd10 <- function(df) {
+  df %>%
+    dplyr::mutate("icd10" = stringr::str_remove(.data[["icd10"]],
+                                                "X$"))
+}
+
 ## Validation helpers ---------------------------
 
 check_codes <- function(codes) {
