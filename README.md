@@ -13,7 +13,7 @@ coverage](https://codecov.io/gh/rmgpanw/codemapper/branch/master/graph/badge.svg
 [![pkgdown](https://github.com/rmgpanw/codemapper/workflows/pkgdown/badge.svg)](https://github.com/rmgpanw/codemapper/actions)
 <!-- badges: end -->
 
-The goal of codemapper is to …
+The goal of codemapper is to facilitate working with clinical codes.
 
 ## Installation
 
