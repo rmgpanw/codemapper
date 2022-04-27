@@ -105,7 +105,7 @@ all_lkps_maps_to_db <- function(all_lkps_maps = build_all_lkps_maps(),
 #' \href{https://biobank.ctsu.ox.ac.uk/crystal/exinfo.cgi?src=accessing_data_guide}{here}).
 #'
 #' @param all_lkps_maps UK Biobank resource 592, as returned by
-#'   \code{\link{get_ukb_all_lkps_maps_raw_direct}}.
+#'   \code{\link{get_ukb_all_lkps_maps}}.
 #' @param bnf_dmd The NHSBSA BNF-SNOMED mapping table, as returned by
 #'   \code{\link{get_nhsbsa_snomed_bnf}}.
 #' @param ukb_codings The UK Biobank codings file, as returned by

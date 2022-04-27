@@ -16,7 +16,7 @@ build_all_lkps_maps(
 }
 \arguments{
 \item{all_lkps_maps}{UK Biobank resource 592, as returned by
-\code{\link{get_ukb_all_lkps_maps_raw_direct}}.}
+\code{\link{get_ukb_all_lkps_maps}}.}
 
 \item{bnf_dmd}{The NHSBSA BNF-SNOMED mapping table, as returned by
 \code{\link{get_nhsbsa_snomed_bnf}}.}

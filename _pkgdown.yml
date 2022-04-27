@@ -1,5 +1,2 @@
-destination: public/pkgdown_site
+destination: docs
 
-url: https://rmgpanw.gitlab.io/codemapper/pkgdown_site
-template:
-  bootstrap: 5

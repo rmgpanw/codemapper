@@ -5,6 +5,6 @@
 ^LICENSE\.md$
 ^public/\.nojekyll$
 ^_pkgdown\.yml$
-^temp_tests/*
-^all_lkps_maps\.db\.gz$
-^ukbb_pan_ancestry-master/*
+^\.github$
+^README\.Rmd$
+^codecov\.yml$

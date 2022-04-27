@@ -4,14 +4,4 @@
 .Ruserdata
 .Rapp.history
 .DS_Store
-analysis/figure
-analysis/*png
-analysis/*html
-analysis/*_cache
-analysis/site_libs
-tar_make.R
-_targets/*
-.Renviron
-all_lkps_maps.db
-all_lkps_maps.db.gz
-ukbb_pan_ancestry-master/*
+docs/*
