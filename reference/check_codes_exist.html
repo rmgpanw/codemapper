@@ -54,7 +54,8 @@
   <span class="va">codes</span>,
   <span class="va">lkp_codes</span>,
   <span class="va">code_type</span>,
-  return_unrecognised_codes <span class="op">=</span> <span class="cn">FALSE</span>
+  return_unrecognised_codes <span class="op">=</span> <span class="cn">FALSE</span>,
+  unrecognised_codes <span class="op">=</span> <span class="st">"error"</span>
 <span class="op">)</span></code></pre></div>
     </div>
 
@@ -69,7 +70,10 @@
 <dd><p>String</p></dd>
 <dt>return_unrecognised_codes</dt>
 <dd><p>If <code>TRUE</code>, return a character vector of
-unrecognised codes. Default is <code>FALSE</code>.</p></dd>
+unrecognised codes. Default is <code>FALSE</code>.check</p></dd>
+<dt>unrecognised_codes</dt>
+<dd><p>Either 'error' or 'warning'. Determines how to
+handle unrecognised codes.</p></dd>
 </dl></div>
     <div id="value">
     <h2>Value</h2>
