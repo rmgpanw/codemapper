@@ -220,6 +220,29 @@ build_all_lkps_maps <-
       icd10_phecode <- readr::read_csv(icd10_phecode_1_2) %>%
         dplyr::mutate("ALT_CODE" = stringr::str_remove(.data[["ICD10"]],
                                                        pattern = "\\."))
+
+      # get vector of all present icd10 codes in ALT_CODE format. Also returns a
+      # message listing ICD10 codes with modifiers that will map to >1 ICD10 code in
+      # ALT_CODE format. Also raises warning if any unrecognised ICD10 codes are
+      # present.
+      icd10_codes_in_icd10_phecode <- codemapper::reformat_icd10_codes(
+        icd10_codes = icd10_phecode$ICD10,
+        all_lkps_maps = all_lkps_maps,
+        input_icd10_format = "ICD10_CODE",
+        output_icd10_format = "ALT_CODE",
+        unrecognised_codes = "warning",
+        strip_x = FALSE
+      )
+
+      # append `ALT_CODE`
+      icd10_phecode <- all_lkps_maps$icd10_lkp %>%
+        dplyr::select(tidyselect::all_of(c(
+          "ICD10_CODE",
+          "ALT_CODE"
+        ))) %>%
+        dplyr::filter(.data[["ALT_CODE"]] %in% !!icd10_codes_in_icd10_phecode) %>%
+        dplyr::right_join(icd10_phecode,
+                          by = c("ICD10_CODE" = "ICD10"))
     }
 
     ## Phecode to ICD9 map ------------------
