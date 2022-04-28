@@ -180,6 +180,8 @@ codes_starting_with <- function(codes,
 #'   resource 592}).
 #' @param unrecognised_codes Either 'error' (default) or 'warning'. If any input
 #'   `codes` are unrecognised, then either an error or warning will be raised.
+#' @param .return_unrecognised_codes If `TRUE`, return a vector of unrecognised
+#'   codes only.
 #' @inheritParams codes_starting_with
 #'
 #' @return data frame
@@ -191,7 +193,8 @@ lookup_codes <- function(codes,
                          preferred_description_only = TRUE,
                          standardise_output = TRUE,
                          unrecognised_codes = "error",
-                         col_filters = default_col_filters()) {
+                         col_filters = default_col_filters(),
+                         .return_unrecognised_codes = FALSE) {
   # validate args
   check_codes(codes)
 
@@ -262,6 +265,13 @@ lookup_codes <- function(codes,
 
   # check for unrecognised codes
   missing_codes <- subset(codes, !codes %in% result[[code_col]])
+
+  if (.return_unrecognised_codes) {
+    # optionally return vector of unrecognised codes only
+    message(paste0("Returning unrecognised codes only. N unrecognised: ",
+                   length(missing_codes)))
+    return(missing_codes)
+  }
 
   handle_unrecognised_codes(
     unrecognised_codes = unrecognised_codes,
@@ -1036,14 +1046,17 @@ handle_unrecognised_codes <-
 #'   `lkp_codes` are considered to be unrecognised.
 #' @param code_type String
 #' @param return_unrecognised_codes If `TRUE`, return a character vector of
-#'   unrecognised codes. Default is `FALSE`.
+#'   unrecognised codes. Default is `FALSE`.check
+#' @param unrecognised_codes Either 'error' or 'warning'. Determines how to
+#'   handle unrecognised codes.
 #'
 #' @return Return vector of unrecognised codes if `return_missing_codes` is
 #'   `TRUE`, otherwise called for side effect (error if any unrecognised codes)
 check_codes_exist <- function(codes,
                               lkp_codes,
                               code_type,
-                              return_unrecognised_codes = FALSE) {
+                              return_unrecognised_codes = FALSE,
+                              unrecognised_codes = "error") {
   # check for unrecognised('missing') codes
   missing_codes <- subset(codes, !codes %in% lkp_codes)
 
@@ -1054,7 +1067,7 @@ check_codes_exist <- function(codes,
 
   # ...otherwise return error
   handle_unrecognised_codes(
-    unrecognised_codes = "error",
+    unrecognised_codes = unrecognised_codes,
     missing_codes = missing_codes,
     code_type = code_type
   )
@@ -1312,6 +1325,13 @@ rm_or_extract_appended_icd10_dxa <- function(icd10_codes,
   )
 }
 
+# utility function to strip 'X' from undivided 3 character ICD-10 codes
+strip_x_from_3char_icd10 <- function(df) {
+  df %>%
+    dplyr::mutate("icd10" = stringr::str_remove(.data[["icd10"]],
+                                                "X$"))
+}
+
 #' Get a mapping table for ICD10 codes in ALT_CODE format, with and without 'X'
 #' appended for undivided 3 character codes
 #'
@@ -1542,13 +1562,6 @@ expand_icd10_ranges <- function(read_v2_icd10,
       "end_icd10_code",
       "icd10_range_new"
     )))
-}
-
-# utility function to strip 'X' from undivided 3 character ICD-10 codes
-strip_x_from_3char_icd10 <- function(df) {
-  df %>%
-    dplyr::mutate("icd10" = stringr::str_remove(.data[["icd10"]],
-                                                "X$"))
 }
 
 ## Validation helpers ---------------------------

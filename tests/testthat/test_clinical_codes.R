@@ -118,6 +118,24 @@ test_that(
   }
   )
 
+test_that(
+  "`lookup_codes()` returns unrecognised codes only when requested", {
+    result <- lookup_codes(
+      codes = c("E10", "E100", "UNRECOGNISED"),
+      code_type = "icd10",
+      all_lkps_maps = all_lkps_maps,
+      preferred_description_only = TRUE,
+      standardise_output = TRUE,
+      .return_unrecognised_codes = TRUE
+    )
+
+    expect_equal(
+      result,
+      "UNRECOGNISED"
+    )
+  }
+)
+
 # `code_descriptions_like()` ----------------------------------------------
 
 test_that("`code_descriptions_like()` returns expected results", {

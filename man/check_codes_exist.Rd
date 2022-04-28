@@ -8,7 +8,8 @@ check_codes_exist(
   codes,
   lkp_codes,
   code_type,
-  return_unrecognised_codes = FALSE
+  return_unrecognised_codes = FALSE,
+  unrecognised_codes = "error"
 )
 }
 \arguments{
@@ -20,7 +21,10 @@ check_codes_exist(
 \item{code_type}{String}
 
 \item{return_unrecognised_codes}{If \code{TRUE}, return a character vector of
-unrecognised codes. Default is \code{FALSE}.}
+unrecognised codes. Default is \code{FALSE}.check}
+
+\item{unrecognised_codes}{Either 'error' or 'warning'. Determines how to
+handle unrecognised codes.}
 }
 \value{
 Return vector of unrecognised codes if \code{return_missing_codes} is

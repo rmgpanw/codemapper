@@ -11,7 +11,8 @@ lookup_codes(
   preferred_description_only = TRUE,
   standardise_output = TRUE,
   unrecognised_codes = "error",
-  col_filters = default_col_filters()
+  col_filters = default_col_filters(),
+  .return_unrecognised_codes = FALSE
 )
 }
 \arguments{
@@ -45,6 +46,9 @@ the names refer to column names in the corresponding table, and the items
 are vectors of values to filter for. For example, \verb{list(my_lookup_table = list(colA = c("A", "B"))} will result in \code{my_lookup_table} being filtered
 for rows where \code{colA} is either 'A' or 'B'. Uses \code{default_col_filters()} by
 default. Set to \code{NULL} to remove all filters.}
+
+\item{.return_unrecognised_codes}{If \code{TRUE}, return a vector of unrecognised
+codes only.}
 }
 \value{
 data frame
