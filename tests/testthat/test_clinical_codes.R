@@ -172,7 +172,7 @@ test_that(
                 to = "read3",
                 all_lkps_maps = all_lkps_maps,
                 unrecognised_codes = "warning"),
-      regexp = "The following 2 codes were not found for read2: 'foo', 'bar'",
+      regexp = "The following 2 codes were not found for 'read2' in table 'read_v2_read_ctv3': 'foo', 'bar'",
       fixed = TRUE
     )
   }
@@ -415,22 +415,25 @@ test_that("`handle_unrecognised_codes()` produces an error/warning message appro
   expect_error(
     handle_unrecognised_codes(unrecognised_codes = "error",
                               missing_codes = "foo",
+                              table_name = "table",
                               code_type = "imaginary_coding_system"),
-    regexp = "The following 1 codes were not found for imaginary_coding_system"
+    regexp = "The following 1 codes were not found for 'imaginary_coding_system' in table 'table'"
   )
 
   # should raise a warning
   expect_warning(
     handle_unrecognised_codes(unrecognised_codes = "warning",
                               missing_codes = "foo",
+                              table_name = "table",
                                code_type = "imaginary_coding_system"),
-    regexp = "The following 1 codes were not found for imaginary_coding_system"
+    regexp = "The following 1 codes were not found for 'imaginary_coding_system' in table 'table': 'foo'"
   )
 
   # should return NULL
   expect_null(
     handle_unrecognised_codes(
       unrecognised_codes = "error",
+      table_name = "table",
       missing_codes = character(),
       code_type = "imaginary_coding_system"
     )
@@ -651,7 +654,7 @@ test_that("`get_icd10_code_range()` returns expected codes", {
       end_icd10_code = "A179D",
       icd10_lkp = all_lkps_maps$icd10_lkp
     ),
-    regexp = "were not found for icd10"
+    regexp = "were not found for 'icd10' in table 'icd10_lkp'"
   )
 
   # 3 character ICD10 code range
