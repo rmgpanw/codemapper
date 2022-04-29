@@ -7,9 +7,3 @@ if (requireNamespace("workflowr", quietly = TRUE)) {
 } else {
   message("workflowr package not installed, please run install.packages(\"workflowr\") to use the workflowr functions")
 }
-
-# install codemapper
-install_codemapper <- function() {
-  devtools::install_gitlab("rmgpanw/codemapper",
-                           auth_token = Sys.getenv("GITLAB_PAT"))
-}
