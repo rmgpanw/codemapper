@@ -1,6 +1,6 @@
 Package: codemapper
 Title: Functions for mapping between clinical coding systems
-Version: 0.0.0.9000
+Version: 0.0.0.9001
 Authors@R: 
     person(given = "Alasdair",
            family = "Warwick",
@@ -10,6 +10,7 @@ Authors@R:
 Description: Functions for mapping between clinical coding systems.
 License: MIT + file LICENSE
 URL: https://github.com/rmgpanw/codemapper
+BugReports: https://github.com/rmgpanw/codemapper/issues
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
@@ -35,7 +36,6 @@ Imports:
     shinyFeedback,
     stats,
     stringr,
-    targets,
     tibble,
     tidyr,
     tidyselect,
