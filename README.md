@@ -13,7 +13,11 @@ coverage](https://codecov.io/gh/rmgpanw/codemapper/branch/master/graph/badge.svg
 [![pkgdown](https://github.com/rmgpanw/codemapper/workflows/pkgdown/badge.svg)](https://github.com/rmgpanw/codemapper/actions)
 <!-- badges: end -->
 
-The goal of codemapper is to facilitate working with clinical codes.
+The goal of codemapper is to facilitate working with clinical codes used
+in electronic health records. This package relies in particular on the
+publicly available UK Biobank resource 592 - [Clinical coding
+classification systems and
+maps](https://biobank.ndph.ox.ac.uk/ukb/refer.cgi?id=592).
 
 ## Installation
 
@@ -25,39 +29,53 @@ You can install the development version from
 devtools::install_github("rmgpanw/codemapper")
 ```
 
-## Example
+## Basic example
 
-This is a basic example which shows you how to solve a common problem:
+A data analyst using electronic health records for research into
+hypertension may wish to build a list of clinical codes that capture
+this condition.
+
+First, build a local resource containing lookup and mapping tables for
+various clinical codings systems (a dummy dataset is used here):
 
 ``` r
 library(codemapper)
 #> Loading required package: ukbwranglr
-## basic example code
+all_lkps_maps_dummy <- build_all_lkps_maps(all_lkps_maps = read_dummy_all_lkps_maps(),
+                                     ukb_codings = read_dummy_ukb_codings(),
+                                     bnf_dmd = NULL,
+                                     self_report_med_to_atc_map = NULL)
+#> Extending tables in UKB resource 592
+#> Success!
 ```
 
-What is special about using `README.Rmd` instead of just `README.md`?
-You can include R chunks like so:
+Look up Read 2 codes for type 1 diabetes:
 
 ``` r
-summary(cars)
-#>      speed           dist       
-#>  Min.   : 4.0   Min.   :  2.00  
-#>  1st Qu.:12.0   1st Qu.: 26.00  
-#>  Median :15.0   Median : 36.00  
-#>  Mean   :15.4   Mean   : 42.98  
-#>  3rd Qu.:19.0   3rd Qu.: 56.00  
-#>  Max.   :25.0   Max.   :120.00
+htn_read2 <- code_descriptions_like("Hypertension",
+                       code_type = "read2",
+                       all_lkps_maps = all_lkps_maps_dummy)
+
+htn_read2
+#> # A tibble: 1 × 3
+#>   code  description            code_type
+#>   <chr> <chr>                  <chr>    
+#> 1 G20.. Essential hypertension read2
 ```
 
-You’ll still need to render `README.Rmd` regularly, to keep `README.md`
-up-to-date. `devtools::build_readme()` is handy for this. You could also
-use GitHub Actions to re-render `README.Rmd` every time you push. An
-example workflow can be found here:
-<https://github.com/r-lib/actions/tree/master/examples>.
+Map these to ICD10:
 
-You can also embed plots, for example:
+``` r
+htn_icd10 <- map_codes(
+  codes = htn_read2$code,
+  from = "read2",
+  to = "icd10",
+  all_lkps_maps = all_lkps_maps_dummy
+)
 
-<img src="man/figures/README-pressure-1.png" width="100%" />
-
-In that case, don’t forget to commit and push the resulting figure
-files, so they display on GitHub and CRAN.
+htn_icd10
+#> # A tibble: 1 × 3
+#>   code  description                      code_type
+#>   <chr> <chr>                            <chr>    
+#> 1 I10X  Essential (primary) hypertension icd10
+```
