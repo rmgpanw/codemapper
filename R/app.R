@@ -1,6 +1,6 @@
-#' Create a clinical codelist.
+#' Create a clinical codelist with R Shiny.
 #'
-#' Launches a shiny app to select clinical codes (see also 'User notes' section
+#' Launches a Shiny app to select clinical codes (see also 'User notes' section
 #' below). In general: \enumerate{\item Complete details for essential search
 #' fields (leaving 'category' box blank and leaving the 'Ignore case' boxes
 #' ticked - if un-ticked, this will not be recorded under

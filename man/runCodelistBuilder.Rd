@@ -2,7 +2,7 @@
 % Please edit documentation in R/app.R
 \name{runCodelistBuilder}
 \alias{runCodelistBuilder}
-\title{Create a clinical codelist.}
+\title{Create a clinical codelist with R Shiny.}
 \usage{
 runCodelistBuilder(all_lkps_maps, options = list(launch.browser = TRUE), ...)
 }
@@ -23,7 +23,7 @@ about the ideal height/width for the app.}
 \code{NULL}
 }
 \description{
-Launches a shiny app to select clinical codes (see also 'User notes' section
+Launches a Shiny app to select clinical codes (see also 'User notes' section
 below). In general: \enumerate{\item Complete details for essential search
 fields (leaving 'category' box blank and leaving the 'Ignore case' boxes
 ticked - if un-ticked, this will not be recorded under
