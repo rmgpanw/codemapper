@@ -1,2 +1,37 @@
 destination: docs
 
+reference:
+- title: Setting up
+  desc: Build a local resource with lookup and mapping tables for various clinical coding systems.
+- contents:
+  - get_ukb_all_lkps_maps
+  - read_all_lkps_maps
+  - build_all_lkps_maps
+  - all_lkps_maps_to_db
+  - get_nhsbsa_snomed_bnf
+  - get_ukb_self_report_med_to_atc_map
+
+- title: Clinical codes
+  desc:  Functions for looking up clinical codes and mapping between the different coding systems.
+- contents:
+  - lookup_codes
+  - codes_starting_with
+  - code_descriptions_like
+  - map_codes
+  - get_mapping_df
+  - default_col_filters
+  - reformat_icd10_codes
+  - runCodelistBuilder
+
+- title: Dummy data
+  desc: Dummy data for tests.
+- contents:
+  - dummy_all_lkps_maps_path
+  - dummy_ukb_codings_path
+  - read_dummy_all_lkps_maps
+  - read_dummy_ukb_codings
+
+- title: Package overview
+  desc: General summary of package contents
+- contents:
+  - codemapper
