@@ -276,6 +276,7 @@ lookup_codes <- function(codes,
   handle_unrecognised_codes(
     unrecognised_codes = unrecognised_codes,
     missing_codes = missing_codes,
+    table_name = lkp_table,
     code_type = code_type
   )
 
@@ -560,6 +561,7 @@ map_codes <- function(codes,
   handle_unrecognised_codes(
     unrecognised_codes = unrecognised_codes,
     missing_codes = missing_codes,
+    table_name = mapping_table,
     code_type = from
   )
 
@@ -804,6 +806,7 @@ reformat_icd10_codes <- function(icd10_codes,
   handle_unrecognised_codes(
     unrecognised_codes = unrecognised_codes,
     missing_codes = missing_codes,
+    table_name = "icd10_lkp",
     code_type = input_icd10_format
   )
 
@@ -1002,76 +1005,6 @@ get_preferred_description_code_for_lookup_sheet <-
       dplyr::filter(.data[["lkp_table"]] == lookup_sheet) %>%
       .[["preferred_code"]]
   }
-
-#' Helper function - raise error or warning if unrecognised codes are present
-#'
-#' Raises an error or warning for unrecognised codes.
-#'
-#' @param unrecognised_codes Either 'error' or 'warning'. Determines how to
-#'   handle unrecognised codes
-#' @param missing_codes character vector of unrecognised codes.
-#' @param code_type The type of clinical coding system
-#'
-#' @return Called for side effects.
-#' @noRd
-#' @family Clinical code lookups and mappings
-handle_unrecognised_codes <-
-  function(unrecognised_codes,
-           missing_codes,
-           code_type) {
-    match.arg(unrecognised_codes,
-              choices = c("error", "warning"))
-
-    if (length(missing_codes) > 0) {
-      missing_codes_message <- paste0(
-        "The following ",
-        length(missing_codes),
-        " codes were not found for ",
-        code_type,
-        ": '",
-        stringr::str_c(missing_codes, sep = "", collapse = "', '"),
-        "'"
-      )
-
-      switch(unrecognised_codes,
-             error = stop(missing_codes_message),
-             warning = warning(missing_codes_message))
-    }
-  }
-
-#' Utility function - check if all of a set of codes are recognised
-#'
-#' @param codes Codes being checked
-#' @param lkp_codes Character vector of lookup codes. Any `codes` not present in
-#'   `lkp_codes` are considered to be unrecognised.
-#' @param code_type String
-#' @param return_unrecognised_codes If `TRUE`, return a character vector of
-#'   unrecognised codes. Default is `FALSE`.check
-#' @param unrecognised_codes Either 'error' or 'warning'. Determines how to
-#'   handle unrecognised codes.
-#'
-#' @return Return vector of unrecognised codes if `return_missing_codes` is
-#'   `TRUE`, otherwise called for side effect (error if any unrecognised codes)
-check_codes_exist <- function(codes,
-                              lkp_codes,
-                              code_type,
-                              return_unrecognised_codes = FALSE,
-                              unrecognised_codes = "error") {
-  # check for unrecognised('missing') codes
-  missing_codes <- subset(codes, !codes %in% lkp_codes)
-
-  # return missing codes, if requested
-  if (return_unrecognised_codes) {
-    return(missing_codes)
-  }
-
-  # ...otherwise return error
-  handle_unrecognised_codes(
-    unrecognised_codes = unrecognised_codes,
-    missing_codes = missing_codes,
-    code_type = code_type
-  )
-}
 
 #' Reformat a dataframe of clinical codes to work with
 #' \code{\link[ukbwranglr]{extract_phenotypes}}
@@ -1410,6 +1343,7 @@ get_icd10_code_alt_code_x_map <- function(icd10_lkp,
 #' @param end_icd10_code String
 #' @param icd10_lkp The ICD10 lookup table. Must have a `.rowid` column.
 #'
+#' @noRd
 #' @return A character vector of
 get_icd10_code_range <- function(start_icd10_code,
                                  end_icd10_code,
@@ -1437,6 +1371,7 @@ get_icd10_code_range <- function(start_icd10_code,
     codes = c(start_icd10_code, end_icd10_code),
     lkp_codes = icd10_lkp$ALT_CODE,
     code_type = "icd10",
+    table_name = "icd10_lkp",
     return_unrecognised_codes = FALSE
   )
 
@@ -1668,5 +1603,84 @@ check_rowid_col_present <- function(df,
       class(df[[".rowid"]]),
       "'"
     )
+  )
+}
+
+#' Helper function - raise error or warning if unrecognised codes are present
+#'
+#' Raises an error or warning for unrecognised codes.
+#'
+#' @param unrecognised_codes Either 'error' or 'warning'. Determines how to
+#'   handle unrecognised codes
+#' @param missing_codes character vector of unrecognised codes.
+#' @param code_type The type of clinical coding system
+#' @param table_name Name of lookup/mapping table from which codes are missing
+#'
+#' @return Called for side effects.
+#' @noRd
+#' @family Clinical code lookups and mappings
+handle_unrecognised_codes <-
+  function(unrecognised_codes,
+           missing_codes,
+           table_name,
+           code_type) {
+    match.arg(unrecognised_codes,
+              choices = c("error", "warning"))
+
+    if (length(missing_codes) > 0) {
+      missing_codes_message <- paste0(
+        "The following ",
+        length(missing_codes),
+        " codes were not found for '",
+        code_type,
+        "' in table '",
+        table_name,
+        "': '",
+        stringr::str_c(missing_codes, sep = "", collapse = "', '"),
+        "'"
+      )
+
+      switch(unrecognised_codes,
+             error = stop(missing_codes_message),
+             warning = warning(missing_codes_message))
+    }
+  }
+
+#' Utility function - check if all of a set of codes are recognised
+#'
+#' @param codes Codes being checked
+#' @param lkp_codes Character vector of lookup codes. Any `codes` not present in
+#'   `lkp_codes` are considered to be unrecognised.
+#' @param code_type String
+#' @param return_unrecognised_codes If `TRUE`, return a character vector of
+#'   unrecognised codes. Default is `FALSE`.check
+#' @param unrecognised_codes Either 'error' or 'warning'. Determines how to
+#'   handle unrecognised codes.
+#' @param table_name Name of lookup/mapping table from which `lkp_codes` was
+#'   obtained.
+#'
+#' @noRd
+#' @return Return vector of unrecognised codes if `return_missing_codes` is
+#'   `TRUE`, otherwise called for side effect (error if any unrecognised codes)
+check_codes_exist <- function(codes,
+                              lkp_codes,
+                              table_name,
+                              code_type,
+                              return_unrecognised_codes = FALSE,
+                              unrecognised_codes = "error") {
+  # check for unrecognised('missing') codes
+  missing_codes <- subset(codes, !codes %in% lkp_codes)
+
+  # return missing codes, if requested
+  if (return_unrecognised_codes) {
+    return(missing_codes)
+  }
+
+  # ...otherwise return error
+  handle_unrecognised_codes(
+    unrecognised_codes = unrecognised_codes,
+    missing_codes = missing_codes,
+    table_name = table_name,
+    code_type = code_type
   )
 }
