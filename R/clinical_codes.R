@@ -25,8 +25,13 @@
 #' @param all_lkps_maps Either a named list of lookup and mapping tables (either
 #'   data frames or `tbl_dbi` objects), or the path to a SQLite database
 #'   containing these tables (see also [build_all_lkps_maps()] and
-#'   [all_lkps_maps_to_db()]). By default, will look for a SQLite datbase called
-#'   `all_lkps_maps.db` in the current working directory.
+#'   [all_lkps_maps_to_db()]). If `NULL`, will attempt to connect to an SQLite
+#'   database named 'all_lkps_maps.db' in the current working directory, or to a
+#'   a SQLite database specified by an environmental variable named
+#'   'ALL_LKPS_MAPS_DB' (see
+#'   [here](https://resources.numbat.space/using-rprofile-and-renviron.html#renviron)
+#'    for how to set environment variables using a `.Renviron` file). The latter
+#'   method will be used in preference.
 #' @param codes_only bool. If \code{TRUE}, return a character vector of
 #'   \emph{unique} codes. If \code{FALSE} (default), return a data frame of all
 #'   results including code descriptions (useful for manual validation).

@@ -4,12 +4,23 @@
 \alias{runCodelistBuilder}
 \title{Create a clinical codelist with R Shiny.}
 \usage{
-runCodelistBuilder(all_lkps_maps, options = list(launch.browser = TRUE), ...)
+runCodelistBuilder(
+  all_lkps_maps = NULL,
+  options = list(launch.browser = TRUE),
+  ...
+)
 }
 \arguments{
-\item{all_lkps_maps}{A named list or path to SQLite database of clinical
-codes created by \code{\link{build_all_lkps_maps}} and
-\code{\link{all_lkps_maps_to_db}}.}
+\item{all_lkps_maps}{Either a named list of lookup and mapping tables (either
+data frames or \code{tbl_dbi} objects), or the path to a SQLite database
+containing these tables (see also \code{\link[=build_all_lkps_maps]{build_all_lkps_maps()}} and
+\code{\link[=all_lkps_maps_to_db]{all_lkps_maps_to_db()}}). If \code{NULL}, will attempt to connect to an SQLite
+database named 'all_lkps_maps.db' in the current working directory, or to a
+a SQLite database specified by an environmental variable named
+'ALL_LKPS_MAPS_DB' (see
+\href{https://resources.numbat.space/using-rprofile-and-renviron.html#renviron}{here}
+for how to set environment variables using a \code{.Renviron} file). The latter
+method will be used in preference.}
 
 \item{options}{Named options that should be passed to the \code{runApp} call
 (these can be any of the following: "port", "launch.browser", "host", "quiet",

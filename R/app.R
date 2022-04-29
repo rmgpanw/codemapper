@@ -32,22 +32,35 @@
 #'   \strong{CAUTION:} make sure there are no inadvertent white spaces (e.g.
 #'   'search term', not 'search term  ').}
 #'
-#' @param all_lkps_maps A named list or path to SQLite database of clinical
-#'   codes created by \code{\link{build_all_lkps_maps}} and
-#'   \code{\link{all_lkps_maps_to_db}}.
+#' @inheritParams codes_starting_with
 #' @param ... Additional args passed on to \code{\link[shiny]{shinyApp}}
 #' @inheritParams shiny::shinyApp
 #'
 #' @return \code{NULL}
 #' @export
 #' @import shiny
-runCodelistBuilder <- function(all_lkps_maps,
+runCodelistBuilder <- function(all_lkps_maps = NULL,
                           options = list(launch.browser = TRUE),
                           ...) {
+  # connect to database file path if `all_lkps_maps` is a string, or `NULL`
   if (is.character(all_lkps_maps)) {
-    con <- DBI::dbConnect(RSQLite::SQLite(), all_lkps_maps)
-    # on.exit(DBI::dbDisconnect(con))
+    con <- check_all_lkps_maps_path(all_lkps_maps)
     all_lkps_maps <- ukbwranglr::db_tables_to_list(con)
+  } else if (is.null(all_lkps_maps)) {
+    if (Sys.getenv("ALL_LKPS_MAPS_DB") != "") {
+      message(paste0("Attempting to connect to ", Sys.getenv("ALL_LKPS_MAPS_DB")))
+      con <-
+        check_all_lkps_maps_path(Sys.getenv("ALL_LKPS_MAPS_DB"))
+      all_lkps_maps <- ukbwranglr::db_tables_to_list(con)
+    } else if (file.exists("all_lkps_maps.db")) {
+      message("Attempting to connect to all_lkps_maps.db in current working directory")
+      con <- check_all_lkps_maps_path("all_lkps_maps.db")
+      all_lkps_maps <- ukbwranglr::db_tables_to_list(con)
+    } else {
+      stop(
+        "No/invalid path supplied to `all_lkps_maps` and no file called 'all_lkps_maps.db' found in current working directory. See `?all_lkps_maps_to_db()`"
+      )
+    }
   }
 
   # UI ----------------------------------------------------------------------

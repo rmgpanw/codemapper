@@ -22,8 +22,13 @@ get_mapping_df(
 \item{all_lkps_maps}{Either a named list of lookup and mapping tables (either
 data frames or \code{tbl_dbi} objects), or the path to a SQLite database
 containing these tables (see also \code{\link[=build_all_lkps_maps]{build_all_lkps_maps()}} and
-\code{\link[=all_lkps_maps_to_db]{all_lkps_maps_to_db()}}). By default, will look for a SQLite datbase called
-\code{all_lkps_maps.db} in the current working directory.}
+\code{\link[=all_lkps_maps_to_db]{all_lkps_maps_to_db()}}). If \code{NULL}, will attempt to connect to an SQLite
+database named 'all_lkps_maps.db' in the current working directory, or to a
+a SQLite database specified by an environmental variable named
+'ALL_LKPS_MAPS_DB' (see
+\href{https://resources.numbat.space/using-rprofile-and-renviron.html#renviron}{here}
+for how to set environment variables using a \code{.Renviron} file). The latter
+method will be used in preference.}
 
 \item{rename_from_to}{Optionally supply a named vector to rename the 'from'
 and 'to' columns. For example \code{c(from = "original_codes", to = "new_codes")}. By default, the columns will be named using the values for
