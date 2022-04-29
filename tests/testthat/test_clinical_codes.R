@@ -1,16 +1,21 @@
 
 # SETUP ---------------------------------------------------------------
 
+
 ukb_codings <- read_dummy_ukb_codings()
 
 all_lkps_maps_raw <- read_dummy_all_lkps_maps()
-all_lkps_maps <- build_all_lkps_maps(all_lkps_maps = all_lkps_maps_raw,
-                    bnf_dmd = NULL,
-                    ukb_codings = ukb_codings,
-                    ctv3sctmap2 = NULL,
-                    phecode_1_2_lkp = NULL,
-                    icd10_phecode_1_2 = NULL,
-                    icd9_phecode_1_2 = NULL)
+all_lkps_maps <-
+  build_all_lkps_maps(
+    all_lkps_maps = all_lkps_maps_raw,
+    ukb_codings = ukb_codings,
+    bnf_dmd = NULL,
+    self_report_med_to_atc_map = NULL,
+    ctv3sctmap2 = NULL,
+    phecode_1_2_lkp = NULL,
+    icd10_phecode_1_2 = NULL,
+    icd9_phecode_1_2 = NULL
+  )
 
 # TESTS -------------------------------------------------------------------
 
