@@ -44,68 +44,62 @@
     </div>
 
     <table class="ref-index"><colgroup><col class="alias"><col class="title"></colgroup><tbody><tr><th colspan="2">
-          <h2 id="all-functions">All functions <a href="#all-functions" class="anchor" aria-hidden="true"></a></h2>
-          <p class="section-desc"></p>
+          <h2 id="setting-up">Setting up <a href="#setting-up" class="anchor" aria-hidden="true"></a></h2>
+          <p class="section-desc"></p><p>Build a local resource with lookup and mapping tables for various clinical coding systems.</p>
         </th>
       </tr></tbody><tbody><tr><td>
-          <p><code><a href="all_lkps_maps_to_db.html">all_lkps_maps_to_db()</a></code> </p>
-        </td>
-        <td><p>Build a SQLite database of clinical code look up and mapping tables</p></td>
-      </tr><tr><td>
-          <p><code><a href="build_all_lkps_maps.html">build_all_lkps_maps()</a></code> </p>
-        </td>
-        <td><p>Build named list of clinical code look up and mapping tables</p></td>
-      </tr><tr><td>
-          <p><code><a href="check_codes_exist.html">check_codes_exist()</a></code> </p>
-        </td>
-        <td><p>Utility function - check if all of a set of codes are recognised</p></td>
-      </tr><tr><td>
-          <p><code><a href="code_descriptions_like.html">code_descriptions_like()</a></code> </p>
-        </td>
-        <td><p>Search for codes that match a description</p></td>
-      </tr><tr><td>
-          <p><code><a href="codemapper.html">codemapper</a></code> </p>
-        </td>
-        <td><p>codemapper: a package for looking up and mapping between clinical coding
-systems</p></td>
-      </tr><tr><td>
-          <p><code><a href="codes_starting_with.html">codes_starting_with()</a></code> </p>
-        </td>
-        <td><p>Get codes that start with...</p></td>
-      </tr><tr><td>
-          <p><code><a href="default_col_filters.html">default_col_filters()</a></code> </p>
-        </td>
-        <td><p>Default filtering parameters for lookup and mapping tables.</p></td>
-      </tr><tr><td>
-          <p><code><a href="get_icd10_code_range.html">get_icd10_code_range()</a></code> </p>
-        </td>
-        <td><p>Get a vector of ICD10 codes in ALT_CODE format for a specified start/end
-range of ICD10 codes</p></td>
-      </tr><tr><td>
-          <p><code><a href="get_mapping_df.html">get_mapping_df()</a></code> </p>
-        </td>
-        <td><p>Get a 'from-to' mapping data frame</p></td>
-      </tr><tr><td>
-          <p><code><a href="get_nhsbsa_snomed_bnf.html">get_nhsbsa_snomed_bnf()</a></code> </p>
-        </td>
-        <td><p>Download and read the NHSBSA BNF_SNOMED mapping file</p></td>
-      </tr><tr><td>
           <p><code><a href="get_ukb_all_lkps_maps.html">get_ukb_all_lkps_maps()</a></code> </p>
         </td>
         <td><p>Get UK Biobank resource 592 directly from UKB
 website</p></td>
       </tr><tr><td>
+          <p><code><a href="read_all_lkps_maps.html">read_all_lkps_maps()</a></code> </p>
+        </td>
+        <td><p>Read UK Biobank resource 592 into a named list</p></td>
+      </tr><tr><td>
+          <p><code><a href="build_all_lkps_maps.html">build_all_lkps_maps()</a></code> </p>
+        </td>
+        <td><p>Build named list of clinical code look up and mapping tables</p></td>
+      </tr><tr><td>
+          <p><code><a href="all_lkps_maps_to_db.html">all_lkps_maps_to_db()</a></code> </p>
+        </td>
+        <td><p>Build a SQLite database of clinical code look up and mapping tables</p></td>
+      </tr><tr><td>
+          <p><code><a href="get_nhsbsa_snomed_bnf.html">get_nhsbsa_snomed_bnf()</a></code> </p>
+        </td>
+        <td><p>Download and read the NHSBSA BNF_SNOMED mapping file</p></td>
+      </tr><tr><td>
+          <p><code><a href="get_ukb_self_report_med_to_atc_map.html">get_ukb_self_report_med_to_atc_map()</a></code> </p>
+        </td>
+        <td><p>Download and read a UKB welf-reported medication code to ATC mapping file</p></td>
+      </tr></tbody><tbody><tr><th colspan="2">
+          <h2 id="clinical-codes">Clinical codes <a href="#clinical-codes" class="anchor" aria-hidden="true"></a></h2>
+          <p class="section-desc"></p><p>Functions for looking up clinical codes and mapping between the different coding systems.</p>
+        </th>
+      </tr></tbody><tbody><tr><td>
           <p><code><a href="lookup_codes.html">lookup_codes()</a></code> </p>
         </td>
         <td><p>Look up descriptions for clinical codes</p></td>
+      </tr><tr><td>
+          <p><code><a href="codes_starting_with.html">codes_starting_with()</a></code> </p>
+        </td>
+        <td><p>Get codes that start with...</p></td>
+      </tr><tr><td>
+          <p><code><a href="code_descriptions_like.html">code_descriptions_like()</a></code> </p>
+        </td>
+        <td><p>Search for codes that match a description</p></td>
       </tr><tr><td>
           <p><code><a href="map_codes.html">map_codes()</a></code> </p>
         </td>
         <td><p>Map clinical codes from one coding system to another</p></td>
       </tr><tr><td>
-          <p><code><a href="read_all_lkps_maps.html">read_all_lkps_maps()</a></code> </p>
+          <p><code><a href="get_mapping_df.html">get_mapping_df()</a></code> </p>
         </td>
-        <td><p>Read UK Biobank resource 592 into a named list</p></td>
+        <td><p>Get a 'from-to' mapping data frame</p></td>
+      </tr><tr><td>
+          <p><code><a href="default_col_filters.html">default_col_filters()</a></code> </p>
+        </td>
+        <td><p>Default filtering parameters for lookup and mapping tables.</p></td>
       </tr><tr><td>
           <p><code><a href="reformat_icd10_codes.html">reformat_icd10_codes()</a></code> </p>
         </td>
@@ -114,6 +108,35 @@ website</p></td>
           <p><code><a href="runCodelistBuilder.html">runCodelistBuilder()</a></code> </p>
         </td>
         <td><p>Create a clinical codelist.</p></td>
+      </tr></tbody><tbody><tr><th colspan="2">
+          <h2 id="dummy-data">Dummy data <a href="#dummy-data" class="anchor" aria-hidden="true"></a></h2>
+          <p class="section-desc"></p><p>Dummy data for tests.</p>
+        </th>
+      </tr></tbody><tbody><tr><td>
+          <p><code><a href="dummy_all_lkps_maps_path.html">dummy_all_lkps_maps_path()</a></code> </p>
+        </td>
+        <td><p>Dummy UK Biobank resource 592 file path</p></td>
+      </tr><tr><td>
+          <p><code><a href="dummy_ukb_codings_path.html">dummy_ukb_codings_path()</a></code> </p>
+        </td>
+        <td><p>Dummy UK Biobank codings file path</p></td>
+      </tr><tr><td>
+          <p><code><a href="read_dummy_all_lkps_maps.html">read_dummy_all_lkps_maps()</a></code> </p>
+        </td>
+        <td><p>Read dummy UK Biobank resource 592 into R</p></td>
+      </tr><tr><td>
+          <p><code><a href="read_dummy_ukb_codings.html">read_dummy_ukb_codings()</a></code> </p>
+        </td>
+        <td><p>Read dummy UK Biobank codings into R</p></td>
+      </tr></tbody><tbody><tr><th colspan="2">
+          <h2 id="package-overview">Package overview <a href="#package-overview" class="anchor" aria-hidden="true"></a></h2>
+          <p class="section-desc"></p><p>General summary of package contents</p>
+        </th>
+      </tr></tbody><tbody><tr><td>
+          <p><code><a href="codemapper.html">codemapper</a></code> </p>
+        </td>
+        <td><p>codemapper: a package for looking up and mapping between clinical coding
+systems</p></td>
       </tr></tbody></table></div>
 
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

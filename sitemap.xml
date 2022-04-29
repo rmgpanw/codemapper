@@ -22,9 +22,6 @@
     <loc>/reference/build_all_lkps_maps.html</loc>
   </url>
   <url>
-    <loc>/reference/check_codes_exist.html</loc>
-  </url>
-  <url>
     <loc>/reference/code_descriptions_like.html</loc>
   </url>
   <url>
@@ -37,7 +34,10 @@
     <loc>/reference/default_col_filters.html</loc>
   </url>
   <url>
-    <loc>/reference/get_icd10_code_range.html</loc>
+    <loc>/reference/dummy_all_lkps_maps_path.html</loc>
+  </url>
+  <url>
+    <loc>/reference/dummy_ukb_codings_path.html</loc>
   </url>
   <url>
     <loc>/reference/get_mapping_df.html</loc>
@@ -47,6 +47,9 @@
   </url>
   <url>
     <loc>/reference/get_ukb_all_lkps_maps.html</loc>
+  </url>
+  <url>
+    <loc>/reference/get_ukb_self_report_med_to_atc_map.html</loc>
   </url>
   <url>
     <loc>/reference/index.html</loc>
@@ -62,6 +65,12 @@
   </url>
   <url>
     <loc>/reference/read_all_lkps_maps.html</loc>
+  </url>
+  <url>
+    <loc>/reference/read_dummy_all_lkps_maps.html</loc>
+  </url>
+  <url>
+    <loc>/reference/read_dummy_ukb_codings.html</loc>
   </url>
   <url>
     <loc>/reference/reformat_icd10_codes.html</loc>
