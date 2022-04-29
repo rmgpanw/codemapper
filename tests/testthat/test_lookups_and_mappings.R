@@ -1,10 +1,16 @@
 
-# CONSTANTS ---------------------------------------------------------------
+# SETUP ---------------------------------------------------------------
 
-all_lkps_maps <- get_ukb_code_mappings() %>%
-  purrr::map(rm_footer_rows_all_lkps_maps_df) %>%
-  purrr::map(~ tibble::rowid_to_column(.data = .x,
-                                       var = ".rowid"))
+ukb_codings <- read_dummy_ukb_codings()
+
+all_lkps_maps_raw <- read_dummy_all_lkps_maps()
+all_lkps_maps <- build_all_lkps_maps(all_lkps_maps = all_lkps_maps_raw,
+                                     bnf_dmd = NULL,
+                                     ukb_codings = ukb_codings,
+                                     ctv3sctmap2 = NULL,
+                                     phecode_1_2_lkp = NULL,
+                                     icd10_phecode_1_2 = NULL,
+                                     icd9_phecode_1_2 = NULL)
 
 # TESTS -------------------------------------------------------------------
 
@@ -97,3 +103,4 @@ test_that("`reformat_icd9_icd10()` converts 'UNDEF' codes to `NA`", {
   expect_error(reformat_icd9_icd10(df_WRONG),
                regexp = "are not true")
 })
+

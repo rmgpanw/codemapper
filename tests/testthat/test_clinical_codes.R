@@ -1,10 +1,16 @@
 
-# CONSTANTS ---------------------------------------------------------------
+# SETUP ---------------------------------------------------------------
 
-all_lkps_maps <- get_ukb_code_mappings() %>%
-  purrr::map(rm_footer_rows_all_lkps_maps_df) %>%
-  purrr::map(~ tibble::rowid_to_column(.data = .x,
-                                       var = ".rowid"))
+ukb_codings <- read_dummy_ukb_codings()
+
+all_lkps_maps_raw <- read_dummy_all_lkps_maps()
+all_lkps_maps <- build_all_lkps_maps(all_lkps_maps = all_lkps_maps_raw,
+                    bnf_dmd = NULL,
+                    ukb_codings = ukb_codings,
+                    ctv3sctmap2 = NULL,
+                    phecode_1_2_lkp = NULL,
+                    icd10_phecode_1_2 = NULL,
+                    icd9_phecode_1_2 = NULL)
 
 # TESTS -------------------------------------------------------------------
 
@@ -43,13 +49,13 @@ test_that("`codes_starting_with()` returns the expected nuber of results, escapi
   # no '.'
   expect_equal(
     length(codes_starting_with(
-      codes = c("C10E"),
+      codes = c("C10"),
       code_type = "read2",
       all_lkps_maps = all_lkps_maps,
       codes_only = TRUE,
       standardise_output = FALSE
     )),
-    expected = 27)
+    expected = 2)
 
   # return codes and descriptions as a data frame
   expect_equal(nrow(
@@ -61,7 +67,7 @@ test_that("`codes_starting_with()` returns the expected nuber of results, escapi
       preferred_description_only = FALSE
     )
   ),
-  expected = 73)
+  expected = 3)
 
   expect_equal(nrow(
     codes_starting_with(
@@ -72,7 +78,7 @@ test_that("`codes_starting_with()` returns the expected nuber of results, escapi
       preferred_description_only = TRUE
     )
   ),
-  expected = 27)
+  expected = 1)
 })
 
 # `lookup_codes()` --------------------------------------------------------
@@ -297,14 +303,14 @@ test_that("`get_mapping_df()` returns the expected output", {
 
   expect_equal(
     read2_icd10_df,
-    tibble::tibble(read2 = "A00..",
-                   icd10 = "A00")
+    tibble::tibble(read2 = "A153.",
+                   icd10 = "A180")
   )
 
   expect_equal(
     read2_icd10_df_renamed,
-    tibble::tibble(from = "A00..",
-                   to = "A00")
+    tibble::tibble(from = "A153.",
+                   to = "A180")
   )
 
   # should be the same as above
@@ -315,8 +321,8 @@ test_that("`get_mapping_df()` returns the expected output", {
 
   expect_equal(
     icd10_read2_df,
-    tibble::tibble(icd10 = "A00",
-                   read2 = "A00..")
+    tibble::tibble(icd10 = "A180",
+                   read2 = "A153.")
   )
 })
 
@@ -433,16 +439,16 @@ test_that("`reformat_icd10_codes()` returns the expected values for ICD10_CODE t
     # table
     suppressWarnings(reformat_icd10_codes(
         icd10_codes = c("D75.1",
-                        "H40", # will be the same for ICD10_CODE and ALT_CODE
-                        "H40.1",
-                        "I714", # not in ICD10_CODE col
-                        "M00.0"), # multiple associated ALT_CODEs
+                        "I11", # will be the same for ICD10_CODE and ALT_CODE
+                        "I11.0",
+                        "I792", # not in ICD10_CODE col
+                        "M90.0"), # multiple associated ALT_CODEs
         all_lkps_maps = all_lkps_maps,
         input_icd10_format = "ICD10_CODE",
         output_icd10_format = "ALT_CODE",
         unrecognised_codes = "warning"
       )),
-    c("D751", "H40", "H401", "M000", "M0000", "M0001", "M0002", "M0003", "M0004", "M0005", "M0006", "M0007", "M0008", "M0009")
+    c("D751", "I11", "I110", "M900", "M9000", "M9001", "M9002", "M9003", "M9004", "M9005", "M9006", "M9007", "M9008", "M9009")
   )
 })
 
@@ -450,17 +456,17 @@ test_that("`reformat_icd10_codes()` returns the expected values for ALT_CODE to 
   expect_equal(
     reformat_icd10_codes(
         icd10_codes = c("D751",
-                        "H40", # will be the same for ICD10_CODE and ALT_CODE
-                        "H401",
-                        "I714", # not in ICD10_CODE col
-                        "M000", # multiple associated ALT_CODEs - all map to "M00.0"
-                        "M0001",
-                        "M0002"),
+                        "I11", # will be the same for ICD10_CODE and ALT_CODE
+                        "I110",
+                        "I792", # not in ICD10_CODE col
+                        "M900", # multiple associated ALT_CODEs - all map to "M00.0"
+                        "M9001",
+                        "M9002"),
         all_lkps_maps = all_lkps_maps,
         input_icd10_format = "ALT_CODE",
         output_icd10_format = "ICD10_CODE"
       ),
-    c("D75.1", "H40", "H40.1", "I71.4", "M00.0")
+    c("D75.1", "I11", "I11.0", "I79.2", "M90.0")
   )
 })
 
@@ -646,44 +652,32 @@ test_that("`get_icd10_code_range()` returns expected codes", {
   # 3 character ICD10 code range
   expect_equal(
     get_icd10_code_range(
-      start_icd10_code = "A80",
-      end_icd10_code = "A81",
+      start_icd10_code = "I11",
+      end_icd10_code = "I12",
       icd10_lkp = all_lkps_maps$icd10_lkp
     ),
     c(
-      "A80",
-      "A800",
-      "A801",
-      "A802",
-      "A803",
-      "A804",
-      "A809",
-      "A81",
-      "A810",
-      "A811",
-      "A812",
-      "A818",
-      "A819"
+      "I11",
+      "I110",
+      "I119",
+      "I12",
+      "I120",
+      "I129"
     )
   )
 
   # 3 character ICD10 code range, including final 'X' character
   expect_equal(
     get_icd10_code_range(
-      start_icd10_code = "A56",
-      end_icd10_code = "A58X",
+      start_icd10_code = "I10X",
+      end_icd10_code = "I11",
       icd10_lkp = all_lkps_maps$icd10_lkp
     ),
     c(
-      "A56",
-      "A560",
-      "A561",
-      "A562",
-      "A563",
-      "A564",
-      "A568",
-      "A57X",
-      "A58X"
+      "I10X",
+      "I11",
+      "I110",
+      "I119"
     )
   )
 })

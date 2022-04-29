@@ -6,8 +6,9 @@
 \usage{
 build_all_lkps_maps(
   all_lkps_maps = read_all_lkps_maps(),
-  bnf_dmd = get_nhsbsa_snomed_bnf(),
   ukb_codings = ukbwranglr::get_ukb_codings_direct(),
+  bnf_dmd = get_nhsbsa_snomed_bnf(),
+  self_report_med_to_atc_map = get_ukb_self_report_med_to_atc_map(),
   ctv3sctmap2 = NULL,
   phecode_1_2_lkp = NULL,
   icd10_phecode_1_2 = NULL,
@@ -18,11 +19,14 @@ build_all_lkps_maps(
 \item{all_lkps_maps}{UK Biobank resource 592, as returned by
 \code{\link{get_ukb_all_lkps_maps}}.}
 
-\item{bnf_dmd}{The NHSBSA BNF-SNOMED mapping table, as returned by
-\code{\link{get_nhsbsa_snomed_bnf}}.}
-
 \item{ukb_codings}{The UK Biobank codings file, as returned by
 \code{\link[ukbwranglr]{get_ukb_codings_direct}}.}
+
+\item{bnf_dmd}{Optional: a data frame, the NHSBSA BNF-SNOMED mapping table as
+returned by \code{\link{get_nhsbsa_snomed_bnf}}.}
+
+\item{self_report_med_to_atc_map}{Optional: a data frame (see
+\code{\link[=get_ukb_self_report_med_to_atc_map]{get_ukb_self_report_med_to_atc_map()}}).}
 
 \item{ctv3sctmap2}{Optional: path to the NHS TRUD mapping file for Read 3 to
 SNOMEDCT ("ctv3sctmap2_uk_20200401000001.txt").}
