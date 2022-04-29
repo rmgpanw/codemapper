@@ -103,45 +103,6 @@ make_lkp_from_ukb_codings <- function(ukb_codings,
   return(result)
 }
 
-get_ukb_self_report_med_to_atc_map <- function() {
-  # download file
-  file_path <-
-    file.path(tempdir(), "self_report_med_to_atc_map.xlsx")
-
-  if (!file.exists(file_path)) {
-    utils::download.file(
-      "https://static-content.springer.com/esm/art%3A10.1038%2Fs41467-019-09572-5/MediaObjects/41467_2019_9572_MOESM3_ESM.xlsx",
-      destfile = file.path(tempdir(), "self_report_med_to_atc_map.xlsx")
-    )
-  }
-
-  # read file
-  result <- readxl::read_excel(
-    file_path,
-    skip = 2,
-    col_names = c(
-      "self_report_medication",
-      "data_coding_4",
-      "atc_code",
-      "drug_name",
-      "rm_1",
-      "rm_2"
-    )
-  )
-
-  # drop redundant cols
-  result <- result[,-c(5, 6)]
-
-  # append drug_name in brackets
-  result$self_report_medication <-
-    paste0(result$self_report_medication,
-           " (",
-           result$drug_name,
-           ")")
-
-  return(result)
-}
-
 #' Pre-populate a list of codes with category labels from an existing codelist
 #'
 #' To be used with \code{\link{runCodeMapper}}. The data frame returned by this

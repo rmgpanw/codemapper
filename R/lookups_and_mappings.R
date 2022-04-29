@@ -106,10 +106,12 @@ all_lkps_maps_to_db <- function(all_lkps_maps = build_all_lkps_maps(),
 #'
 #' @param all_lkps_maps UK Biobank resource 592, as returned by
 #'   \code{\link{get_ukb_all_lkps_maps}}.
-#' @param bnf_dmd The NHSBSA BNF-SNOMED mapping table, as returned by
-#'   \code{\link{get_nhsbsa_snomed_bnf}}.
 #' @param ukb_codings The UK Biobank codings file, as returned by
 #'   \code{\link[ukbwranglr]{get_ukb_codings_direct}}.
+#' @param bnf_dmd Optional: a data frame, the NHSBSA BNF-SNOMED mapping table as
+#'   returned by \code{\link{get_nhsbsa_snomed_bnf}}.
+#' @param self_report_med_to_atc_map Optional: a data frame (see
+#'   [get_ukb_self_report_med_to_atc_map()]).
 #' @param ctv3sctmap2 Optional: path to the NHS TRUD mapping file for Read 3 to
 #'   SNOMEDCT ("ctv3sctmap2_uk_20200401000001.txt").
 #' @param phecode_1_2_lkp Optional: path to the phecode v1.2 lookup file
@@ -124,8 +126,9 @@ all_lkps_maps_to_db <- function(all_lkps_maps = build_all_lkps_maps(),
 #' @export
 build_all_lkps_maps <-
   function(all_lkps_maps = read_all_lkps_maps(),
-           bnf_dmd = get_nhsbsa_snomed_bnf(),
            ukb_codings = ukbwranglr::get_ukb_codings_direct(),
+           bnf_dmd = get_nhsbsa_snomed_bnf(),
+           self_report_med_to_atc_map = get_ukb_self_report_med_to_atc_map(),
            ctv3sctmap2 = NULL,
            phecode_1_2_lkp = NULL,
            icd10_phecode_1_2 = NULL,
@@ -200,9 +203,6 @@ build_all_lkps_maps <-
         Value_col_new_name = "data_coding_6"
       )
 
-    # https://www.nature.com/articles/s41467-019-09572-5#additional-information
-    self_report_med_to_atc_map <- get_ukb_self_report_med_to_atc_map()
-
     # Add 'extra' tables -------------------------
 
     ## NHS TRUD Read 3 to SNOMEDCT mapping table ---------
@@ -256,17 +256,25 @@ build_all_lkps_maps <-
     all_lkps_maps <- c(
       all_lkps_maps,
       list(
-        bnf_dmd = bnf_dmd,
         opcs4_lkp = opcs4_lkp,
         self_report_cancer = self_report_cancer,
         self_report_medication = self_report_medication,
         self_report_operation = self_report_operation,
-        self_report_non_cancer = self_report_non_cancer,
-        self_report_med_to_atc_map = self_report_med_to_atc_map
+        self_report_non_cancer = self_report_non_cancer
       )
     )
 
     # Append 'extra' lookup/mapping tables
+    if (!is.null(bnf_dmd)) {
+      all_lkps_maps <- c(all_lkps_maps,
+                         list(bnf_dmd = bnf_dmd))
+    }
+
+    if (!is.null(self_report_med_to_atc_map)) {
+      all_lkps_maps <- c(all_lkps_maps,
+                         list(self_report_med_to_atc_map = self_report_med_to_atc_map))
+    }
+
     if (!is.null(ctv3sctmap2)) {
       all_lkps_maps <- c(all_lkps_maps,
                          list(read_ctv3_sct = read_ctv3_sct))
@@ -378,6 +386,53 @@ get_ukb_all_lkps_maps <- function(dir_path = tempdir()) {
   return(file.path(dir_path, primarycare_codings))
 }
 
+#' Download and read a UKB welf-reported medication code to ATC mapping file
+#'
+#' Mapping table obtained from [Wray et al
+#' 2019](https://www.nature.com/articles/s41467-019-09572-5#Sec23),
+#' Supplementary Data 1.
+#'
+#' @return A data frame.
+#' @export
+get_ukb_self_report_med_to_atc_map <- function() {
+  # download file
+  file_path <-
+    file.path(tempdir(), "self_report_med_to_atc_map.xlsx")
+
+  if (!file.exists(file_path)) {
+    utils::download.file(
+      "https://static-content.springer.com/esm/art%3A10.1038%2Fs41467-019-09572-5/MediaObjects/41467_2019_9572_MOESM3_ESM.xlsx",
+      destfile = file.path(tempdir(), "self_report_med_to_atc_map.xlsx")
+    )
+  }
+
+  # read file
+  result <- readxl::read_excel(
+    file_path,
+    skip = 2,
+    col_names = c(
+      "self_report_medication",
+      "data_coding_4",
+      "atc_code",
+      "drug_name",
+      "rm_1",
+      "rm_2"
+    )
+  )
+
+  # drop redundant cols
+  result <- result[,-c(5, 6)]
+
+  # append drug_name in brackets
+  result$self_report_medication <-
+    paste0(result$self_report_medication,
+           " (",
+           result$drug_name,
+           ")")
+
+  return(result)
+}
+
 #' Read UK Biobank resource 592 into a named list
 #'
 #' Reads the UK Biobank code mappings file (`all_lkps_maps_v3.xlsx`,
@@ -480,7 +535,7 @@ reformat_read_v2_icd10 <- function(read_v2_icd10,
 
   # check all ICD10 codes now exist in `icd10_lkp`
   check_codes_exist(
-    codes = read_v2_icd10$icd10_code,
+    codes = unique(read_v2_icd10$icd10_code),
     lkp_codes = icd10_lkp$ALT_CODE,
     code_type = "icd10"
   )
