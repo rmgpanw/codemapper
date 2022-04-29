@@ -1,0 +1,26 @@
+---
+title: "Introduction to codemapper"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{codemapper}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(codemapper)
+```
+
+The goal of codemapper is to simplify working with clinical codes for research using electronic health records. The first step is to create a local database containing lookup and mapping tables for various clinical coding systems:
+
+```{r eval = FALSE}
+codemapper::all_lkps_maps_to_db()
+```
+
