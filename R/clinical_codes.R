@@ -1263,13 +1263,6 @@ rm_or_extract_appended_icd10_dxa <- function(icd10_codes,
   )
 }
 
-# utility function to strip 'X' from undivided 3 character ICD-10 codes
-strip_x_from_3char_icd10 <- function(df) {
-  df %>%
-    dplyr::mutate("icd10" = stringr::str_remove(.data[["icd10"]],
-                                                "X$"))
-}
-
 #' Get a mapping table for ICD10 codes in ALT_CODE format, with and without 'X'
 #' appended for undivided 3 character codes
 #'
