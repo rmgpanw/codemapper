@@ -331,6 +331,39 @@ test_that("`get_mapping_df()` returns the expected output", {
   )
 })
 
+test_that("`get_mapping_df()` returns the expected results with/without `col_filters` for Read 2 to Read 3", {
+  read2_read3_df <- get_mapping_df(from = "read2",
+                                   to = "read3",
+                                   all_lkps_maps = all_lkps_maps,
+                                   col_filters = default_col_filters())
+
+  read2_read3_df_no_col_filter <- get_mapping_df(from = "read2",
+                                         to = "read3",
+                                         all_lkps_maps = all_lkps_maps,
+                                         col_filters = NULL)
+
+  expect_equal(
+    read2_read3_df,
+    tibble::tribble(
+      ~read2,  ~read3,
+      "C108.", "X40J4",
+      "C10E.", "X40J4",
+      "J5310", "J5311"
+    )
+  )
+
+  expect_equal(
+      read2_read3_df_no_col_filter,
+      tibble::tribble(
+        ~read2,  ~read3,
+        "C108.", "X40J4",
+        "C10E.", "X40J4",
+        "J5310", "J5311",
+        "J5311", "J5311"
+      )
+    )
+})
+
 # `reformat_standardised_codelist()` --------------------------------------
 
 test_that("`reformat_standardised_codelist()` returns the expected output format",

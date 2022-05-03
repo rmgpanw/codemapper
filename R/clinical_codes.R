@@ -682,11 +682,7 @@ get_mapping_df <- function(from,
                     to_col)
 
   result <- all_lkps_maps[[mapping_table]] %>%
-    dplyr::collect() %>%
-    # note, cannot use `distinct()` with `.keep_all = TRUE` before calling
-    # `collect()` (see https://github.com/tidyverse/dbplyr/issues/404)
-    dplyr::distinct(dplyr::across(tidyselect::all_of(from_to_cols)),
-                    .keep_all = TRUE)
+    dplyr::collect()
 
 
   # filter on `col_filters` parameters
@@ -704,6 +700,12 @@ get_mapping_df <- function(from,
   if (na.rm) {
     result <- tidyr::drop_na(result)
   }
+
+  # distinct rows only (e.g. read 2 'J5310' maps to both primary and secondary
+  # descriptions for read 3 'J5311')
+  result <- result %>%
+    dplyr::distinct(dplyr::across(tidyselect::everything()),
+                    .keep_all = TRUE)
 
   # rename
   if (!is.null(rename_from_to)) {
@@ -806,7 +808,9 @@ reformat_icd10_codes <- function(icd10_codes,
 
   # handle any unrecognised codes
   missing_codes <-
-    subset(icd10_codes, !icd10_codes %in% icd10_mapping_df[[input_icd10_format]])
+    subset(icd10_codes,
+           !icd10_codes %in% icd10_mapping_df[[input_icd10_format]]) %>%
+    unique()
 
   handle_unrecognised_codes(
     unrecognised_codes = unrecognised_codes,
@@ -1625,6 +1629,26 @@ handle_unrecognised_codes <-
     match.arg(unrecognised_codes,
               choices = c("error", "warning"))
 
+    # make sure missing_codes are unique, if not already
+    missing_codes <- unique(missing_codes)
+
+    # only display first 25 codes
+    if (length(missing_codes) > 25) {
+    missing_codes_to_print <- utils::head(missing_codes,
+                                          n = 25)
+    } else {
+      missing_codes_to_print <-  missing_codes
+    }
+
+    missing_codes_to_print <- stringr::str_c(missing_codes_to_print,
+                                             sep = "",
+                                             collapse = "', '")
+
+    if (length(missing_codes) > 25) {
+      missing_codes_to_print <- paste0(missing_codes_to_print,
+                                       " (first 25 only shown")
+    }
+
     if (length(missing_codes) > 0) {
       missing_codes_message <- paste0(
         "The following ",
@@ -1634,7 +1658,7 @@ handle_unrecognised_codes <-
         "' in table '",
         table_name,
         "': '",
-        stringr::str_c(missing_codes, sep = "", collapse = "', '"),
+        stringr::str_c(missing_codes_to_print, sep = "", collapse = "', '"),
         "'"
       )
 
