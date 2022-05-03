@@ -7,7 +7,7 @@
 
 <!-- badges: start -->
 
-[![R-CMD-check](https://github.com/rmgpanw/codemapper/workflows/R-CMD-check/badge.svg)](https://github.com/rmgpanw/codemapper/actions)
+[![R-CMD-check](https://github.com/rmgpanw/codemapper/workflows/check-standard/badge.svg)](https://github.com/rmgpanw/codemapper/actions)
 [![Codecov test
 coverage](https://codecov.io/gh/rmgpanw/codemapper/branch/master/graph/badge.svg)](https://codecov.io/gh/rmgpanw/codemapper?branch=master)
 [![pkgdown](https://github.com/rmgpanw/codemapper/workflows/pkgdown/badge.svg)](https://github.com/rmgpanw/codemapper/actions)
@@ -41,6 +41,7 @@ various clinical codings systems (a dummy dataset is used here):
 ``` r
 library(codemapper)
 #> Loading required package: ukbwranglr
+
 all_lkps_maps_dummy <- build_all_lkps_maps(all_lkps_maps = read_dummy_all_lkps_maps(),
                                      ukb_codings = read_dummy_ukb_codings(),
                                      bnf_dmd = NULL,
