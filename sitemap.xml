@@ -10,6 +10,9 @@
     <loc>/LICENSE.html</loc>
   </url>
   <url>
+    <loc>/articles/caliber.html</loc>
+  </url>
+  <url>
     <loc>/articles/codemapper.html</loc>
   </url>
   <url>
@@ -28,6 +31,9 @@
     <loc>/reference/build_all_lkps_maps.html</loc>
   </url>
   <url>
+    <loc>/reference/build_dummy_all_lkps_maps.html</loc>
+  </url>
+  <url>
     <loc>/reference/code_descriptions_like.html</loc>
   </url>
   <url>
@@ -40,10 +46,22 @@
     <loc>/reference/default_col_filters.html</loc>
   </url>
   <url>
+    <loc>/reference/default_overlapping_disease_categories_csv.html</loc>
+  </url>
+  <url>
+    <loc>/reference/download_caliber_repo.html</loc>
+  </url>
+  <url>
     <loc>/reference/dummy_all_lkps_maps_path.html</loc>
   </url>
   <url>
+    <loc>/reference/dummy_caliber_dir_path.html</loc>
+  </url>
+  <url>
     <loc>/reference/dummy_ukb_codings_path.html</loc>
+  </url>
+  <url>
+    <loc>/reference/get_caliber_categories_mapping.html</loc>
   </url>
   <url>
     <loc>/reference/get_mapping_df.html</loc>
@@ -64,6 +82,12 @@
     <loc>/reference/lookup_codes.html</loc>
   </url>
   <url>
+    <loc>/reference/make_phecode_reverse_map.html</loc>
+  </url>
+  <url>
+    <loc>/reference/map_clinical_events_to_phecodes.html</loc>
+  </url>
+  <url>
     <loc>/reference/map_codes.html</loc>
   </url>
   <url>
@@ -73,10 +97,16 @@
     <loc>/reference/read_all_lkps_maps.html</loc>
   </url>
   <url>
+    <loc>/reference/read_caliber_raw.html</loc>
+  </url>
+  <url>
     <loc>/reference/read_dummy_all_lkps_maps.html</loc>
   </url>
   <url>
     <loc>/reference/read_dummy_ukb_codings.html</loc>
+  </url>
+  <url>
+    <loc>/reference/reformat_caliber_for_ukb.html</loc>
   </url>
   <url>
     <loc>/reference/reformat_icd10_codes.html</loc>
