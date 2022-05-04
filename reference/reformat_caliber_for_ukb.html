@@ -132,8 +132,20 @@ set to <code><a href="default_overlapping_disease_categories_csv.html">default_o
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Secondary care ICD10 (2 of 3)</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Secondary care OPCS4 (3 of 3)</span>
 <span class="r-in"></span>
-<span class="r-in"><span class="co"># reformat</span></span>
-<span class="r-in"><span class="co"># reformat_caliber_for_ukb(caliber_raw, all_lkps_maps = build_dummy_all_lkps_maps())</span></span>
+<span class="r-in"><span class="co"># build dummy all_lkps_maps</span></span>
+<span class="r-in"><span class="va">all_lkps_maps</span> <span class="op">&lt;-</span> <span class="fu"><a href="build_all_lkps_maps_dummy.html">build_all_lkps_maps_dummy</a></span><span class="op">(</span><span class="op">)</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Extending tables in UKB resource 592</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Success!</span>
+<span class="r-in"></span>
+<span class="r-in"><span class="co"># reformat CALIBER codes for UK Biobank</span></span>
+<span class="r-in"><span class="va">caliber_ukb</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/warning.html" class="external-link">suppressWarnings</a></span><span class="op">(</span><span class="fu">reformat_caliber_for_ukb</span><span class="op">(</span><span class="va">caliber_raw</span>,</span>
+<span class="r-in"> all_lkps_maps <span class="op">=</span> <span class="va">all_lkps_maps</span><span class="op">)</span><span class="op">)</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Reformatting Read 2 codes</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Reformatting ICD10 codes</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> The following 1 input ICD10 codes do not have a 1-to-1 mapping: 'M90.0'. There will therefore be *more* output than input codes</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Reformatting OPCS4 codes</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Mapping read2 codes to read3</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Mapping icd10 to icd9 codes</span>
 </code></pre></div>
     </div>
   </div>

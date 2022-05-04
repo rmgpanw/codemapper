@@ -82,7 +82,7 @@
 </h1></div>
 <p><strong>UNDER CONSTRUCTION</strong></p>
 <!-- badges: start -->
-<p>The goal of codemapper is to facilitate working with clinical codes used in electronic health records. This package relies in particular on the publicly available UK Biobank resource 592 - <a href="https://biobank.ndph.ox.ac.uk/ukb/refer.cgi?id=592" class="external-link">Clinical coding classification systems and maps</a>.</p>
+<!-- badges: end --><p>The goal of codemapper is to facilitate working with clinical codes used in electronic health records. This package relies in particular on the publicly available UK Biobank resource 592 - <a href="https://biobank.ndph.ox.ac.uk/ukb/refer.cgi?id=592" class="external-link">Clinical coding classification systems and maps</a>.</p>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
@@ -98,12 +98,8 @@
 <p>First, build a local resource containing lookup and mapping tables for various clinical codings systems (a dummy dataset is used here):</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/rmgpanw/codemapper" class="external-link">codemapper</a></span><span class="op">)</span>
-<span class="co">#&gt; Loading required package: ukbwranglr</span>
 
-<span class="va">all_lkps_maps_dummy</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/build_all_lkps_maps.html">build_all_lkps_maps</a></span><span class="op">(</span>all_lkps_maps <span class="op">=</span> <span class="fu"><a href="reference/read_dummy_all_lkps_maps.html">read_dummy_all_lkps_maps</a></span><span class="op">(</span><span class="op">)</span>,
-                                     ukb_codings <span class="op">=</span> <span class="fu"><a href="reference/read_dummy_ukb_codings.html">read_dummy_ukb_codings</a></span><span class="op">(</span><span class="op">)</span>,
-                                     bnf_dmd <span class="op">=</span> <span class="cn">NULL</span>,
-                                     self_report_med_to_atc_map <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span>
+<span class="va">all_lkps_maps_dummy</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/build_all_lkps_maps_dummy.html">build_all_lkps_maps_dummy</a></span><span class="op">(</span><span class="op">)</span>
 <span class="co">#&gt; Extending tables in UKB resource 592</span>
 <span class="co">#&gt; Success!</span></code></pre></div>
 <p>Look up Read 2 codes for type 1 diabetes:</p>
@@ -163,7 +159,7 @@
 <div class="developers">
 <h2 data-toc-skip>Developers</h2>
 <ul class="list-unstyled">
-<li>Alasdair Warwick <br><small class="roles"> Author, maintainer </small> <a href="https://orcid.org/https://orcid.org/0000-0002-0800-2890?lang=en" target="orcid.widget" aria-label="ORCID" class="external-link"><span class="fab fa-orcid orcid" aria-hidden="true"></span></a> </li>
+<li>Alasdair Warwick <br><small class="roles"> Author, maintainer </small> <a href="https://orcid.org/https://orcid.org/0000-0002-0800-2890" target="orcid.widget" aria-label="ORCID" class="external-link"><span class="fab fa-orcid orcid" aria-hidden="true"></span></a> </li>
 </ul>
 </div>
 

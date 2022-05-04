@@ -31,7 +31,7 @@
     <loc>/reference/build_all_lkps_maps.html</loc>
   </url>
   <url>
-    <loc>/reference/build_dummy_all_lkps_maps.html</loc>
+    <loc>/reference/build_all_lkps_maps_dummy.html</loc>
   </url>
   <url>
     <loc>/reference/code_descriptions_like.html</loc>
@@ -70,6 +70,15 @@
     <loc>/reference/get_nhsbsa_snomed_bnf.html</loc>
   </url>
   <url>
+    <loc>/reference/get_phecode_definitions.html</loc>
+  </url>
+  <url>
+    <loc>/reference/get_phecode_icd10_map.html</loc>
+  </url>
+  <url>
+    <loc>/reference/get_phecode_icd9_map.html</loc>
+  </url>
+  <url>
     <loc>/reference/get_ukb_all_lkps_maps.html</loc>
   </url>
   <url>
@@ -97,13 +106,13 @@
     <loc>/reference/read_all_lkps_maps.html</loc>
   </url>
   <url>
+    <loc>/reference/read_all_lkps_maps_dummy.html</loc>
+  </url>
+  <url>
     <loc>/reference/read_caliber_raw.html</loc>
   </url>
   <url>
-    <loc>/reference/read_dummy_all_lkps_maps.html</loc>
-  </url>
-  <url>
-    <loc>/reference/read_dummy_ukb_codings.html</loc>
+    <loc>/reference/read_ukb_codings_dummy.html</loc>
   </url>
   <url>
     <loc>/reference/reformat_caliber_for_ukb.html</loc>

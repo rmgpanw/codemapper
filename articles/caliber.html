@@ -89,14 +89,34 @@
     
     
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/rmgpanw/codemapper" class="external-link">codemapper</a></span><span class="op">)</span>
-<span class="co">#&gt; Loading required package: ukbwranglr</span></code></pre></div>
+<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/rmgpanw/codemapper" class="external-link">codemapper</a></span><span class="op">)</span></code></pre></div>
 <div class="section level2">
 <h2 id="introduction">Introduction<a class="anchor" aria-label="anchor" href="#introduction"></a>
 </h2>
-<p>The CALIBER team have manually curated clinical code lists for 308 common health conditions, providing a rich resource for researchers working with electronic health records.<span class="citation">(Kuan et al. 2019)</span> All code lists are publicly available in csv format on github.<a href="#fn1" class="footnote-ref" id="fnref1"><sup>1</sup></a> These are divided into primary care (Read 2 codes and Medcodes) and secondary care (ICD10).</p>
-<p>The UK Biobank contains both <a href="https://biobank.ndph.ox.ac.uk/ukb/label.cgi?id=100091" class="external-link">linked primary and secondary care diagnostic records</a>. Primary care records are in both Read 2 and Read 3 formats, while secondary care records are in both ICD10 and ICD9 formats (although the large majority of these are ICD10). Data analysts may therefore wish to extend the CALIBER resource by mapping to Read 3 and ICD9. The original Read 2 and ICD10 CALIBER codes also require reformatting to match the format in UK Biobank data.</p>
-<p>The CALIBER repository may be imported into R, reformatted for use with UK Biobank data,<a href="#fn2" class="footnote-ref" id="fnref2"><sup>2</sup></a> and mapped to Read 3 and ICD9 equivalents using <code>map_caliber_for_ukb()</code>. This vignette outlines the steps performed to achieve this.</p>
+<p>The CALIBER team have manually curated clinical code lists for 308 common health conditions, providing a rich resource for researchers working with electronic health records.<span class="citation">(Kuan et al. 2019)</span> All code lists are publicly available in csv format on github.<a href="#fn1" class="footnote-ref" id="fnref1"><sup>1</sup></a> These are divided into primary care (Read 2 codes and Medcodes) and secondary care (ICD10 and OPCS4).</p>
+<p>The UK Biobank contains both <a href="https://biobank.ndph.ox.ac.uk/ukb/label.cgi?id=100091" class="external-link">linked primary and secondary care diagnostic records</a>. Primary care records are in both Read 2 and Read 3 formats, while secondary care records are in both ICD10 and ICD9 formats (although the large majority of these are ICD10) as well as OPCS4. Data analysts may therefore wish to extend the CALIBER resource by mapping from Read 2 to Read 3, and from ICD10 to ICD9. The raw Read 2 and ICD10 CALIBER codes also require reformatting to match the format in UK Biobank data.</p>
+<p>The CALIBER repository may be imported into R, reformatted for use with UK Biobank data, and mapped to Read 3 and ICD9 equivalents as follows:</p>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># download CALIBER repository, returning file path</span>
+<span class="va">caliber_dir_path</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/download_caliber_repo.html">download_caliber_repo</a></span><span class="op">(</span><span class="op">)</span>
+
+<span class="co"># read all CALIBER codes into R</span>
+<span class="va">caliber_raw</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_caliber_raw.html">read_caliber_raw</a></span><span class="op">(</span><span class="va">caliber_dir_path</span><span class="op">)</span>
+
+<span class="co"># build all_lkps_maps resource - contains clinical code lookup and mapping tables</span>
+<span class="va">all_lkps_maps</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/build_all_lkps_maps.html">build_all_lkps_maps</a></span><span class="op">(</span><span class="op">)</span>
+
+<span class="co"># reformat CALIBER codes for UK Biobank, and map from ICD10 and Read 2 to ICD9 and Read 3 respectively. Expect various warnings to be raised at this stage</span>
+<span class="va">caliber_ukb</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/reformat_caliber_for_ukb.html">reformat_caliber_for_ukb</a></span><span class="op">(</span>
+  <span class="va">caliber_raw</span>,
+  all_lkps_maps <span class="op">=</span> <span class="va">all_lkps_maps</span>,
+  overlapping_disease_categories_csv <span class="op">=</span> <span class="fu"><a href="../reference/default_overlapping_disease_categories_csv.html">default_overlapping_disease_categories_csv</a></span><span class="op">(</span><span class="op">)</span>
+<span class="op">)</span></code></pre></div>
+<p>This vignette:</p>
+<ol style="list-style-type: decimal">
+<li>Outlines the steps performed by <code><a href="../reference/read_caliber_raw.html">read_caliber_raw()</a></code> and <code><a href="../reference/reformat_caliber_for_ukb.html">reformat_caliber_for_ukb()</a></code> to achieve this.</li>
+<li>Highlights issues to be aware of</li>
+</ol>
 </div>
 <div class="section level2">
 <h2 id="reformatting-read-2-and-icd10-codes">Reformatting Read 2 and ICD10 codes<a class="anchor" aria-label="anchor" href="#reformatting-read-2-and-icd10-codes"></a>
@@ -111,8 +131,8 @@
 <p>The following read codes are not present in the Read 2 lookup table provided by UK Biobank resource 592:</p>
 <table class="table">
 <colgroup>
-<col width="25%">
-<col width="75%">
+<col width="27%">
+<col width="72%">
 </colgroup>
 <thead><tr class="header">
 <th>CALIBER disease</th>
@@ -195,11 +215,11 @@
 </h3>
 <ul>
 <li>Convert all ICD10 codes to the <code>ALT_CODE</code> format used in UK Biobank data. Note that while undivided three character ICD10 codes are flagged by an ‘X’ suffix in <a href="https://biobank.ndph.ox.ac.uk/ukb/refer.cgi?id=592" title="Clinical coding classification systems and maps" class="external-link">UK Biobank resource 592</a> (e.g. ‘A38X’, Scarlet fever), the suffix does not appear in the UK Biobank dataset itself (e.g. ‘A38X’ should instead appear as ‘A38’).</li>
-<li>Expand all three character ICD10 codes to include their children. For example, ‘D25’ (Leiomyoma of uterus) is expanded to include ‘D25’, ‘D250’, ‘D251’, ‘D252’, ‘D259.’<a href="#fn3" class="footnote-ref" id="fnref3"><sup>3</sup></a>
+<li>Expand all three character ICD10 codes to include their children. For example, ‘D25’ (Leiomyoma of uterus) is expanded to include ‘D25’, ‘D250’, ‘D251’, ‘D252’, ‘D259.’<a href="#fn2" class="footnote-ref" id="fnref2"><sup>2</sup></a>
 </li>
 <li>Expand any four character ICD10 codes with a ‘modifier 5’ to include their five character children. For example, ‘M90.0’ (Tuberculosis of bone) is expanded to include ‘M900’, ‘M9000’, ‘M9001’, ‘M9002’, ‘M9003’, ‘M9004’, ‘M9005’, ‘M9006’, ‘M9007’, ‘M9008’ and ‘M9009’.</li>
 </ul>
-<p>The following ICD10 codes are not present in the ICD10 lookup table provided by UK Biobank resource 592:<a href="#fn4" class="footnote-ref" id="fnref4"><sup>4</sup></a></p>
+<p>The following ICD10 codes are not present in the ICD10 lookup table provided by UK Biobank resource 592:<a href="#fn3" class="footnote-ref" id="fnref3"><sup>3</sup></a></p>
 <table class="table">
 <thead><tr class="header">
 <th>CALIBER disease</th>
@@ -233,21 +253,336 @@
 </h3>
 <p>Mapping from Read 2 to Read 3 is performed using the <code>read_v2_read_ctv3</code> mapping sheet from <a href="https://biobank.ndph.ox.ac.uk/ukb/refer.cgi?id=592" title="Clinical coding classification systems and maps" class="external-link">UK Biobank resource 592</a>. Points to be aware of:</p>
 <ul>
-<li>A minority of mappings in <code>read_v2_read_ctv3</code> are flagged as ‘not assured’ (<code>IS_ASSURED</code> ‘0’). These mappings are excluded by default.</li>
+<li>A minority of mappings in <code>read_v2_read_ctv3</code> are flagged as ‘not assured’ (<code>IS_ASSURED</code> ‘0’). These mappings are excluded by default - this action can be adjusted with the <code>col_filters</code> argument to <code><a href="../reference/reformat_caliber_for_ukb.html">reformat_caliber_for_ukb()</a></code>.</li>
 </ul>
 </div>
 <div class="section level3">
 <h3 id="icd10-to-icd9">ICD10 to ICD9<a class="anchor" aria-label="anchor" href="#icd10-to-icd9"></a>
 </h3>
-<p>Mapping from ICD10 to ICD9<a href="#fn5" class="footnote-ref" id="fnref5"><sup>5</sup></a> is performed using the <code>icd9_icd10</code> mapping sheet from <a href="https://biobank.ndph.ox.ac.uk/ukb/refer.cgi?id=592" title="Clinical coding classification systems and maps" class="external-link">UK Biobank resource 592</a>. Points to be aware of:</p>
+<p>Mapping from ICD10 to ICD9<a href="#fn4" class="footnote-ref" id="fnref4"><sup>4</sup></a> is performed using the <code>icd9_icd10</code> mapping sheet from <a href="https://biobank.ndph.ox.ac.uk/ukb/refer.cgi?id=592" title="Clinical coding classification systems and maps" class="external-link">UK Biobank resource 592</a>. Points to be aware of:</p>
 <ul>
-<li><p>There are a number of rows with missing values for either <code>DESCRIPTION_ICD9</code> or <code>DESCRIPTION_ICD10</code>, indicating that these codes have no ICD9/ICD10 equivalent.<a href="#fn6" class="footnote-ref" id="fnref6"><sup>6</sup></a></p></li>
+<li><p>There are a number of rows with missing values for either <code>DESCRIPTION_ICD9</code> or <code>DESCRIPTION_ICD10</code>, indicating that these codes have no ICD9/ICD10 equivalent.<a href="#fn5" class="footnote-ref" id="fnref5"><sup>5</sup></a></p></li>
 <li><p>One-to-many mappings occur in either direction (i.e. ICD9 to ICD10, and ICD10 to ICD9).</p></li>
 </ul>
 </div>
 <div class="section level3">
-<h3 id="removing-duplicates">Removing duplicates<a class="anchor" aria-label="anchor" href="#removing-duplicates"></a>
+<h3 id="overlapping-disease-categories">Overlapping disease categories<a class="anchor" aria-label="anchor" href="#overlapping-disease-categories"></a>
 </h3>
+<p>The mapping process results in some codes appearing under more than one disease category within a single disease. As a general rule, subcategories within a clinical code list should be mutually exclusive (e.g. a clinical code list for diabetes may be sub categorised into type 1 and type 2 diabetes - a clinical code for type 1 diabetes should not also be used for type 2 diabetes).<a href="#fn6" class="footnote-ref" id="fnref6"><sup>6</sup></a></p>
+<p>By default, these cases are dealt with by setting argument <code>overlapping_disease_categories_csv = default_overlapping_disease_categories_csv()</code> in <code><a href="../reference/reformat_caliber_for_ukb.html">reformat_caliber_for_ukb()</a></code>. This uses a csv file which has been manually annotated (‘Y’ in column ‘keep’) to indicate which disease category a code should belong to:</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.csv</a></span><span class="op">(</span><span class="fu"><a href="../reference/default_overlapping_disease_categories_csv.html">default_overlapping_disease_categories_csv</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> 
+  <span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span><span class="op">)</span></code></pre></div>
+<table style="width:100%;" class="table">
+<colgroup>
+<col width="20%">
+<col width="32%">
+<col width="30%">
+<col width="5%">
+<col width="3%">
+<col width="4%">
+<col width="2%">
+</colgroup>
+<thead><tr class="header">
+<th align="left">disease</th>
+<th align="left">description</th>
+<th align="left">category</th>
+<th align="left">code_type</th>
+<th align="left">code</th>
+<th align="left">author</th>
+<th align="left">keep</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left">Diabetes</td>
+<td align="left">DIABETES MELLITUS</td>
+<td align="left">Diabetes not otherwise specified (6)</td>
+<td align="left">icd9</td>
+<td align="left">6480</td>
+<td align="left">caliber</td>
+<td align="left">Y</td>
+</tr>
+<tr class="even">
+<td align="left">Diabetes</td>
+<td align="left">DIABETES MELLITUS</td>
+<td align="left">Secondary diabetes (5)</td>
+<td align="left">icd9</td>
+<td align="left">6480</td>
+<td align="left">caliber</td>
+<td align="left"></td>
+</tr>
+<tr class="odd">
+<td align="left">Diabetic neurological complications</td>
+<td align="left">Diabetic (femoral mononeuropathy) &amp; (Diabetic amyotrophy)</td>
+<td align="left">Diagnosis of diabetic neurological complications</td>
+<td align="left">read3</td>
+<td align="left">Xa0lK</td>
+<td align="left">caliber</td>
+<td align="left">Y</td>
+</tr>
+<tr class="even">
+<td align="left">Diabetic neurological complications</td>
+<td align="left">Diabetic (femoral mononeuropathy) &amp; (Diabetic amyotrophy)</td>
+<td align="left">History of diabetic neurological complications</td>
+<td align="left">read3</td>
+<td align="left">Xa0lK</td>
+<td align="left">caliber</td>
+<td align="left"></td>
+</tr>
+<tr class="odd">
+<td align="left">Diabetic neurological complications</td>
+<td align="left">Diabetic amyotrophy</td>
+<td align="left">Diagnosis of diabetic neurological complications</td>
+<td align="left">read3</td>
+<td align="left">XaPmX</td>
+<td align="left">caliber</td>
+<td align="left">Y</td>
+</tr>
+<tr class="even">
+<td align="left">Diabetic neurological complications</td>
+<td align="left">Diabetic amyotrophy</td>
+<td align="left">History of diabetic neurological complications</td>
+<td align="left">read3</td>
+<td align="left">XaPmX</td>
+<td align="left">caliber</td>
+<td align="left"></td>
+</tr>
+<tr class="odd">
+<td align="left">End stage renal disease</td>
+<td align="left">End stage renal failure</td>
+<td align="left">Diagnosis of End stage renal disease</td>
+<td align="left">read3</td>
+<td align="left">X30J0</td>
+<td align="left">caliber</td>
+<td align="left">Y</td>
+</tr>
+<tr class="even">
+<td align="left">End stage renal disease</td>
+<td align="left">End stage renal failure</td>
+<td align="left">Procedure for End stage renal disease</td>
+<td align="left">read3</td>
+<td align="left">X30J0</td>
+<td align="left">caliber</td>
+<td align="left"></td>
+</tr>
+<tr class="odd">
+<td align="left">Erectile dysfunction</td>
+<td align="left">Erectile dysfunction</td>
+<td align="left">Diagnosis of erectile dysfunction</td>
+<td align="left">read3</td>
+<td align="left">E2273</td>
+<td align="left">caliber</td>
+<td align="left">Y</td>
+</tr>
+<tr class="even">
+<td align="left">Erectile dysfunction</td>
+<td align="left">Erectile dysfunction</td>
+<td align="left">Possible diagnosis of erectile dysfunction</td>
+<td align="left">read3</td>
+<td align="left">E2273</td>
+<td align="left">caliber</td>
+<td align="left"></td>
+</tr>
+<tr class="odd">
+<td align="left">Primary Malignancy_Other Organs</td>
+<td align="left">HEAD, FACE AND NECK</td>
+<td align="left">Diagnosis of Primary Malignancy_Other Organs</td>
+<td align="left">icd9</td>
+<td align="left">1710</td>
+<td align="left">caliber</td>
+<td align="left">Y</td>
+</tr>
+<tr class="even">
+<td align="left">Primary Malignancy_Other Organs</td>
+<td align="left">HEAD, FACE AND NECK</td>
+<td align="left">Possible Diagnosis of Primary Malignancy_Other Organs</td>
+<td align="left">icd9</td>
+<td align="left">1710</td>
+<td align="left">caliber</td>
+<td align="left"></td>
+</tr>
+<tr class="odd">
+<td align="left">Primary Malignancy_Other Organs</td>
+<td align="left">UPPER LIMB, INCLUDING SHOULDER</td>
+<td align="left">Diagnosis of Primary Malignancy_Other Organs</td>
+<td align="left">icd9</td>
+<td align="left">1712</td>
+<td align="left">caliber</td>
+<td align="left">Y</td>
+</tr>
+<tr class="even">
+<td align="left">Primary Malignancy_Other Organs</td>
+<td align="left">UPPER LIMB, INCLUDING SHOULDER</td>
+<td align="left">Possible Diagnosis of Primary Malignancy_Other Organs</td>
+<td align="left">icd9</td>
+<td align="left">1712</td>
+<td align="left">caliber</td>
+<td align="left"></td>
+</tr>
+<tr class="odd">
+<td align="left">Primary Malignancy_Other Organs</td>
+<td align="left">LOWER LIMB, INCLUDING HIP</td>
+<td align="left">Diagnosis of Primary Malignancy_Other Organs</td>
+<td align="left">icd9</td>
+<td align="left">1713</td>
+<td align="left">caliber</td>
+<td align="left">Y</td>
+</tr>
+<tr class="even">
+<td align="left">Primary Malignancy_Other Organs</td>
+<td align="left">LOWER LIMB, INCLUDING HIP</td>
+<td align="left">Possible Diagnosis of Primary Malignancy_Other Organs</td>
+<td align="left">icd9</td>
+<td align="left">1713</td>
+<td align="left">caliber</td>
+<td align="left"></td>
+</tr>
+<tr class="odd">
+<td align="left">Primary Malignancy_Other Organs</td>
+<td align="left">THORAX</td>
+<td align="left">Diagnosis of Primary Malignancy_Other Organs</td>
+<td align="left">icd9</td>
+<td align="left">1714</td>
+<td align="left">caliber</td>
+<td align="left">Y</td>
+</tr>
+<tr class="even">
+<td align="left">Primary Malignancy_Other Organs</td>
+<td align="left">THORAX</td>
+<td align="left">Possible Diagnosis of Primary Malignancy_Other Organs</td>
+<td align="left">icd9</td>
+<td align="left">1714</td>
+<td align="left">caliber</td>
+<td align="left"></td>
+</tr>
+<tr class="odd">
+<td align="left">Primary Malignancy_Other Organs</td>
+<td align="left">ABDOMEN</td>
+<td align="left">Diagnosis of Primary Malignancy_Other Organs</td>
+<td align="left">icd9</td>
+<td align="left">1715</td>
+<td align="left">caliber</td>
+<td align="left">Y</td>
+</tr>
+<tr class="even">
+<td align="left">Primary Malignancy_Other Organs</td>
+<td align="left">ABDOMEN</td>
+<td align="left">Possible Diagnosis of Primary Malignancy_Other Organs</td>
+<td align="left">icd9</td>
+<td align="left">1715</td>
+<td align="left">caliber</td>
+<td align="left"></td>
+</tr>
+<tr class="odd">
+<td align="left">Primary Malignancy_Other Organs</td>
+<td align="left">PELVIS</td>
+<td align="left">Diagnosis of Primary Malignancy_Other Organs</td>
+<td align="left">icd9</td>
+<td align="left">1716</td>
+<td align="left">caliber</td>
+<td align="left">Y</td>
+</tr>
+<tr class="even">
+<td align="left">Primary Malignancy_Other Organs</td>
+<td align="left">PELVIS</td>
+<td align="left">Possible Diagnosis of Primary Malignancy_Other Organs</td>
+<td align="left">icd9</td>
+<td align="left">1716</td>
+<td align="left">caliber</td>
+<td align="left"></td>
+</tr>
+<tr class="odd">
+<td align="left">Primary Malignancy_Other Organs</td>
+<td align="left">TRUNK, UNSPECIFIED</td>
+<td align="left">Diagnosis of Primary Malignancy_Other Organs</td>
+<td align="left">icd9</td>
+<td align="left">1717</td>
+<td align="left">caliber</td>
+<td align="left">Y</td>
+</tr>
+<tr class="even">
+<td align="left">Primary Malignancy_Other Organs</td>
+<td align="left">TRUNK, UNSPECIFIED</td>
+<td align="left">Possible Diagnosis of Primary Malignancy_Other Organs</td>
+<td align="left">icd9</td>
+<td align="left">1717</td>
+<td align="left">caliber</td>
+<td align="left"></td>
+</tr>
+<tr class="odd">
+<td align="left">Primary Malignancy_Other Organs</td>
+<td align="left">OTHER</td>
+<td align="left">Diagnosis of Primary Malignancy_Other Organs</td>
+<td align="left">icd9</td>
+<td align="left">1718</td>
+<td align="left">caliber</td>
+<td align="left">Y</td>
+</tr>
+<tr class="even">
+<td align="left">Primary Malignancy_Other Organs</td>
+<td align="left">OTHER</td>
+<td align="left">Possible Diagnosis of Primary Malignancy_Other Organs</td>
+<td align="left">icd9</td>
+<td align="left">1718</td>
+<td align="left">caliber</td>
+<td align="left"></td>
+</tr>
+<tr class="odd">
+<td align="left">Primary Malignancy_Other Organs</td>
+<td align="left">OTHER</td>
+<td align="left">Diagnosis of Primary Malignancy_Other Organs</td>
+<td align="left">icd9</td>
+<td align="left">1878</td>
+<td align="left">caliber</td>
+<td align="left">Y</td>
+</tr>
+<tr class="even">
+<td align="left">Primary Malignancy_Other Organs</td>
+<td align="left">OTHER</td>
+<td align="left">Possible Diagnosis of Primary Malignancy_Other Organs</td>
+<td align="left">icd9</td>
+<td align="left">1878</td>
+<td align="left">caliber</td>
+<td align="left"></td>
+</tr>
+<tr class="odd">
+<td align="left">Tuberculosis</td>
+<td align="left">Late effects of tuberculosis of bones and joints</td>
+<td align="left">Diagnosis of tuberculosis</td>
+<td align="left">read3</td>
+<td align="left">AE03.</td>
+<td align="left">caliber</td>
+<td align="left">Y</td>
+</tr>
+<tr class="even">
+<td align="left">Tuberculosis</td>
+<td align="left">Late effects of tuberculosis of bones and joints</td>
+<td align="left">History of tuberculosis</td>
+<td align="left">read3</td>
+<td align="left">AE03.</td>
+<td align="left">caliber</td>
+<td align="left"></td>
+</tr>
+<tr class="odd">
+<td align="left">Unstable Angina</td>
+<td align="left">Worsening angina</td>
+<td align="left">Unstable angina (3)</td>
+<td align="left">read3</td>
+<td align="left">XE0Ui</td>
+<td align="left">caliber</td>
+<td align="left"></td>
+</tr>
+<tr class="even">
+<td align="left">Unstable Angina</td>
+<td align="left">Worsening angina</td>
+<td align="left">Worsening angina (2)</td>
+<td align="left">read3</td>
+<td align="left">XE0Ui</td>
+<td align="left">caliber</td>
+<td align="left">Y</td>
+</tr>
+</tbody>
+</table>
 </div>
 </div>
 <div class="section level2">
@@ -263,11 +598,11 @@
 <hr>
 <ol>
 <li id="fn1"><p>See also the <a href="https://phenotypes.healthdatagateway.org/" class="external-link">HDRUK Phenotype Library</a> for even more clinical code lists.<a href="#fnref1" class="footnote-back">↩︎</a></p></li>
-<li id="fn2"><p>See <a href="https://biobank.ndph.ox.ac.uk/ukb/refer.cgi?id=592" class="external-link">UK Biobank resource 592</a> for further information on the various clinical coding systems.<a href="#fnref2" class="footnote-back">↩︎</a></p></li>
-<li id="fn3"><p>See this <a href="https://www.caliberresearch.org/portal/show/diabcomp_hes" class="external-link">warning note</a> (under the ‘Coding lists’ tab)<a href="#fnref3" class="footnote-back">↩︎</a></p></li>
-<li id="fn4"><p>These were retired after the 4th ICD10 edition, whereas the lookup table in UK Biobank resource 592 is based on the 5th edition.<a href="#fnref4" class="footnote-back">↩︎</a></p></li>
-<li id="fn5"><p>Note that there are relatively few ICD9 diagnostic records.<a href="#fnref5" class="footnote-back">↩︎</a></p></li>
-<li id="fn6"><p>Although some of these codes look like they should map to each other (e.g. ICD9 ‘0030’ SALMONELLA GASTROENTERITIS and ICD10 ‘A020’ Salmonella enteritis).<a href="#fnref6" class="footnote-back">↩︎</a></p></li>
+<li id="fn2"><p>See this <a href="https://www.caliberresearch.org/portal/show/diabcomp_hes" class="external-link">warning note</a> (under the ‘Coding lists’ tab)<a href="#fnref2" class="footnote-back">↩︎</a></p></li>
+<li id="fn3"><p>These were retired after the 4th ICD10 edition, whereas the lookup table in UK Biobank resource 592 is based on the 5th edition.<a href="#fnref3" class="footnote-back">↩︎</a></p></li>
+<li id="fn4"><p>Note that there are relatively few ICD9 diagnostic records.<a href="#fnref4" class="footnote-back">↩︎</a></p></li>
+<li id="fn5"><p>Although some of these codes look like they should map to each other (e.g. ICD9 ‘0030’ SALMONELLA GASTROENTERITIS and ICD10 ‘A020’ Salmonella enteritis).<a href="#fnref5" class="footnote-back">↩︎</a></p></li>
+<li id="fn6"><p>Note that clinical codes <em>may</em> appropriately appear under more than one disease however (e.g. ‘E103’ Type 1 diabetes mellitus With ophthalmic complications, is listed under both ‘Diabetes’ and ‘Diabetic ophthalmic complications’ by CALIBER)<a href="#fnref6" class="footnote-back">↩︎</a></p></li>
 </ol>
 </div>
   </div>
