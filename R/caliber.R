@@ -276,28 +276,34 @@ reformat_caliber_for_ukb <- function(caliber,
       dplyr::semi_join(caliber,
                        by = names(caliber))
 
-    # validate
-    resolved_overlapping_disease_categories <-
-      validate_overlapping_disease_categories_df(resolved_overlapping_disease_categories)
-
-    # resolve overlapping disease categories
-
-    ## setup
-    resolved_overlapping_disease_categories <-
-      resolved_overlapping_disease_categories %>%
-      dplyr::mutate(keep = dplyr::case_when(is.na(.data[["keep"]]) ~ "N",
-                                            TRUE ~ .data[["keep"]]))
-
-    resolved_overlapping_disease_categories <-
-      split(
-        resolved_overlapping_disease_categories,
-        resolved_overlapping_disease_categories$keep
+    if (nrow(resolved_overlapping_disease_categories) == 0) {
+      message(
+        "No rows from `overlapping_disease_categories_csv` detected in mapped CALIBER codes"
       )
+    } else {
+      # validate
+      resolved_overlapping_disease_categories <-
+        validate_overlapping_disease_categories_df(resolved_overlapping_disease_categories)
 
-    ## remove rows to be removed
-    caliber <- caliber %>%
-      dplyr::anti_join(resolved_overlapping_disease_categories$N,
-                       by = names(caliber))
+      # resolve overlapping disease categories
+
+      ## setup
+      resolved_overlapping_disease_categories <-
+        resolved_overlapping_disease_categories %>%
+        dplyr::mutate(keep = dplyr::case_when(is.na(.data[["keep"]]) ~ "N",
+                                              TRUE ~ .data[["keep"]]))
+
+      resolved_overlapping_disease_categories <-
+        split(
+          resolved_overlapping_disease_categories,
+          resolved_overlapping_disease_categories$keep
+        )
+
+      ## remove rows to be removed
+      caliber <- caliber %>%
+        dplyr::anti_join(resolved_overlapping_disease_categories$N,
+                         by = names(caliber))
+    }
   }
 
   # Check for remaining overlapping disease categories ----------
@@ -565,7 +571,7 @@ reformat_caliber_icd10 <- function(icd10_df,
                 " rows with unrecognised ICD10 codes. Diseases with unrecognised codes: '",
                 stringr::str_c(unique(unrecognised_icd10_df$disease),
                                sep = "",
-                               collapse = ", "),
+                               collapse = "', '"),
                 "'"))
 
   icd10_df <- icd10_df %>%
@@ -586,10 +592,21 @@ reformat_caliber_icd10 <- function(icd10_df,
       "ALT_CODE"
     )))
 
+  icd10_lkp_map_3_char <- icd10_lkp_map_3_char %>%
+    dplyr::pull("ALT_CODE") %>%
+    lookup_codes(code_type = "icd10",
+                 all_lkps_maps = all_lkps_maps,
+                 preferred_description_only = TRUE,
+                 standardise_output = TRUE) %>%
+    dplyr::select(-.data[["code_type"]]) %>%
+    dplyr::full_join(icd10_lkp_map_3_char,
+                     by = c("code" = "ALT_CODE"))
+
   icd10_3_char <- icd10_3_char %>%
     dplyr::left_join(icd10_lkp_map_3_char,
                      by = c("code" = "icd10_3_char")) %>%
-    dplyr::mutate("code" = .data[["ALT_CODE"]]) %>%
+    dplyr::mutate("code" = .data[["code.y"]]) %>%
+    dplyr::mutate("description" = .data[["description.y"]]) %>%
     dplyr::select(tidyselect::all_of(cols_to_keep))
 
   # recombine and remove duplicate rows
@@ -611,7 +628,7 @@ reformat_caliber_icd10 <- function(icd10_df,
 #' @param all_lkps_maps all_lkps_maps list
 #' @param unrecognised_codes Passed to `check_codes_exist()`
 #'
-#' @return Dataframe
+#' @return Data frame
 #' @noRd
 reformat_caliber_opcs4 <- function(opcs4_df,
                                    all_lkps_maps,
