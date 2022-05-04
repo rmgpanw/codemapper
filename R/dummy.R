@@ -1,6 +1,8 @@
 
 # PUBLIC ------------------------------------------------------------------
 
+## all_lkps_maps ------------
+
 #' Dummy UK Biobank codings file path
 #'
 #' Returns the file path to a dummy [UK Biobank
@@ -83,4 +85,18 @@ build_dummy_all_lkps_maps <- function() {
       icd10_phecode_1_2 = NULL,
       icd9_phecode_1_2 = NULL
     )
+}
+
+## CALIBER -----------------------------------------------------------------
+
+#' Dummy CALIBER repository
+#'
+#' Returns the file path to a dummy data
+#' [CALIBER](https://github.com/spiros/chronological-map-phenotypes) repository.
+#'
+#' @return A string.
+#' @export
+#' @family Dummy data
+dummy_caliber_dir_path <- function() {
+  system.file("extdata", "test_caliber_repo", package = "codemapper")
 }

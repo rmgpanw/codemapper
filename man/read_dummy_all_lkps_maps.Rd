@@ -20,6 +20,7 @@ read_dummy_all_lkps_maps()
 Other Dummy data: 
 \code{\link{build_dummy_all_lkps_maps}()},
 \code{\link{dummy_all_lkps_maps_path}()},
+\code{\link{dummy_caliber_dir_path}()},
 \code{\link{dummy_ukb_codings_path}()},
 \code{\link{read_dummy_ukb_codings}()}
 }

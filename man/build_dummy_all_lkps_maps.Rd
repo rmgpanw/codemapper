@@ -10,7 +10,8 @@ build_dummy_all_lkps_maps()
 A named list of tibbles.
 }
 \description{
-A thin convenience wrapper around \code{\link[=build_all_lkps_maps]{build_all_lkps_maps()}}.
+A thin convenience wrapper around \code{\link[=build_all_lkps_maps]{build_all_lkps_maps()}}, using dummy data
+included with this package.
 }
 \examples{
 build_dummy_all_lkps_maps()
@@ -20,6 +21,7 @@ build_dummy_all_lkps_maps()
 
 Other Dummy data: 
 \code{\link{dummy_all_lkps_maps_path}()},
+\code{\link{dummy_caliber_dir_path}()},
 \code{\link{dummy_ukb_codings_path}()},
 \code{\link{read_dummy_all_lkps_maps}()},
 \code{\link{read_dummy_ukb_codings}()}
