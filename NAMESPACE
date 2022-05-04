@@ -3,6 +3,7 @@
 export("%>%")
 export(all_lkps_maps_to_db)
 export(build_all_lkps_maps)
+export(build_dummy_all_lkps_maps)
 export(code_descriptions_like)
 export(codes_starting_with)
 export(default_col_filters)

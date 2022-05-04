@@ -13,8 +13,12 @@ A data frame.
 Reads a dummy \href{https://biobank.ctsu.ox.ac.uk/crystal/exinfo.cgi?src=accessing_data_guide}{UK Biobank codings}
 tsv file into R.
 }
+\examples{
+read_dummy_ukb_codings
+}
 \seealso{
 Other Dummy data: 
+\code{\link{build_dummy_all_lkps_maps}()},
 \code{\link{dummy_all_lkps_maps_path}()},
 \code{\link{dummy_ukb_codings_path}()},
 \code{\link{read_dummy_all_lkps_maps}()}

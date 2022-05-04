@@ -12,8 +12,12 @@ A string.
 \description{
 Returns the file path to a dummy \href{https://biobank.ndph.ox.ac.uk/ukb/refer.cgi?id=592}{UK Biobank resource 592} excel spreadsheet.
 }
+\examples{
+dummy_all_lkps_maps_path()
+}
 \seealso{
 Other Dummy data: 
+\code{\link{build_dummy_all_lkps_maps}()},
 \code{\link{dummy_ukb_codings_path}()},
 \code{\link{read_dummy_all_lkps_maps}()},
 \code{\link{read_dummy_ukb_codings}()}
