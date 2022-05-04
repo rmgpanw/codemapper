@@ -612,7 +612,10 @@ reformat_caliber_icd10 <- function(icd10_df,
   # recombine and remove duplicate rows
   icd10_df <- dplyr::bind_rows(icd10_df,
                                icd10_3_char) %>%
-    dplyr::distinct()
+    # some codes may have >1 description at this stage - omit 'description' from
+    # call to `distinct()`
+    dplyr::distinct(dplyr::across(c("disease", "category", "code_type", "code")),
+                    .keep_all = TRUE)
 
   # return result
   return(icd10_df)
