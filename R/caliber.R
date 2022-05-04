@@ -654,6 +654,8 @@ reformat_caliber_opcs4 <- function(opcs4_df,
 #' @param all_lkps_maps Named list
 #' @param col_filters See [map_codes()]
 #'
+#' @noRd
+#'
 #' @return A data frame. The `code_type` column will equal the value for `to`.
 map_caliber <- function(df,
                         from,
@@ -714,6 +716,7 @@ map_caliber <- function(df,
 #' @param df Data frame - columns as for a clinical codes df, plus an additional
 #'   'keep' column which should only contain 'Y' and `NA` values.
 #'
+#' @noRd
 #' @return The input df, unchanged
 validate_overlapping_disease_categories_df <- function(df) {
   # expected names

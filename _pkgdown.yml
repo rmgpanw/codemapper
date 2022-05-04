@@ -12,7 +12,7 @@ reference:
   - get_ukb_self_report_med_to_atc_map
 
 - title: Clinical codes
-  desc:  Functions for looking up clinical codes and mapping between the different coding systems.
+  desc:  Functions for looking up clinical codes and mapping between different coding systems.
 - contents:
   - lookup_codes
   - codes_starting_with
@@ -23,6 +23,21 @@ reference:
   - reformat_icd10_codes
   - runCodelistBuilder
 
+- title: CALIBER
+  desc:  Functions for reformatting CALIBER codelists to use with UK Biobank data
+- contents:
+  - download_caliber_repo
+  - read_caliber_raw
+  - reformat_caliber_for_ukb
+  - get_caliber_categories_mapping
+  - default_overlapping_disease_categories_csv
+
+- title: Phecodes
+  desc:  Functions for mapping UK Biobank data to Phecodes
+- contents:
+  - map_clinical_events_to_phecodes
+  - make_phecode_reverse_map
+
 - title: Dummy data
   desc: Dummy data for tests.
 - contents:
@@ -30,6 +45,8 @@ reference:
   - dummy_ukb_codings_path
   - read_dummy_all_lkps_maps
   - read_dummy_ukb_codings
+  - build_dummy_all_lkps_maps
+  - dummy_caliber_dir_path
 
 - title: Package overview
   desc: General summary of package contents
