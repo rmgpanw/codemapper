@@ -17,6 +17,11 @@ File path to downloaded (and unzipped) repository, invisibly.
 Downloads to \code{tempdir()} and unzips, invisibly returning the file path to the
 unzipped folder.
 }
+\examples{
+\dontrun{
+ caliber_dir_path <- download_caliber_repo()
+}
+}
 \seealso{
 Other CALIBER: 
 \code{\link{default_overlapping_disease_categories_csv}()},

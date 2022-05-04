@@ -18,9 +18,12 @@ knitr::opts_chunk$set(
 library(codemapper)
 ```
 
+# Introduction
+
 The goal of codemapper is to simplify working with clinical codes for research using electronic health records. The first step is to create a local database containing lookup and mapping tables for various clinical coding systems:
 
 ```{r eval = FALSE}
-codemapper::all_lkps_maps_to_db()
+all_lkps_maps <- build_all_lkps_maps()
 ```
 
+By default this will downloads [UK Biobank resource 592](https://biobank.ndph.ox.ac.uk/ukb/refer.cgi?id=592),

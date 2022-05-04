@@ -137,6 +137,33 @@ update_code_selection <- function(current_selection,
     dplyr::select(-tidyselect::ends_with("_TOREMOVE"))
 }
 
+#' Download a file
+#'
+#' First checks if the file already exists at the download path (`download_dir`
+#' + `filename`). If so, the file path is returned invisibly without
+#' re-downloading.
+#'
+#' @param download_url Character
+#' @param filename Character
+#' @param download_dir Character
+#'
+#' @return File path to downloaded file
+#' @noRd
+download_file <- function(download_url,
+                          filename = tempfile(),
+                          download_dir = tempdir()) {
+  file_path <- file.path(download_dir, filename)
+
+  if (file.exists(file_path)) {
+    invisible(file_path)
+  } else {
+    utils::download.file(url = download_url,
+                  destfile = file_path,
+                  mode = "wb")
+    invisible(file_path)
+  }
+}
+
 # TODO --------------------------------------------------------------------
 
 validate_all_lkps_maps <- function(all_lkps_maps) {

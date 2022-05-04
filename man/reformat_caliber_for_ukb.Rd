@@ -56,8 +56,12 @@ ICD9. See \code{vignette("caliber")} for further details.
 # read local copy of CALIBER repository into a named list
 caliber_raw <- read_caliber_raw(dummy_caliber_dir_path())
 
-# reformat
-# reformat_caliber_for_ukb(caliber_raw, all_lkps_maps = build_dummy_all_lkps_maps())
+# build dummy all_lkps_maps
+all_lkps_maps <- build_all_lkps_maps_dummy()
+
+# reformat CALIBER codes for UK Biobank
+caliber_ukb <- suppressWarnings(reformat_caliber_for_ukb(caliber_raw,
+ all_lkps_maps = all_lkps_maps))
 }
 \seealso{
 Other CALIBER: 

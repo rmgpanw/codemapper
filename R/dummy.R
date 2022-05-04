@@ -42,8 +42,8 @@ dummy_all_lkps_maps_path <- function() {
 #' @export
 #' @family Dummy data
 #' @examples
-#' read_dummy_ukb_codings
-read_dummy_ukb_codings <- function() {
+#' read_ukb_codings_dummy
+read_ukb_codings_dummy <- function() {
   ukb_codings <- ukbwranglr:::fread_tsv_as_character(dummy_ukb_codings_path())
 }
 
@@ -57,8 +57,8 @@ read_dummy_ukb_codings <- function() {
 #' @export
 #' @family Dummy data
 #' @examples
-#' read_dummy_all_lkps_maps()
-read_dummy_all_lkps_maps <- function() {
+#' read_all_lkps_maps_dummy()
+read_all_lkps_maps_dummy <- function() {
   read_all_lkps_maps(path = dummy_all_lkps_maps_path())
 }
 
@@ -73,11 +73,11 @@ read_dummy_all_lkps_maps <- function() {
 #' @family Dummy data
 #' @seealso [build_all_lkps_maps()]
 #' @examples
-#' build_dummy_all_lkps_maps()
-build_dummy_all_lkps_maps <- function() {
+#' build_all_lkps_maps_dummy()
+build_all_lkps_maps_dummy <- function() {
     build_all_lkps_maps(
-      all_lkps_maps = read_dummy_all_lkps_maps(),
-      ukb_codings = read_dummy_ukb_codings(),
+      all_lkps_maps = read_all_lkps_maps_dummy(),
+      ukb_codings = read_ukb_codings_dummy(),
       bnf_dmd = NULL,
       self_report_med_to_atc_map = NULL,
       ctv3sctmap2 = NULL,

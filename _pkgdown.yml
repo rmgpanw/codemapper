@@ -10,6 +10,9 @@ reference:
   - all_lkps_maps_to_db
   - get_nhsbsa_snomed_bnf
   - get_ukb_self_report_med_to_atc_map
+  - get_phecode_definitions
+  - get_phecode_icd9_map
+  - get_phecode_icd10_map
 
 - title: Clinical codes
   desc:  Functions for looking up clinical codes and mapping between different coding systems.
@@ -43,9 +46,9 @@ reference:
 - contents:
   - dummy_all_lkps_maps_path
   - dummy_ukb_codings_path
-  - read_dummy_all_lkps_maps
-  - read_dummy_ukb_codings
-  - build_dummy_all_lkps_maps
+  - read_all_lkps_maps_dummy
+  - read_ukb_codings_dummy
+  - build_all_lkps_maps_dummy
   - dummy_caliber_dir_path
 
 - title: Package overview

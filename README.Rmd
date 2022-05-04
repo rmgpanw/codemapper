@@ -18,13 +18,12 @@ knitr::opts_chunk$set(
 **UNDER CONSTRUCTION**
 
 <!-- badges: start -->
-  [![R-CMD-check](https://github.com/rmgpanw/codemapper/workflows/R-CMD-check/badge.svg)](https://github.com/rmgpanw/codemapper/actions)
-[![Codecov test coverage](https://codecov.io/gh/rmgpanw/codemapper/branch/master/graph/badge.svg)](https://codecov.io/gh/rmgpanw/codemapper?branch=master)
-[![pkgdown](https://github.com/rmgpanw/codemapper/workflows/pkgdown/badge.svg)](https://github.com/rmgpanw/codemapper/actions)
+
+[![R-CMD-check](https://github.com/rmgpanw/codemapper/workflows/R-CMD-check/badge.svg)](https://github.com/rmgpanw/codemapper/actions) [![Codecov test coverage](https://codecov.io/gh/rmgpanw/codemapper/branch/master/graph/badge.svg)](https://codecov.io/gh/rmgpanw/codemapper?branch=master) [![pkgdown](https://github.com/rmgpanw/codemapper/workflows/pkgdown/badge.svg)](https://github.com/rmgpanw/codemapper/actions)
+
 <!-- badges: end -->
 
-The goal of codemapper is to facilitate working with clinical codes used in electronic health records. This package relies in particular on the publicly available UK Biobank resource 592 - [Clinical coding classification systems and maps
-](https://biobank.ndph.ox.ac.uk/ukb/refer.cgi?id=592). 
+The goal of codemapper is to facilitate working with clinical codes used in electronic health records. This package relies in particular on the publicly available UK Biobank resource 592 - [Clinical coding classification systems and maps](https://biobank.ndph.ox.ac.uk/ukb/refer.cgi?id=592).
 
 ## Installation
 
@@ -34,6 +33,7 @@ You can install the development version from [GitHub](https://github.com/) with:
 # install.packages("devtools")
 devtools::install_github("rmgpanw/codemapper")
 ```
+
 ## Basic example
 
 A data analyst using electronic health records for research into hypertension may wish to build a list of clinical codes that capture this condition.
@@ -43,10 +43,7 @@ First, build a local resource containing lookup and mapping tables for various c
 ```{r example}
 library(codemapper)
 
-all_lkps_maps_dummy <- build_all_lkps_maps(all_lkps_maps = read_dummy_all_lkps_maps(),
-                                     ukb_codings = read_dummy_ukb_codings(),
-                                     bnf_dmd = NULL,
-                                     self_report_med_to_atc_map = NULL)
+all_lkps_maps_dummy <- build_all_lkps_maps_dummy()
 ```
 
 Look up Read 2 codes for type 1 diabetes:
@@ -71,4 +68,3 @@ htn_icd10 <- map_codes(
 
 htn_icd10
 ```
-

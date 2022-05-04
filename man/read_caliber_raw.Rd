@@ -40,7 +40,7 @@ codes may be combined into a single data frame
 caliber_raw <- read_caliber_raw(dummy_caliber_dir_path())
 caliber_raw
 
-# combine into a single data frame with dplyr
+# combine into a single data frame using dplyr
 dplyr::bind_rows(caliber_raw)
 }
 \seealso{

@@ -6,7 +6,7 @@
 \usage{
 all_lkps_maps_to_db(
   all_lkps_maps = build_all_lkps_maps(),
-  db_path,
+  db_path = "all_lkps_maps.db",
   overwrite = FALSE
 )
 }

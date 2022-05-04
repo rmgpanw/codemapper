@@ -17,10 +17,10 @@ dummy_all_lkps_maps_path()
 }
 \seealso{
 Other Dummy data: 
-\code{\link{build_dummy_all_lkps_maps}()},
+\code{\link{build_all_lkps_maps_dummy}()},
 \code{\link{dummy_caliber_dir_path}()},
 \code{\link{dummy_ukb_codings_path}()},
-\code{\link{read_dummy_all_lkps_maps}()},
-\code{\link{read_dummy_ukb_codings}()}
+\code{\link{read_all_lkps_maps_dummy}()},
+\code{\link{read_ukb_codings_dummy}()}
 }
 \concept{Dummy data}

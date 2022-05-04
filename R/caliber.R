@@ -35,6 +35,10 @@ get_caliber_categories_mapping <- function() {
 #'
 #' @return File path to downloaded (and unzipped) repository, invisibly.
 #' @family CALIBER
+#' @examples
+#' \dontrun{
+#'  caliber_dir_path <- download_caliber_repo()
+#' }
 download_caliber_repo <- function(url) {
 
   # file paths
@@ -86,7 +90,7 @@ download_caliber_repo <- function(url) {
 #' caliber_raw <- read_caliber_raw(dummy_caliber_dir_path())
 #' caliber_raw
 #'
-#' # combine into a single data frame with dplyr
+#' # combine into a single data frame using dplyr
 #' dplyr::bind_rows(caliber_raw)
 read_caliber_raw <- function(caliber_dir_path,
                              overlapping_disease_categories = "error") {
@@ -185,8 +189,12 @@ read_caliber_raw <- function(caliber_dir_path,
 #' # read local copy of CALIBER repository into a named list
 #' caliber_raw <- read_caliber_raw(dummy_caliber_dir_path())
 #'
-#' # reformat
-#' # reformat_caliber_for_ukb(caliber_raw, all_lkps_maps = build_dummy_all_lkps_maps())
+#' # build dummy all_lkps_maps
+#' all_lkps_maps <- build_all_lkps_maps_dummy()
+#'
+#' # reformat CALIBER codes for UK Biobank
+#' caliber_ukb <- suppressWarnings(reformat_caliber_for_ukb(caliber_raw,
+#'  all_lkps_maps = all_lkps_maps))
 reformat_caliber_for_ukb <- function(caliber,
                                      all_lkps_maps,
                                      col_filters = default_col_filters(),

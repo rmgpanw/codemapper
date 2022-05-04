@@ -21,15 +21,36 @@ library(codemapper)
 
 # Introduction
 
-The CALIBER team have manually curated clinical code lists for 308 common health conditions, providing a rich resource for researchers working with electronic health records.[@kuan2019] All code lists are publicly available in csv format on github.[^1] These are divided into primary care (Read 2 codes and Medcodes) and secondary care (ICD10).
+The CALIBER team have manually curated clinical code lists for 308 common health conditions, providing a rich resource for researchers working with electronic health records.[@kuan2019] All code lists are publicly available in csv format on github.[^1] These are divided into primary care (Read 2 codes and Medcodes) and secondary care (ICD10 and OPCS4).
 
 [^1]: See also the [HDRUK Phenotype Library](https://phenotypes.healthdatagateway.org/) for even more clinical code lists.
 
-The UK Biobank contains both [linked primary and secondary care diagnostic records](https://biobank.ndph.ox.ac.uk/ukb/label.cgi?id=100091). Primary care records are in both Read 2 and Read 3 formats, while secondary care records are in both ICD10 and ICD9 formats (although the large majority of these are ICD10). Data analysts may therefore wish to extend the CALIBER resource by mapping to Read 3 and ICD9. The original Read 2 and ICD10 CALIBER codes also require reformatting to match the format in UK Biobank data.
+The UK Biobank contains both [linked primary and secondary care diagnostic records](https://biobank.ndph.ox.ac.uk/ukb/label.cgi?id=100091). Primary care records are in both Read 2 and Read 3 formats, while secondary care records are in both ICD10 and ICD9 formats (although the large majority of these are ICD10) as well as OPCS4. Data analysts may therefore wish to extend the CALIBER resource by mapping from Read 2 to Read 3, and from ICD10 to ICD9. The raw Read 2 and ICD10 CALIBER codes also require reformatting to match the format in UK Biobank data.
 
-The CALIBER repository may be imported into R, reformatted for use with UK Biobank data,[^2] and mapped to Read 3 and ICD9 equivalents using `map_caliber_for_ukb()`. This vignette outlines the steps performed to achieve this.
+The CALIBER repository may be imported into R, reformatted for use with UK Biobank data, and mapped to Read 3 and ICD9 equivalents as follows:
 
-[^2]: See [UK Biobank resource 592](https://biobank.ndph.ox.ac.uk/ukb/refer.cgi?id=592) for further information on the various clinical coding systems.
+```{r eval=FALSE}
+# download CALIBER repository, returning file path
+caliber_dir_path <- download_caliber_repo()
+
+# read all CALIBER codes into R
+caliber_raw <- read_caliber_raw(caliber_dir_path)
+
+# build all_lkps_maps resource - contains clinical code lookup and mapping tables
+all_lkps_maps <- build_all_lkps_maps()
+
+# reformat CALIBER codes for UK Biobank, and map from ICD10 and Read 2 to ICD9 and Read 3 respectively. Expect various warnings to be raised at this stage
+caliber_ukb <- reformat_caliber_for_ukb(
+  caliber_raw,
+  all_lkps_maps = all_lkps_maps,
+  overlapping_disease_categories_csv = default_overlapping_disease_categories_csv()
+)
+```
+
+This vignette:
+
+1.  Outlines the steps performed by `read_caliber_raw()` and `reformat_caliber_for_ukb()` to achieve this.
+2.  Highlights issues to be aware of
 
 # Reformatting Read 2 and ICD10 codes
 
@@ -41,7 +62,7 @@ The CALIBER repository may be imported into R, reformatted for use with UK Bioba
 The following read codes are not present in the Read 2 lookup table provided by UK Biobank resource 592:
 
 | CALIBER disease                          | Unrecognised Read 2 code                                                                                                                          |
-|------------------|------------------------------------------------------|
+|--------------------|----------------------------------------------------|
 | Alcohol Problems                         | Z191.; Z1911; Z1912; Z4B1.                                                                                                                        |
 | Anxiety disorders                        | Z481.; Z4L1.                                                                                                                                      |
 | Coeliac disease                          | ZC2C2                                                                                                                                             |
@@ -63,14 +84,14 @@ The following read codes are not present in the Read 2 lookup table provided by 
 ## ICD10
 
 -   Convert all ICD10 codes to the `ALT_CODE` format used in UK Biobank data. Note that while undivided three character ICD10 codes are flagged by an 'X' suffix in [UK Biobank resource 592](https://biobank.ndph.ox.ac.uk/ukb/refer.cgi?id=592 "Clinical coding classification systems and maps") (e.g. 'A38X', Scarlet fever), the suffix does not appear in the UK Biobank dataset itself (e.g. 'A38X' should instead appear as 'A38').
--   Expand all three character ICD10 codes to include their children. For example, 'D25' (Leiomyoma of uterus) is expanded to include 'D25', 'D250', 'D251', 'D252', 'D259'.[^3]
+-   Expand all three character ICD10 codes to include their children. For example, 'D25' (Leiomyoma of uterus) is expanded to include 'D25', 'D250', 'D251', 'D252', 'D259'.[^2]
 -   Expand any four character ICD10 codes with a 'modifier 5' to include their five character children. For example, 'M90.0' (Tuberculosis of bone) is expanded to include 'M900', 'M9000', 'M9001', 'M9002', 'M9003', 'M9004', 'M9005', 'M9006', 'M9007', 'M9008' and 'M9009'.
 
-[^3]: See this [warning note](https://www.caliberresearch.org/portal/show/diabcomp_hes) (under the 'Coding lists' tab)
+[^2]: See this [warning note](https://www.caliberresearch.org/portal/show/diabcomp_hes) (under the 'Coding lists' tab)
 
-The following ICD10 codes are not present in the ICD10 lookup table provided by UK Biobank resource 592:[^4]
+The following ICD10 codes are not present in the ICD10 lookup table provided by UK Biobank resource 592:[^3]
 
-[^4]: These were retired after the 4th ICD10 edition, whereas the lookup table in UK Biobank resource 592 is based on the 5th edition.
+[^3]: These were retired after the 4th ICD10 edition, whereas the lookup table in UK Biobank resource 592 is based on the 5th edition.
 
 | CALIBER disease                             | Unrecognised ICD10 code |
 |---------------------------------------------|-------------------------|
@@ -87,20 +108,32 @@ The following ICD10 codes are not present in the ICD10 lookup table provided by 
 
 Mapping from Read 2 to Read 3 is performed using the `read_v2_read_ctv3` mapping sheet from [UK Biobank resource 592](https://biobank.ndph.ox.ac.uk/ukb/refer.cgi?id=592 "Clinical coding classification systems and maps"). Points to be aware of:
 
--   A minority of mappings in `read_v2_read_ctv3` are flagged as 'not assured' (`IS_ASSURED` '0'). These mappings are excluded by default.
+-   A minority of mappings in `read_v2_read_ctv3` are flagged as 'not assured' (`IS_ASSURED` '0'). These mappings are excluded by default - this action can be adjusted with the `col_filters` argument to `reformat_caliber_for_ukb()`.
 
 ## ICD10 to ICD9
 
-Mapping from ICD10 to ICD9[^5] is performed using the `icd9_icd10` mapping sheet from [UK Biobank resource 592](https://biobank.ndph.ox.ac.uk/ukb/refer.cgi?id=592 "Clinical coding classification systems and maps"). Points to be aware of:
+Mapping from ICD10 to ICD9[^4] is performed using the `icd9_icd10` mapping sheet from [UK Biobank resource 592](https://biobank.ndph.ox.ac.uk/ukb/refer.cgi?id=592 "Clinical coding classification systems and maps"). Points to be aware of:
 
-[^5]: Note that there are relatively few ICD9 diagnostic records.
+[^4]: Note that there are relatively few ICD9 diagnostic records.
 
--   There are a number of rows with missing values for either `DESCRIPTION_ICD9` or `DESCRIPTION_ICD10`, indicating that these codes have no ICD9/ICD10 equivalent.[^6]
+-   There are a number of rows with missing values for either `DESCRIPTION_ICD9` or `DESCRIPTION_ICD10`, indicating that these codes have no ICD9/ICD10 equivalent.[^5]
 
 -   One-to-many mappings occur in either direction (i.e. ICD9 to ICD10, and ICD10 to ICD9).
 
-[^6]: Although some of these codes look like they should map to each other (e.g. ICD9 '0030' SALMONELLA GASTROENTERITIS and ICD10 'A020' Salmonella enteritis).
+[^5]: Although some of these codes look like they should map to each other (e.g. ICD9 '0030' SALMONELLA GASTROENTERITIS and ICD10 'A020' Salmonella enteritis).
 
-## Removing duplicates
+## Overlapping disease categories
+
+The mapping process results in some codes appearing under more than one disease category within a single disease. As a general rule, subcategories within a clinical code list should be mutually exclusive (e.g. a clinical code list for diabetes may be sub categorised into type 1 and type 2 diabetes - a clinical code for type 1 diabetes should not also be used for type 2 diabetes).[^6]
+
+[^6]: Note that clinical codes *may* appropriately appear under more than one disease however (e.g. 'E103' Type 1 diabetes mellitus With ophthalmic complications, is listed under both 'Diabetes' and 'Diabetic ophthalmic complications' by CALIBER)
+
+By default, these cases are dealt with by setting argument `overlapping_disease_categories_csv = default_overlapping_disease_categories_csv()` in `reformat_caliber_for_ukb()`. This uses a csv file which has been manually annotated ('Y' in column 'keep') to indicate which disease category a code should belong to:
+
+```{r}
+read.csv(default_overlapping_disease_categories_csv()) %>% 
+  knitr::kable()
+```
+
 
 # References

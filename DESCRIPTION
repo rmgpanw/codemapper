@@ -6,7 +6,7 @@ Authors@R:
            family = "Warwick",
            role = c("aut", "cre"),
            email = "alasdair.warwick06@gmail.com",
-           comment = c(ORCID = "https://orcid.org/0000-0002-0800-2890?lang=en"))
+           comment = c(ORCID = "https://orcid.org/0000-0002-0800-2890"))
 Description: Functions for mapping between clinical coding systems.
 License: MIT + file LICENSE
 URL: https://github.com/rmgpanw/codemapper
@@ -22,8 +22,6 @@ Suggests:
     rmarkdown,
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
-Depends:
-    ukbwranglr (>= 0.0.0.9000)
 Imports: 
     assertthat,
     DBI,
@@ -42,6 +40,7 @@ Imports:
     tibble,
     tidyr,
     tidyselect,
+    ukbwranglr,
     utils
 Remotes: 
     github::rmgpanw/ukbwranglr,

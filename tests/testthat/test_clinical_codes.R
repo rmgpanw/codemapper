@@ -1,10 +1,9 @@
 
 # SETUP ---------------------------------------------------------------
 
+ukb_codings <- read_ukb_codings_dummy()
 
-ukb_codings <- read_dummy_ukb_codings()
-
-all_lkps_maps_raw <- read_dummy_all_lkps_maps()
+all_lkps_maps_raw <- read_all_lkps_maps_dummy()
 all_lkps_maps <-
   build_all_lkps_maps(
     all_lkps_maps = all_lkps_maps_raw,
@@ -16,6 +15,9 @@ all_lkps_maps <-
     icd10_phecode_1_2 = NULL,
     icd9_phecode_1_2 = NULL
   )
+
+all_lkps_maps_db <- all_lkps_maps_to_db(all_lkps_maps = all_lkps_maps,
+                                        db_path = tempfile(fileext = ".db"))
 
 # TESTS -------------------------------------------------------------------
 
@@ -275,6 +277,26 @@ test_that("`map_codes()` works when mapping icd9 to icd10", {
   )
 })
 
+# `map_codes()` with all_lkps_maps_db -------------------------------------
+
+test_that("`map_codes()` works when mapping icd9 to icd10", {
+  expect_equal(
+    map_codes(
+      codes = "0020",
+      from = "icd9",
+      to = "icd10",
+      all_lkps_maps = all_lkps_maps_db,
+      unrecognised_codes = "error",
+      codes_only = FALSE,
+      preferred_description_only = TRUE,
+      standardise_output = TRUE
+    )$code,
+    expected = "A010"
+  )
+})
+
+all_lkps_maps_db
+
 # `get_mapping_df()` --------------------------
 test_that("`get_mapping_df()` returns the expected output", {
   read2_icd10_df <- get_mapping_df(from = "read2",
@@ -345,22 +367,42 @@ test_that("`get_mapping_df()` returns the expected results with/without `col_fil
   expect_equal(
     read2_read3_df,
     tibble::tribble(
-      ~read2,  ~read3,
-      "C108.", "X40J4",
-      "C10E.", "X40J4",
-      "J5310", "J5311"
-    )
+        ~read2,  ~read3,
+       "C106.", "XE10H",
+       "C106.", "X00Ag",
+       "C106.", "XE15k",
+       "C106.", "XaPmX",
+       "C108.", "X40J4",
+       "C10E.", "X40J4",
+       "F3813", "XE15n",
+       "F3813", "XaPmX",
+       "J5310", "J5311",
+       "K05..", "X30J0",
+       "K050.", "X30J0",
+       "K0D..", "X30J0"
+       )
   )
 
   expect_equal(
       read2_read3_df_no_col_filter,
       tibble::tribble(
-        ~read2,  ~read3,
-        "C108.", "X40J4",
-        "C10E.", "X40J4",
-        "J5310", "J5311",
-        "J5311", "J5311"
-      )
+          ~read2,  ~read3,
+         "C106.", "XE10H",
+         "C106.", "X00Ag",
+         "C106.", "XE15k",
+         "C106.", "Xa0lK",
+         "C106.", "XaPmX",
+         "C108.", "X40J4",
+         "C10E.", "X40J4",
+         "F3813", "XE15n",
+         "F3813", "Xa0lK",
+         "F3813", "XaPmX",
+         "J5310", "J5311",
+         "J5311", "J5311",
+         "K05..", "X30J0",
+         "K050.", "X30J0",
+         "K0D..", "X30J0"
+         )
     )
 })
 

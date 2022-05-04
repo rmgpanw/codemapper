@@ -1646,7 +1646,7 @@ handle_unrecognised_codes <-
 
     if (length(missing_codes) > 25) {
       missing_codes_to_print <- paste0(missing_codes_to_print,
-                                       " (first 25 only shown")
+                                       " (first 25 only shown)")
     }
 
     if (length(missing_codes) > 0) {

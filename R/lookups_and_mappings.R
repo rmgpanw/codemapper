@@ -16,7 +16,7 @@
 #' @seealso [build_all_lkps_maps()]
 #' @export
 all_lkps_maps_to_db <- function(all_lkps_maps = build_all_lkps_maps(),
-                                db_path,
+                                db_path = "all_lkps_maps.db",
                                 overwrite = FALSE) {
   # If database already exists at db_path, check if tables to be written are
   # already present
@@ -453,6 +453,45 @@ read_all_lkps_maps <- function(path = get_ukb_all_lkps_maps()) {
     to_exclude = c("Description", "Contents"),
     col_types = "text"
   )
+}
+
+#' Download the Phecode 1.2 definitions file
+#'
+#' Download link obtained from https://phewascatalog.org/phecodes.
+#'
+#' @return File path to downloaded file in `tempdir()`.
+#' @export
+#' @example \dontrun{ get_phecode_definitions() }
+get_phecode_definitions <- function() {
+  download_file(download_url = "https://phewascatalog.org/files/phecode_definitions1.2.csv.zip",
+                download_dir = tempdir(),
+                filename = tempfile())
+}
+
+#' Download the Phecode 1.2 to ICD9 mapping file
+#'
+#' Download link obtained from https://phewascatalog.org/phecodes.
+#'
+#' @return File path to downloaded file in `tempdir()`.
+#' @export
+#' @example \dontrun{ get_phecode_definitions() }
+get_phecode_icd9_map <- function() {
+  download_file(download_url = "https://phewascatalog.org/files/phecode_icd9_map_unrolled.csv.zip",
+                download_dir = tempdir(),
+                filename = tempfile())
+}
+
+#' Download the Phecode 1.2 to ICD10 (beta) mapping file
+#'
+#' Download link obtained from https://phewascatalog.org/phecodes.
+#'
+#' @return File path to downloaded file in `tempdir()`.
+#' @export
+#' @example \dontrun{ get_phecode_definitions() }
+get_phecode_icd10_map <- function() {
+  download_file(download_url = "https://phewascatalog.org/files/Phecode_map_v1_2_icd10_beta.csv.zip",
+                download_dir = tempdir(),
+                filename = tempfile())
 }
 
 # PRIVATE -----------------------------------------------------------------

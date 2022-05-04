@@ -11,6 +11,7 @@
 [![Codecov test
 coverage](https://codecov.io/gh/rmgpanw/codemapper/branch/master/graph/badge.svg)](https://codecov.io/gh/rmgpanw/codemapper?branch=master)
 [![pkgdown](https://github.com/rmgpanw/codemapper/workflows/pkgdown/badge.svg)](https://github.com/rmgpanw/codemapper/actions)
+
 <!-- badges: end -->
 
 The goal of codemapper is to facilitate working with clinical codes used
@@ -40,12 +41,8 @@ various clinical codings systems (a dummy dataset is used here):
 
 ``` r
 library(codemapper)
-#> Loading required package: ukbwranglr
 
-all_lkps_maps_dummy <- build_all_lkps_maps(all_lkps_maps = read_dummy_all_lkps_maps(),
-                                     ukb_codings = read_dummy_ukb_codings(),
-                                     bnf_dmd = NULL,
-                                     self_report_med_to_atc_map = NULL)
+all_lkps_maps_dummy <- build_all_lkps_maps_dummy()
 #> Extending tables in UKB resource 592
 #> Success!
 ```

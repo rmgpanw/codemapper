@@ -1,9 +1,9 @@
 
 # SETUP ---------------------------------------------------------------
 
-ukb_codings <- read_dummy_ukb_codings()
+ukb_codings <- read_ukb_codings_dummy()
 
-all_lkps_maps_raw <- read_dummy_all_lkps_maps()
+all_lkps_maps_raw <- read_all_lkps_maps_dummy()
 all_lkps_maps <-
   build_all_lkps_maps(
     all_lkps_maps = all_lkps_maps_raw,
