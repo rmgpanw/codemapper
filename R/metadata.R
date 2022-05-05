@@ -1,6 +1,5 @@
-# TODO unhash this
-# all_lkps_maps <- get_all_lkps_maps()
-# all_lkps_maps_db <- get_all_lkps_maps_db()
+
+# CONSTANTS ---------------------------------------------------------------
 
 # UKB CODE MAPPINGS -------------------------------------------------------
 
@@ -98,3 +97,22 @@ CLINICAL_CODE_MAPPINGS_MAP <- tibble::tribble(
   "icd10", "phecode", "icd10_phecode", "ALT_CODE", "PHECODE", NA, NA,
   "icd9", "phecode", "icd9_phecode", "icd9", "phecode", NA, NA
 )
+
+# PUBLIC ------------------------------------------------------------------
+
+#' Metadata
+#'
+#' Returns a named list of tibbles which show the metadata used for (i) lookup
+#' tables and (ii) mapping tables.
+#'
+#' @return A named list.
+#' @export
+#'
+#' @examples
+#' codemapper_metadata()
+codemapper_metadata <- function() {
+  list(
+    lookup_tables = CODE_TYPE_TO_LKP_TABLE_MAP,
+    mapping_tables = CLINICAL_CODE_MAPPINGS_MAP
+  )
+}

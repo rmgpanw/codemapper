@@ -54,9 +54,7 @@ all_lkps_maps_dummy <- suppressWarnings(build_all_lkps_maps_dummy())
 head(all_lkps_maps_dummy$icd10_lkp)
 ```
 
-Many of the functions in this package will require this object (supplied to argument `all_lkps_maps`).
-
-Instead of re-running `build_all_lkps_maps()` in each new R session, the output can be saved to a SQLite database file:
+Many of the functions in this package will require this object (supplied to argument `all_lkps_maps`). Instead of re-running `build_all_lkps_maps()` in each new R session, the output can be saved to a SQLite database file:
 
 ```{r}
 # write to SQLite database file
@@ -91,24 +89,33 @@ Assuming you are using a [RStudio project](https://r4ds.had.co.nz/workflow-proje
 
 Codes may be explored with:
 
--    `lookup_codes()`:
+-   `lookup_codes()`:
 
+```{=html}
+<!-- -->
+```
     ```{r}
     lookup_codes(codes = c("E10", "E11"),
                  code_type = "icd10",
                  all_lkps_maps = all_lkps_maps_dummy_db)
     ```
 
--    `codes_starting_with()`:
+-   `codes_starting_with()`:
 
+```{=html}
+<!-- -->
+```
     ```{r}
     codes_starting_with(codes = "E1",
                  code_type = "icd10",
                  all_lkps_maps = all_lkps_maps_dummy_db)
     ```
 
--    `code_descriptions_like():`
+-   `code_descriptions_like():`
 
+```{=html}
+<!-- -->
+```
     ```{r}
     code_descriptions_like(
       reg_expr = "cyst",
