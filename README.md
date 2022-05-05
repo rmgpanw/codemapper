@@ -3,8 +3,6 @@
 
 # codemapper
 
-**UNDER CONSTRUCTION**
-
 <!-- badges: start -->
 
 [![R-CMD-check](https://github.com/rmgpanw/codemapper/workflows/R-CMD-check/badge.svg)](https://github.com/rmgpanw/codemapper/actions)
@@ -15,10 +13,12 @@ coverage](https://codecov.io/gh/rmgpanw/codemapper/branch/master/graph/badge.svg
 <!-- badges: end -->
 
 The goal of codemapper is to facilitate working with clinical codes used
-in electronic health records. This package relies in particular on the
-publicly available UK Biobank resource 592 - [Clinical coding
-classification systems and
-maps](https://biobank.ndph.ox.ac.uk/ukb/refer.cgi?id=592).
+in electronic health records. This package relies primarily on UK
+Biobank resource 592 ([Clinical coding classification systems and
+maps](https://biobank.ndph.ox.ac.uk/ukb/refer.cgi?id=592)) and the UK
+Biobank [data codings
+file](https://biobank.ctsu.ox.ac.uk/crystal/exinfo.cgi?src=accessing_data_guide),
+both of which are publicly available.
 
 ## Installation
 
@@ -37,7 +37,7 @@ hypertension may wish to build a list of clinical codes that capture
 this condition.
 
 First, build a local resource containing lookup and mapping tables for
-various clinical codings systems (a dummy dataset is used here):
+various clinical codings systems. A dummy dataset is used here:
 
 ``` r
 library(codemapper)
@@ -47,7 +47,7 @@ all_lkps_maps_dummy <- build_all_lkps_maps_dummy()
 #> Success!
 ```
 
-Look up Read 2 codes for type 1 diabetes:
+Look up Read 2 codes for hypertension:
 
 ``` r
 htn_read2 <- code_descriptions_like("Hypertension",

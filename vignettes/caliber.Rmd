@@ -47,10 +47,7 @@ caliber_ukb <- reformat_caliber_for_ukb(
 )
 ```
 
-This vignette:
-
-1.  Outlines the steps performed by `read_caliber_raw()` and `reformat_caliber_for_ukb()` to achieve this.
-2.  Highlights issues to be aware of
+This vignette outlines the steps performed by `read_caliber_raw()` and `reformat_caliber_for_ukb()` to achieve this.
 
 # Reformatting Read 2 and ICD10 codes
 

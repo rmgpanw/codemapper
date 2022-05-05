@@ -57,11 +57,11 @@ download_caliber_repo <- function(url) {
   invisible(list.files(caliber_repo_unzipped))
 }
 
-#' Read a local copy of the CALIBER repository into R
+#' Import CALIBER code lists
 #'
-#' @description All CALIBER codes are read into a named list containing 3 data
-#'   frames: primary care Read 2, secondary care ICD10 and secondary care OPCS4
-#'   codes.
+#' @description Reads a local copy of the CALIBER repository into R. All CALIBER
+#'   codes are read into a named list containing 3 data frames: primary care
+#'   Read 2, secondary care ICD10 and secondary care OPCS4 codes.
 #'
 #' @details The directory supplied to `caliber_dir_path` is expected to contain
 #'   subdirectories `primary_care` and `secondary_care`, each of which contains
@@ -195,6 +195,9 @@ read_caliber_raw <- function(caliber_dir_path,
 #' # reformat CALIBER codes for UK Biobank
 #' caliber_ukb <- suppressWarnings(reformat_caliber_for_ukb(caliber_raw,
 #'  all_lkps_maps = all_lkps_maps))
+#'
+#' # view first few rows
+#' head(caliber_ukb)
 reformat_caliber_for_ukb <- function(caliber,
                                      all_lkps_maps,
                                      col_filters = default_col_filters(),
