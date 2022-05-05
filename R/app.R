@@ -1,3 +1,6 @@
+
+# PUBLIC ------------------------------------------------------------------
+
 #' Create a clinical codelist with R Shiny.
 #'
 #' Launches a Shiny app to select clinical codes (see also 'User notes' section
@@ -62,6 +65,7 @@ runCodelistBuilder <- function(all_lkps_maps = NULL,
       )
     }
   }
+
 
   # UI ----------------------------------------------------------------------
 
@@ -208,6 +212,7 @@ runCodelistBuilder <- function(all_lkps_maps = NULL,
     )
   )
 
+  # Server ------------------------------------------------------------------
   server <- function(input, output, session) {
     # Search for codes --------------------------------------------------------
 
@@ -667,8 +672,9 @@ runCodelistBuilder <- function(all_lkps_maps = NULL,
           readr::write_csv(result, file, na = "")
         }
       )
-
   }
+
+
 
   shinyApp(ui, server, options = options, ...)
 }
