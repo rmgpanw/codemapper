@@ -113,16 +113,6 @@ test_that("`reformat_icd10_phecode_map_1_2()` returns expected results", {
                  "PHECODE",
                  "Exl. Phecodes",
                  "Excl. Phenotypes"))
-
-  expect_true(sum(is.na(
-    icd10_phecode_map_dummy_reformatted$ICD10_CODE
-  )) == 0 &
-    sum(is.na(
-      icd10_phecode_map_dummy_reformatted$ALT_CODE
-    )) == 0 &
-    sum(is.na(
-      icd10_phecode_map_dummy_reformatted$PHECODE
-    )) == 0)
 })
 
 test_that(
