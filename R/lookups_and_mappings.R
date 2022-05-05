@@ -90,7 +90,9 @@ all_lkps_maps_to_db <- function(all_lkps_maps = build_all_lkps_maps(),
     )
   }
 
-  message("Success!")
+  message(paste0("Success! Connect to database with `con <- DBI::dbConnect(RSQLite::SQLite(), '",
+                 db_path,
+                 "')`, then access all tables with `all_lkps_maps <- ukbwranglr::db_tables_to_list(con)`"))
   invisible(db_path)
 }
 

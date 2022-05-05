@@ -152,7 +152,7 @@ test_that("ICD9 has been mapped to", {
 
 ## Read 3 mappings ----------------------
 
-test_that("ICD9 has been mapped to", {
+test_that("Read 3 has been mapped to", {
   expect_equal(caliber_ukb %>%
                  dplyr::filter(category == "Type I diabetes mellitus (3)" &
                                  code_type == "read3") %>%
