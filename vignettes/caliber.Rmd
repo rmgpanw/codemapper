@@ -17,6 +17,7 @@ knitr::opts_chunk$set(
 
 ```{r setup}
 library(codemapper)
+library(dplyr)
 ```
 
 # Introduction
@@ -47,6 +48,28 @@ caliber_ukb <- reformat_caliber_for_ukb(
 )
 ```
 
+Using dummy data:
+
+```{r}
+# read all codes from dummy CALIBER repo into R
+caliber_raw_dummy <- read_caliber_raw(dummy_caliber_dir_path())
+
+# build dummy all_lkps_maps resource
+all_lkps_maps_dummy <- build_all_lkps_maps_dummy()
+
+# reformat CALIBER codes for UK Biobank, and map from ICD10 and Read 2 to ICD9 and Read 3 respectively (warnings suppressed)
+caliber_ukb_dummy <- suppressWarnings(reformat_caliber_for_ukb(
+  caliber_raw_dummy,
+  all_lkps_maps = all_lkps_maps_dummy,
+  overlapping_disease_categories_csv = default_overlapping_disease_categories_csv()
+))
+
+# view first few rows
+caliber_ukb_dummy %>% 
+  head() %>% 
+  knitr::kable()
+```
+
 This vignette outlines the steps performed by `read_caliber_raw()` and `reformat_caliber_for_ukb()` to achieve this.
 
 # Reformatting Read 2 and ICD10 codes
@@ -56,10 +79,29 @@ This vignette outlines the steps performed by `read_caliber_raw()` and `reformat
 -   Remove the last 2 digits from all Read 2 codes (these indicate whether the associated description is 'preferred' or 'alternative').
 -   Filter for just one code description per code (in some cases, one or more alternative descriptions are included because they map to distinct Medcodes e.g. see preferred and alternative descriptions for '7K1D0' under ['Fracture of hip'](https://github.com/spiros/chronological-map-phenotypes/blob/master/primary_care/CPRD_fracture_hip.csv)).
 
+Before:
+
+```{r}
+caliber_raw_dummy$read2 %>% 
+  arrange(category) %>% 
+  head() %>% 
+  knitr::kable()
+```
+
+After:
+
+```{r}
+caliber_ukb_dummy %>% 
+  arrange(category) %>% 
+  filter(code_type == "read2") %>% 
+  head() %>% 
+  knitr::kable()
+```
+
 The following read codes are not present in the Read 2 lookup table provided by UK Biobank resource 592:
 
 | CALIBER disease                          | Unrecognised Read 2 code                                                                                                                          |
-|------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------|
+|------------------|------------------------------------------------------|
 | Alcohol Problems                         | Z191.; Z1911; Z1912; Z4B1.                                                                                                                        |
 | Anxiety disorders                        | Z481.; Z4L1.                                                                                                                                      |
 | Coeliac disease                          | ZC2C2                                                                                                                                             |
@@ -86,6 +128,25 @@ The following read codes are not present in the Read 2 lookup table provided by 
 
 [^2]: See this [warning note](https://www.caliberresearch.org/portal/show/diabcomp_hes) (under the 'Coding lists' tab)
 
+Before:
+
+```{r}
+caliber_raw_dummy$icd10 %>% 
+  arrange(category) %>% 
+  head() %>% 
+  knitr::kable()
+```
+
+After:
+
+```{r}
+caliber_ukb_dummy %>% 
+  filter(code_type == "icd10") %>% 
+  arrange(category) %>% 
+  head() %>% 
+  knitr::kable()
+```
+
 The following ICD10 codes are not present in the ICD10 lookup table provided by UK Biobank resource 592:[^3]
 
 [^3]: These were retired after the 4th ICD10 edition, whereas the lookup table in UK Biobank resource 592 is based on the 5th edition.
@@ -98,6 +159,25 @@ The following ICD10 codes are not present in the ICD10 lookup table provided by 
 ## OPCS4
 
 -   Remove '.' from all codes (e.g. 'H01.1' becomes 'H011').
+
+Before:
+
+```{r}
+caliber_raw_dummy$opcs4 %>% 
+  arrange(category) %>% 
+  head() %>% 
+  knitr::kable()
+```
+
+After:
+
+```{r}
+caliber_ukb_dummy %>% 
+  filter(code_type == "opcs4") %>% 
+  arrange(category) %>% 
+  head() %>% 
+  knitr::kable()
+```
 
 # Mapping to Read 3 and ICD9
 

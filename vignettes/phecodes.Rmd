@@ -64,3 +64,5 @@ make_phecode_reverse_map(clinical_events_phecodes = clinical_events_phecodes,
                            all_lkps_maps = all_lkps_maps_dummy) %>% 
   knitr::kable()
 ```
+
+# References
