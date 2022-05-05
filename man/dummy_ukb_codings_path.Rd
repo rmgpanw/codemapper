@@ -21,7 +21,12 @@ Other Dummy data:
 \code{\link{build_all_lkps_maps_dummy}()},
 \code{\link{dummy_all_lkps_maps_path}()},
 \code{\link{dummy_caliber_dir_path}()},
+\code{\link{dummy_clinical_events_tidy}()},
+\code{\link{dummy_phecode_lkp_path}()},
+\code{\link{dummy_pheode_icd10_map_path}()},
 \code{\link{read_all_lkps_maps_dummy}()},
+\code{\link{read_phecode_icd10_map_dummy}()},
+\code{\link{read_phecode_lkp_dummy}()},
 \code{\link{read_ukb_codings_dummy}()}
 }
 \concept{Dummy data}

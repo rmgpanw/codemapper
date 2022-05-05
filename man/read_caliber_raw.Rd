@@ -2,7 +2,7 @@
 % Please edit documentation in R/caliber.R
 \name{read_caliber_raw}
 \alias{read_caliber_raw}
-\title{Read a local copy of the CALIBER repository into R}
+\title{Import CALIBER code lists}
 \usage{
 read_caliber_raw(caliber_dir_path, overlapping_disease_categories = "error")
 }
@@ -17,9 +17,9 @@ if any overlapping disease categories are present after mapping. Specify
 A named list of data frames.
 }
 \description{
-All CALIBER codes are read into a named list containing 3 data
-frames: primary care Read 2, secondary care ICD10 and secondary care OPCS4
-codes.
+Reads a local copy of the CALIBER repository into R. All CALIBER
+codes are read into a named list containing 3 data frames: primary care
+Read 2, secondary care ICD10 and secondary care OPCS4 codes.
 }
 \details{
 The directory supplied to \code{caliber_dir_path} is expected to contain
