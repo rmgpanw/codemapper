@@ -212,37 +212,19 @@ build_all_lkps_maps <-
 
     ## Phecode lookup ----------------
     if (!is.null(phecode_1_2_lkp)) {
-      phecode_lkp <- readr::read_csv(phecode_1_2_lkp)
+      phecode_lkp <- readr::read_csv(phecode_1_2_lkp,
+                                     progress = FALSE,
+                                     col_types = readr::cols(.default = "c"))
     }
 
     ## Phecode to ICD10 map ---------------------
     if (!is.null(icd10_phecode_1_2)) {
-      icd10_phecode <- readr::read_csv(icd10_phecode_1_2) %>%
-        dplyr::mutate("ALT_CODE" = stringr::str_remove(.data[["ICD10"]],
-                                                       pattern = "\\."))
+      icd10_phecode <- readr::read_csv(icd10_phecode_1_2,
+                                       progress = FALSE,
+                                       col_types = readr::cols(.default = "c"))
 
-      # get vector of all present icd10 codes in ALT_CODE format. Also returns a
-      # message listing ICD10 codes with modifiers that will map to >1 ICD10 code in
-      # ALT_CODE format. Also raises warning if any unrecognised ICD10 codes are
-      # present.
-      icd10_codes_in_icd10_phecode <- codemapper::reformat_icd10_codes(
-        icd10_codes = icd10_phecode$ICD10,
-        all_lkps_maps = all_lkps_maps,
-        input_icd10_format = "ICD10_CODE",
-        output_icd10_format = "ALT_CODE",
-        unrecognised_codes = "warning",
-        strip_x = FALSE
-      )
-
-      # append `ALT_CODE`
-      icd10_phecode <- all_lkps_maps$icd10_lkp %>%
-        dplyr::select(tidyselect::all_of(c(
-          "ICD10_CODE",
-          "ALT_CODE"
-        ))) %>%
-        dplyr::filter(.data[["ALT_CODE"]] %in% !!icd10_codes_in_icd10_phecode) %>%
-        dplyr::right_join(icd10_phecode,
-                          by = c("ICD10_CODE" = "ICD10"))
+      icd10_phecode <- reformat_icd10_phecode_map_1_2(icd10_phecode,
+                                                      all_lkps_maps = all_lkps_maps)
     }
 
     ## Phecode to ICD9 map ------------------
@@ -461,7 +443,8 @@ read_all_lkps_maps <- function(path = get_ukb_all_lkps_maps()) {
 #'
 #' @return File path to downloaded file in `tempdir()`.
 #' @export
-#' @example \dontrun{ get_phecode_definitions() }
+#' @examples
+#' \dontrun{ get_phecode_definitions() }
 get_phecode_definitions <- function() {
   download_file(download_url = "https://phewascatalog.org/files/phecode_definitions1.2.csv.zip",
                 download_dir = tempdir(),
@@ -474,7 +457,8 @@ get_phecode_definitions <- function() {
 #'
 #' @return File path to downloaded file in `tempdir()`.
 #' @export
-#' @example \dontrun{ get_phecode_definitions() }
+#' @examples
+#' \dontrun{ get_phecode_icd9_map() }
 get_phecode_icd9_map <- function() {
   download_file(download_url = "https://phewascatalog.org/files/phecode_icd9_map_unrolled.csv.zip",
                 download_dir = tempdir(),
@@ -487,7 +471,8 @@ get_phecode_icd9_map <- function() {
 #'
 #' @return File path to downloaded file in `tempdir()`.
 #' @export
-#' @example \dontrun{ get_phecode_definitions() }
+#' @examples
+#' \dontrun{ get_phecode_icd10_map() }
 get_phecode_icd10_map <- function() {
   download_file(download_url = "https://phewascatalog.org/files/Phecode_map_v1_2_icd10_beta.csv.zip",
                 download_dir = tempdir(),
@@ -643,6 +628,42 @@ reformat_icd9_icd10 <- function(icd9_icd10) {
 
   # return result
   return(icd9_icd10)
+}
+
+reformat_icd10_phecode_map_1_2 <- function(icd10_phecode,
+                                           all_lkps_maps) {
+
+  # get vector of all present icd10 codes in ALT_CODE format. Also returns a
+  # message listing ICD10 codes with modifiers that will map to >1 ICD10 code in
+  # ALT_CODE format. Also raises warning if any unrecognised ICD10 codes are
+  # present.
+  icd10_codes_in_icd10_phecode <- codemapper::reformat_icd10_codes(
+    icd10_codes = icd10_phecode$ICD10,
+    all_lkps_maps = all_lkps_maps,
+    input_icd10_format = "ICD10_CODE",
+    output_icd10_format = "ALT_CODE",
+    unrecognised_codes = "warning",
+    strip_x = FALSE
+  )
+
+  # append `ALT_CODE`
+  icd10_phecode <- all_lkps_maps$icd10_lkp %>%
+    dplyr::select(tidyselect::all_of(c("ICD10_CODE",
+                                       "ALT_CODE"))) %>%
+    dplyr::filter(.data[["ALT_CODE"]] %in% !!icd10_codes_in_icd10_phecode) %>%
+    dplyr::right_join(icd10_phecode,
+                      by = c("ICD10_CODE" = "ICD10"))
+
+  # check no empty rows for ALT_CODE
+  assertthat::assert_that(sum(is.na(icd10_phecode$ALT_CODE)) == 0,
+                          msg = "Some rows are missing an ICD10 code (after mapping to ALT_CODE format)")
+
+  # remove empty PHECODE rows
+  icd10_phecode <- icd10_phecode %>%
+    dplyr::filter(!is.na(.data[["PHECODE"]]))
+
+  # result
+  return(icd10_phecode)
 }
 
 extend_bnf_lkp <- function(all_lkps_maps) {

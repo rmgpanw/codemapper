@@ -12,3 +12,6 @@ File path to downloaded file in \code{tempdir()}.
 \description{
 Download link obtained from https://phewascatalog.org/phecodes.
 }
+\examples{
+\dontrun{ get_phecode_icd9_map() }
+}

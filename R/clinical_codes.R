@@ -844,7 +844,7 @@ reformat_icd10_codes <- function(icd10_codes,
     message(
       "The following ",
       length(input_icd10_not_1_to_1_mapping),
-      " input ICD10 codes do not have a 1-to-1 mapping: '",
+      " input ICD10 codes do not have a 1-to-1 ICD10_CODE-to-ALT_CODE mapping: '",
       stringr::str_c(
         input_icd10_not_1_to_1_mapping,
         sep = "",
@@ -1273,7 +1273,7 @@ rm_or_extract_appended_icd10_dxa <- function(icd10_codes,
 #' @param icd10_lkp The lookup table for ICD10 codes, `icd10_lkp`.
 #' @param undivided_3char_only If `TRUE` return only undivided 3 character ICD10
 #'   codes. Default is `FALSE`.
-#' @param as_named_list. If `NULL`, returns a data frame with columns `ALT_CODE`
+#' @param as_named_list If `NULL`, returns a data frame with columns `ALT_CODE`
 #'   and `ALT_CODE_minus_x`. If 'names_no_x' or 'names_with_x', returns a named
 #'   list with either `ALT_CODE` or `ALT_CODE_minus_x` set as names (and the
 #'   other as values) respectively.
@@ -1292,6 +1292,7 @@ get_icd10_code_alt_code_x_map <- function(icd10_lkp,
   icd10_lkp_alt_x_map <- icd10_lkp %>%
     dplyr::select(.data[["ALT_CODE"]]) %>%
     dplyr::filter(!is.na(.data[["ALT_CODE"]])) %>%
+    dplyr::collect() %>%
     dplyr::mutate("ALT_CODE_minus_x" = stringr::str_remove(.data[["ALT_CODE"]],
                                                            pattern = "X$"))
 

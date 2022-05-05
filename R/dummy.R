@@ -81,8 +81,8 @@ build_all_lkps_maps_dummy <- function() {
       bnf_dmd = NULL,
       self_report_med_to_atc_map = NULL,
       ctv3sctmap2 = NULL,
-      phecode_1_2_lkp = read_phecode_lkp_dummy(),
-      icd10_phecode_1_2 = read_phecode_icd10_map_dummy(),
+      phecode_1_2_lkp = dummy_phecode_lkp_path(),
+      icd10_phecode_1_2 = dummy_icd10_phecode_map_path(),
       icd9_phecode_1_2 = NULL
     )
 }
@@ -131,8 +131,8 @@ dummy_phecode_lkp_path <- function() {
 #' @export
 #' @family Dummy data
 #' @examples
-#' dummy_pheode_icd10_map_path()
-dummy_pheode_icd10_map_path <- function() {
+#' dummy_icd10_phecode_map_path()
+dummy_icd10_phecode_map_path <- function() {
   system.file("extdata",
               "dummy_Phecode_map_v1_2_icd10_beta.csv",
               package = "codemapper")
@@ -168,17 +168,16 @@ read_phecode_lkp_dummy <- function() {
 #' @export
 #' @family Dummy data
 #' @examples
-#' read_phecode_lkp_dummy()
-read_phecode_icd10_map_dummy <- function() {
+#' read_icd10_phecode_map_dummy()
+read_icd10_phecode_map_dummy <- function() {
   readr::read_csv(
-    dummy_pheode_icd10_map_path(),
+    dummy_icd10_phecode_map_path(),
     progress = FALSE,
     col_types = readr::cols(.default = "c")
   )
 }
 
-# TODO: dummy phecode descriptions + dummy_phecode_path functions -> update
-# build_all_lkps_maps_dummy(). Make 'reformat_phecode' function and write tests
+# TODO: Make 'reformat_phecode' function and write tests
 # for lookups_and_mapping.R. Write tests for clinical_Events_to_phecodes.R. ukbwranglr
 
 ## UKB clinical events -----------------------------------------------------
@@ -202,6 +201,7 @@ dummy_clinical_events_tidy <- function() {
         1,  "f41271",  "0_0",  "4019", "1910-02-19",
         1, "gpc1_r2",    "1", "C10..", "1965-08-08",
         1, "gpc1_r2",    "2", "C10..", "1917-10-08",
-        1, "gpc3_r3",    "3", "XaIP9", "1917-10-08"
+        1, "gpc3_r3",    "3", "XaIP9", "1917-10-08",
+        1, "gpc3_r3",    "3", "XE0Uc", "1917-10-08"
      )
 }

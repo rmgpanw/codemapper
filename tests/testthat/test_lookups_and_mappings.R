@@ -4,17 +4,9 @@
 ukb_codings <- read_ukb_codings_dummy()
 
 all_lkps_maps_raw <- read_all_lkps_maps_dummy()
-all_lkps_maps <-
-  build_all_lkps_maps(
-    all_lkps_maps = all_lkps_maps_raw,
-    ukb_codings = ukb_codings,
-    bnf_dmd = NULL,
-    self_report_med_to_atc_map = NULL,
-    ctv3sctmap2 = NULL,
-    phecode_1_2_lkp = NULL,
-    icd10_phecode_1_2 = NULL,
-    icd9_phecode_1_2 = NULL
-  )
+all_lkps_maps <- build_all_lkps_maps_dummy()
+
+icd10_phecode_map_dummy <- read_icd10_phecode_map_dummy()
 
 # TESTS -------------------------------------------------------------------
 
@@ -108,3 +100,44 @@ test_that("`reformat_icd9_icd10()` converts 'UNDEF' codes to `NA`", {
                regexp = "are not true")
 })
 
+# `reformat_icd10_phecode_map_1_2()` --------------------------------------
+
+test_that("`reformat_icd10_phecode_map_1_2()` returns expected results", {
+  icd10_phecode_map_dummy_reformatted <-
+    reformat_icd10_phecode_map_1_2(icd10_phecode_map_dummy,
+                                   all_lkps_maps = all_lkps_maps)
+
+  expect_equal(names(icd10_phecode_map_dummy_reformatted),
+               c("ICD10_CODE",
+                 "ALT_CODE",
+                 "PHECODE",
+                 "Exl. Phecodes",
+                 "Excl. Phenotypes"))
+
+  expect_true(sum(is.na(
+    icd10_phecode_map_dummy_reformatted$ICD10_CODE
+  )) == 0 &
+    sum(is.na(
+      icd10_phecode_map_dummy_reformatted$ALT_CODE
+    )) == 0 &
+    sum(is.na(
+      icd10_phecode_map_dummy_reformatted$PHECODE
+    )) == 0)
+})
+
+test_that(
+  "`reformat_icd10_phecode_map_1_2()` returns undivided 3 character ICD10 code I10 as I10X",
+  {
+    icd10_phecode_map_dummy_reformatted <-
+      reformat_icd10_phecode_map_1_2(icd10_phecode_map_dummy,
+                                     all_lkps_maps = all_lkps_maps)
+
+
+    expect_equal(
+      icd10_phecode_map_dummy_reformatted %>%
+        dplyr::filter(ICD10_CODE == "I10") %>%
+        dplyr::pull(ALT_CODE),
+      "I10X"
+    )
+  }
+)

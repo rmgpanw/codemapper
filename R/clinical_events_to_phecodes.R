@@ -55,8 +55,10 @@ CLINICAL_EVENTS_SOURCES_MAPPED_TO_PHECODES <- c(
 #' #  all_lkps_maps = ALL_LKPS_MAPS,
 #' #  min_date_only = FALSE)
 map_clinical_events_to_phecodes <- function(clinical_events,
-                                             all_lkps_maps = NULL,
-                                             min_date_only = FALSE) {
+                                            all_lkps_maps = NULL,
+                                            min_date_only = FALSE,
+                                            col_filters = default_col_filters()) {
+
 
   start_time <- proc.time()
 
@@ -108,7 +110,8 @@ map_clinical_events_to_phecodes <- function(clinical_events,
 
   map_clinical_events_source_to_phecode_partial <- purrr::partial(map_clinical_events_source_to_phecode,
                                                                   all_lkps_maps = all_lkps_maps,
-                                                                  clinical_events = clinical_events)
+                                                                  clinical_events = clinical_events,
+                                                                  col_filters = col_filters)
 
   result <- clinical_events_sources_to_map %>%
     purrr::pmap(map_clinical_events_source_to_phecode_partial)
@@ -306,6 +309,7 @@ make_phecode_reverse_map <- function(clinical_events_phecodes,
 #' @param all_lkps_maps List of lookup/mappings tables (or path to database
 #'   version of this).
 #' @param clinical_events UKB clinical events table.
+#' @param col_filters See [default_col_filters()]
 #' @noRd
 #'
 #' @return A data frame.
@@ -313,7 +317,8 @@ map_clinical_events_source_to_phecode <- function(source,
                                                   data_coding,
                                                   category_description,
                                                   all_lkps_maps,
-                                                  clinical_events) {
+                                                  clinical_events,
+                                                  col_filters = default_col_filters()) {
   # informative message
   message(category_description)
 
@@ -327,9 +332,24 @@ map_clinical_events_source_to_phecode <- function(source,
     clinical_events_source <- clinical_events_source %>%
       dplyr::rename("icd10" = .data[["code"]])
 
+    # need to re-append 'X' to undivided 3 character ICD10 codes (e.g. 'I10X'
+    # hypertension)
+    icd10_code_alt_code_x_map <-
+      get_icd10_code_alt_code_x_map(
+        icd10_lkp = all_lkps_maps$icd10_lkp,
+        undivided_3char_only = FALSE,
+        as_named_list = "names_no_x"
+      )
+
+    clinical_events_source <- clinical_events_source %>%
+      dplyr::mutate("icd10" = dplyr::recode(.data[["icd10"]],
+                                            !!!icd10_code_alt_code_x_map))
+
+    # map
     result <-
       map_icd10_to_phecode(clinical_events = clinical_events_source,
-                           all_lkps_maps = all_lkps_maps)
+                           all_lkps_maps = all_lkps_maps,
+                           col_filters = col_filters)
   } else {
     # map non-ICD10 to phecode (via ICD10)
     clinical_events_source <-
@@ -341,12 +361,16 @@ map_clinical_events_source_to_phecode <- function(source,
       from = data_coding,
       to = "icd10",
       all_lkps_maps = all_lkps_maps,
-      strict_ukb = FALSE
+      strict_ukb = FALSE,
+      col_filters = col_filters
     ) %>%
-      dplyr::mutate("icd10" = stringr::str_remove(.data[["icd10"]],
-                                                  "X$")) %>%
-      map_icd10_to_phecode(all_lkps_maps = all_lkps_maps)
+      map_icd10_to_phecode(all_lkps_maps = all_lkps_maps,
+                           col_filters = col_filters)
   }
+
+  # remove 'X' from 'icd10' column
+  result$icd10 <- stringr::str_remove(result$icd10,
+                                      pattern = "X$")
 
   # result - a data frame
   return(result)
@@ -358,11 +382,13 @@ map_clinical_events_source_to_phecode <- function(source,
 #' @param clinical_events Clinical events data frame
 #' @param all_lkps_maps Named list of lookup and mapping tables (can be
 #'   `tbl_dbi` objects) or the path to an SQLite database containing these
+#' @param col_filters See [default_col_filters()]
 #'
-#' @return
+#' @return A clinical events data frame.
 #' @noRd
 map_icd10_to_phecode <- function(clinical_events,
-                                 all_lkps_maps = "all_lkps_maps.db") {
+                                 all_lkps_maps = "all_lkps_maps.db",
+                                 col_filters = default_col_filters()) {
   map_codes_ukb_clinical_events(
     clinical_events = clinical_events,
     from = "icd10",
@@ -370,7 +396,8 @@ map_icd10_to_phecode <- function(clinical_events,
     from_colname = "icd10",
     to_colname = "phecode",
     all_lkps_maps = all_lkps_maps,
-    strict_ukb = FALSE
+    strict_ukb = FALSE,
+    col_filters = col_filters
   )
 }
 
@@ -378,8 +405,8 @@ map_icd10_to_phecode <- function(clinical_events,
 #' Map codes in a UKB clinical events table
 #'
 #' Joins the existing `code` column to a mapping data frame created by
-#' [ get_mapping_df], then filters out any missing values for the new
-#' code type. A column is appended containing the newly mapped codes.
+#' [get_mapping_df()], then filters out any missing values for the new code
+#' type. A column is appended containing the newly mapped codes.
 #'
 #' The `clinical_events` data frame can contain multiple sources, but an error
 #' is raised by default if these do not all use the same data coding (see
@@ -398,6 +425,7 @@ map_icd10_to_phecode <- function(clinical_events,
 #' @param strict_ukb If `TRUE`, extra checks are performed to check that
 #'   `source` and `data_coding` match [ukbwranglr::clinical_events_sources()],
 #'   and that column names match those expected for a clinical events table.
+#' @param col_filters See [default_col_filters()]
 #' @noRd
 #'
 #' @return A clinical events data frame.
@@ -407,7 +435,8 @@ map_codes_ukb_clinical_events <- function(clinical_events,
                                           from_colname = NULL,
                                           to_colname = NULL,
                                           all_lkps_maps = "all_lkps_maps.db",
-                                          strict_ukb = TRUE) {
+                                          strict_ukb = TRUE,
+                                          col_filters = default_col_filters()) {
   # validate args
    check_mapping_args(from = from,
                                   to = to)
@@ -437,9 +466,15 @@ map_codes_ukb_clinical_events <- function(clinical_events,
   }
 
   # create mapping df
-  mapping_df <-  get_mapping_df(from = from,
-                                           to = to,
-                                           all_lkps_maps = all_lkps_maps)
+  mapping_df <-  get_mapping_df(
+    from = from,
+    to = to,
+    all_lkps_maps = all_lkps_maps,
+    rename_from_to = NULL,
+    na.rm = TRUE,
+    reverse_mapping = "error",
+    col_filters = col_filters
+  )
 
   # map
   if (is.null(from_colname)) {

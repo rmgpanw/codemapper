@@ -7,7 +7,8 @@
 map_clinical_events_to_phecodes(
   clinical_events,
   all_lkps_maps = NULL,
-  min_date_only = FALSE
+  min_date_only = FALSE,
+  col_filters = default_col_filters()
 )
 }
 \arguments{
@@ -30,6 +31,13 @@ method will be used in preference.}
 \item{min_date_only}{If \code{TRUE}, result will be filtered for only the earliest
 date per eid-phecode pair (date will be recorded as \code{NA} for cases where
 there are no dates).}
+
+\item{col_filters}{A named list where each name in the list refers to the
+name of a lookup or mapping table. Each item is also a named list, where
+the names refer to column names in the corresponding table, and the items
+are vectors of values to filter for. For example, \verb{list(my_lookup_table = list(colA = c("A", "B"))} will result in \code{my_lookup_table} being filtered
+for rows where \code{colA} is either 'A' or 'B'. Uses \code{default_col_filters()} by
+default. Set to \code{NULL} to remove all filters.}
 }
 \value{
 A data frame with column names 'eid', 'source', 'index', 'code',
