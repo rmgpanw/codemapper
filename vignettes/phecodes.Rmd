@@ -36,11 +36,11 @@ A UK Biobank clinical events table created by `ukbwranglr::tidy_clinical_events(
 dummy_clinical_events <- dummy_clinical_events_tidy()
 
 # map to Phecodes
-clinical_events_phecodes <- map_clinical_events_to_phecodes(clinical_events = dummy_clinical_events,
+dummy_clinical_events_phecodes <- map_clinical_events_to_phecodes(clinical_events = dummy_clinical_events,
                                                             all_lkps_maps = all_lkps_maps_dummy,
                                                             min_date_only = FALSE)
 
-clinical_events_phecodes
+dummy_clinical_events_phecodes
 ```
 
 ICD10 codes are mapped directly to phecodes, while non-ICD10 sources are mapped to phecodes via ICD10. Use the `col_filters` argument to determine which code mappings to include (see `vignette(map_codes)` for further details).
@@ -53,7 +53,20 @@ ukbwranglr::clinical_events_sources() %>%
   knitr::kable()
 ```
 
-This may be reformatted for running a phenome-wide association study using the [PheWAS package](https://github.com/PheWAS/PheWAS)
+The the output from `map_clinical_events_to_phecodes()` may be reformatted for running a phenome-wide association study using the [PheWAS package](https://github.com/PheWAS/PheWAS) as follows:
+
+```{r}
+dummy_clinical_events_phecodes %>%
+               select(eid,
+                      phecode,
+                      date) %>%
+               mutate(date = TRUE) %>%
+               # ensure one phecode only per eid
+               distinct() %>%
+               tidyr::pivot_wider(names_from = phecode,
+                           values_from = date,
+                           values_fill = FALSE)
+```
 
 # Reverse mapping
 
