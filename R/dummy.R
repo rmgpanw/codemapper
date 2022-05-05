@@ -42,7 +42,7 @@ dummy_all_lkps_maps_path <- function() {
 #' @export
 #' @family Dummy data
 #' @examples
-#' read_ukb_codings_dummy
+#' read_ukb_codings_dummy()
 read_ukb_codings_dummy <- function() {
   ukb_codings <- ukbwranglr:::fread_tsv_as_character(dummy_ukb_codings_path())
 }
@@ -81,8 +81,8 @@ build_all_lkps_maps_dummy <- function() {
       bnf_dmd = NULL,
       self_report_med_to_atc_map = NULL,
       ctv3sctmap2 = NULL,
-      phecode_1_2_lkp = NULL,
-      icd10_phecode_1_2 = NULL,
+      phecode_1_2_lkp = read_phecode_lkp_dummy(),
+      icd10_phecode_1_2 = read_phecode_icd10_map_dummy(),
       icd9_phecode_1_2 = NULL
     )
 }
@@ -99,4 +99,109 @@ build_all_lkps_maps_dummy <- function() {
 #' @family Dummy data
 dummy_caliber_dir_path <- function() {
   system.file("extdata", "test_caliber_repo", package = "codemapper")
+}
+
+
+## Phecodes ----------------------------------------------------------------
+
+#' Dummy Phecode definitions file path
+#'
+#' Returns the file path to a dummy Phecode definitions 1.2 csv file (full
+#' version may be downloaded from
+#' [phewascatalog.org](https://phewascatalog.org/phecodes_icd10)).
+#'
+#' @return A string.
+#' @export
+#' @family Dummy data
+#' @examples
+#' dummy_phecode_lkp_path()
+dummy_phecode_lkp_path <- function() {
+  system.file("extdata",
+              "dummy_phecode_definitions1.2.csv",
+              package = "codemapper")
+}
+
+#' Dummy Phecode Map 1.2 with ICD-10 codes (beta) file path
+#'
+#' Returns the file path to a dummy Phecode Map 1.2 with ICD-10 codes (beta) csv
+#' file (full version may be downloaded from
+#' [phewascatalog.org](https://phewascatalog.org/phecodes_icd10)).
+#'
+#' @return A string.
+#' @export
+#' @family Dummy data
+#' @examples
+#' dummy_pheode_icd10_map_path()
+dummy_pheode_icd10_map_path <- function() {
+  system.file("extdata",
+              "dummy_Phecode_map_v1_2_icd10_beta.csv",
+              package = "codemapper")
+}
+
+
+#' Read dummy Phecode definitions file into R
+#'
+#' Reads a dummy Phecode definitions 1.2 csv file into R (full version may be
+#' downloaded from
+#' [phewascatalog.org](https://phewascatalog.org/phecodes_icd10))
+#'
+#' @return A data frame.
+#' @export
+#' @family Dummy data
+#' @examples
+#' read_phecode_lkp_dummy()
+read_phecode_lkp_dummy <- function() {
+  readr::read_csv(
+    dummy_phecode_lkp_path(),
+    progress = FALSE,
+    col_types = readr::cols(.default = "c")
+  )
+}
+
+#' Read dummy Phecode Map 1.2 with ICD-10 codes (beta) file into R
+#'
+#' Reads a dummy Phecode Map 1.2 with ICD-10 codes (beta) file into R (full
+#' version may be downloaded from
+#' [phewascatalog.org](https://phewascatalog.org/phecodes_icd10))
+#'
+#' @return A data frame.
+#' @export
+#' @family Dummy data
+#' @examples
+#' read_phecode_lkp_dummy()
+read_phecode_icd10_map_dummy <- function() {
+  readr::read_csv(
+    dummy_pheode_icd10_map_path(),
+    progress = FALSE,
+    col_types = readr::cols(.default = "c")
+  )
+}
+
+# TODO: dummy phecode descriptions + dummy_phecode_path functions -> update
+# build_all_lkps_maps_dummy(). Make 'reformat_phecode' function and write tests
+# for lookups_and_mapping.R. Write tests for clinical_Events_to_phecodes.R. ukbwranglr
+
+## UKB clinical events -----------------------------------------------------
+
+#' Dummy UK Biobank clinical events, tidied
+#'
+#' A dummy UK Biobank data frame, as returned by
+#' [ukbwranglr::tidy_clinical_events()].
+#'
+#' @return A data frame.
+#' @export
+#' @family Dummy data
+#'
+#' @examples
+#' dummy_clinical_events_tidy()
+dummy_clinical_events_tidy <- function() {
+  tibble::tribble(
+     ~eid,   ~source, ~index,   ~code,        ~date,
+        1,  "f40001",  "0_0",   "I10", "1917-10-08",
+        1,  "f40002",  "0_0",  "E109", "1955-02-11",
+        1,  "f41271",  "0_0",  "4019", "1910-02-19",
+        1, "gpc1_r2",    "1", "C10..", "1965-08-08",
+        1, "gpc1_r2",    "2", "C10..", "1917-10-08",
+        1, "gpc3_r3",    "3", "XaIP9", "1917-10-08"
+     )
 }

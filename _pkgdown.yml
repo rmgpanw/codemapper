@@ -44,12 +44,17 @@ reference:
 - title: Dummy data
   desc: Dummy data for tests.
 - contents:
+  - build_all_lkps_maps_dummy
   - dummy_all_lkps_maps_path
   - dummy_ukb_codings_path
   - read_all_lkps_maps_dummy
   - read_ukb_codings_dummy
-  - build_all_lkps_maps_dummy
+  - dummy_phecode_lkp_path
+  - dummy_pheode_icd10_map_path
+  - read_phecode_lkp_dummy
+  - read_phecode_icd10_map_dummy
   - dummy_caliber_dir_path
+  - dummy_clinical_events_tidy
 
 - title: Package overview
   desc: General summary of package contents
