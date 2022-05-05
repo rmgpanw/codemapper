@@ -9,6 +9,8 @@
 [![Codecov test
 coverage](https://codecov.io/gh/rmgpanw/codemapper/branch/master/graph/badge.svg)](https://codecov.io/gh/rmgpanw/codemapper?branch=master)
 [![pkgdown](https://github.com/rmgpanw/codemapper/workflows/pkgdown/badge.svg)](https://github.com/rmgpanw/codemapper/actions)
+[![Launch RStudio
+Cloud](https://img.shields.io/badge/RStudio-Cloud-blue)](https://rstudio.cloud/project/4007004)
 
 <!-- badges: end -->
 
@@ -44,6 +46,9 @@ library(codemapper)
 
 all_lkps_maps_dummy <- build_all_lkps_maps_dummy()
 #> Extending tables in UKB resource 592
+#> Reformatting ICD10-Phecode map
+#> The following 1 input ICD10 codes do not have a 1-to-1 ICD10_CODE-to-ALT_CODE mapping: 'M90.0'. There will therefore be *more* output than input codes
+#> Reformatting ICD9-Phecode map
 #> Success!
 ```
 
