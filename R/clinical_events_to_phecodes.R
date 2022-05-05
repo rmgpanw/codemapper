@@ -361,7 +361,6 @@ map_clinical_events_source_to_phecode <- function(source,
       from = data_coding,
       to = "icd10",
       all_lkps_maps = all_lkps_maps,
-      strict_ukb = FALSE,
       col_filters = col_filters
     ) %>%
       map_icd10_to_phecode(all_lkps_maps = all_lkps_maps,
@@ -396,7 +395,6 @@ map_icd10_to_phecode <- function(clinical_events,
     from_colname = "icd10",
     to_colname = "phecode",
     all_lkps_maps = all_lkps_maps,
-    strict_ukb = FALSE,
     col_filters = col_filters
   )
 }
@@ -422,9 +420,6 @@ map_icd10_to_phecode <- function(clinical_events,
 #' @param to_colname Name of new column containing mapped codes. If `NULL`
 #'   (default), this will equal the value for argument `to`.
 #' @param all_lkps_maps Named list of SQLite database with lookup/mapping tables
-#' @param strict_ukb If `TRUE`, extra checks are performed to check that
-#'   `source` and `data_coding` match [ukbwranglr::clinical_events_sources()],
-#'   and that column names match those expected for a clinical events table.
 #' @param col_filters See [default_col_filters()]
 #' @noRd
 #'
@@ -435,7 +430,6 @@ map_codes_ukb_clinical_events <- function(clinical_events,
                                           from_colname = NULL,
                                           to_colname = NULL,
                                           all_lkps_maps = "all_lkps_maps.db",
-                                          strict_ukb = TRUE,
                                           col_filters = default_col_filters()) {
   # validate args
    check_mapping_args(from = from,
@@ -447,14 +441,6 @@ map_codes_ukb_clinical_events <- function(clinical_events,
 
   if (!is.null(from_colname)) {
     assertthat::is.string(from_colname)
-  }
-
-  if (strict_ukb) {
-    ukbwranglr:::validate_clinical_events_and_check_type(clinical_events)
-
-    ## check `clinical_events` contains only one `data_coding` type
-    assert_sources_match_data_coding(clinical_events = clinical_events,
-                                     data_coding = from)
   }
 
   # all_lkps_maps
@@ -561,36 +547,3 @@ get_clinical_events_source <- function(clinical_events,
   # return result
   return(result)
 }
-
-#' Asssert that all data sources in a `clinical_events` data frame match a
-#' single `data_coding`
-#'
-#' @param clinical_events Clinical events data frame
-#' @param data_coding String
-#' @noRd
-assert_sources_match_data_coding <- function(clinical_events,
-                                             data_coding) {
-  # validate args
-  ukbwranglr:::validate_clinical_events_and_check_type(clinical_events)
-  assertthat::is.string(data_coding)
-  assertthat::assert_that(
-    data_coding %in% ukbwranglr::clinical_events_sources()$data_coding,
-    msg = paste0("Error! Unrecognised `data_coding`: ",
-                 data_coding)
-  )
-
-  # see what sources are in `clinical_events`
-  included_sources <- unique(clinical_events$source)
-
-  # get which data codings are associated with these
-  included_data_codings <- ukbwranglr::clinical_events_sources() %>%
-    dplyr::filter(.data[["source"]] %in% !!included_sources) %>%
-    dplyr::pull(.data[["source"]]) %>%
-    unique()
-
-  # check only one `data_coding`, and check that this matches what's expected
-  assertthat::are_equal(included_data_codings, data_coding)
-
-  invisible(NULL)
-}
-
