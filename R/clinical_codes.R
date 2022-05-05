@@ -20,8 +20,7 @@
 #' @param codes character. A vector of code strings to search for matching
 #'   codes.
 #' @param code_type character. The type of clinical code system to be searched.
-#'   Must be one of \code{read2}, \code{read3}, \code{icd9}, \code{icd10},
-#'   \code{bnf}, \code{dmd}, \code{read2_drugs} or \code{opcs4}.
+#'   Must be one of `r knitr::combine_words(CODE_TYPE_TO_LKP_TABLE_MAP$code, and = "or ")`.
 #' @param all_lkps_maps Either a named list of lookup and mapping tables (either
 #'   data frames or `tbl_dbi` objects), or the path to a SQLite database
 #'   containing these tables (see also [build_all_lkps_maps()] and
@@ -753,6 +752,21 @@ get_mapping_df <- function(from,
 #'   \code{output_icd10_format}.
 #' @export
 #' @family Clinical code lookups and mappings
+#' @examples
+#' # build dummy all_lkps_maps
+#' all_lkps_maps_dummy <- suppressMessages(build_all_lkps_maps_dummy())
+#'
+#' # reformat from ICD10_CODE to ALT_CODE
+#' reformat_icd10_codes(icd10_codes = c("E10.9"),
+#'   all_lkps_maps = all_lkps_maps_dummy,
+#'   input_icd10_format = "ICD10_CODE",
+#'   output_icd10_format = "ALT_CODE")
+#'
+#' # reformat from ALT_CODE to ICD10_CODE
+#' reformat_icd10_codes(icd10_codes = c("E109"),
+#'   all_lkps_maps = all_lkps_maps_dummy,
+#'   input_icd10_format = "ALT_CODE",
+#'   output_icd10_format = "ICD10_CODE")
 reformat_icd10_codes <- function(icd10_codes,
                                  all_lkps_maps = NULL,
                                  input_icd10_format = "ICD10_CODE",
