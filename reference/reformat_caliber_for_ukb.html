@@ -135,6 +135,7 @@ set to <code><a href="default_overlapping_disease_categories_csv.html">default_o
 <span class="r-in"><span class="co"># build dummy all_lkps_maps</span></span>
 <span class="r-in"><span class="va">all_lkps_maps</span> <span class="op">&lt;-</span> <span class="fu"><a href="build_all_lkps_maps_dummy.html">build_all_lkps_maps_dummy</a></span><span class="op">(</span><span class="op">)</span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Extending tables in UKB resource 592</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> The following 1 input ICD10 codes do not have a 1-to-1 ICD10_CODE-to-ALT_CODE mapping: 'M90.0'. There will therefore be *more* output than input codes</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Success!</span>
 <span class="r-in"></span>
 <span class="r-in"><span class="co"># reformat CALIBER codes for UK Biobank</span></span>
@@ -142,10 +143,22 @@ set to <code><a href="default_overlapping_disease_categories_csv.html">default_o
 <span class="r-in"> all_lkps_maps <span class="op">=</span> <span class="va">all_lkps_maps</span><span class="op">)</span><span class="op">)</span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Reformatting Read 2 codes</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Reformatting ICD10 codes</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> The following 1 input ICD10 codes do not have a 1-to-1 mapping: 'M90.0'. There will therefore be *more* output than input codes</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> The following 1 input ICD10 codes do not have a 1-to-1 ICD10_CODE-to-ALT_CODE mapping: 'M90.0'. There will therefore be *more* output than input codes</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Reformatting OPCS4 codes</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Mapping read2 codes to read3</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Mapping icd10 to icd9 codes</span>
+<span class="r-in"></span>
+<span class="r-in"><span class="co"># view first few rows</span></span>
+<span class="r-in"><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">caliber_ukb</span><span class="op">)</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 6 × 6</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   disease  description                           category code_type code  author</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                                 <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> Diabetes Type 1 diabetes mellitus              Type I … read2     C108. calib…</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> Diabetes Type I diabetes mellitus with renal … Type I … read2     C1080 calib…</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span> Diabetes Type I diabetes mellitus with neurol… Type I … read2     C1082 calib…</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">4</span> Diabetes Unstable type I diabetes mellitus     Type I … read2     C1084 calib…</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">5</span> Diabetes Type I diabetes mellitus with ulcer   Type I … read2     C1085 calib…</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">6</span> Diabetes Type I diabetes mellitus with retino… Type I … read2     C1087 calib…</span>
 </code></pre></div>
     </div>
   </div>

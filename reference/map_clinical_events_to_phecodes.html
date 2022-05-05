@@ -70,7 +70,8 @@ ICD10.</p>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">map_clinical_events_to_phecodes</span><span class="op">(</span>
   <span class="va">clinical_events</span>,
   all_lkps_maps <span class="op">=</span> <span class="cn">NULL</span>,
-  min_date_only <span class="op">=</span> <span class="cn">FALSE</span>
+  min_date_only <span class="op">=</span> <span class="cn">FALSE</span>,
+  col_filters <span class="op">=</span> <span class="fu"><a href="default_col_filters.html">default_col_filters</a></span><span class="op">(</span><span class="op">)</span>
 <span class="op">)</span></code></pre></div>
     </div>
 
@@ -96,6 +97,13 @@ method will be used in preference.</p></dd>
 <dd><p>If <code>TRUE</code>, result will be filtered for only the earliest
 date per eid-phecode pair (date will be recorded as <code>NA</code> for cases where
 there are no dates).</p></dd>
+<dt>col_filters</dt>
+<dd><p>A named list where each name in the list refers to the
+name of a lookup or mapping table. Each item is also a named list, where
+the names refer to column names in the corresponding table, and the items
+are vectors of values to filter for. For example, <code>list(my_lookup_table = list(colA = c("A", "B"))</code> will result in <code>my_lookup_table</code> being filtered
+for rows where <code>colA</code> is either 'A' or 'B'. Uses <code><a href="default_col_filters.html">default_col_filters()</a></code> by
+default. Set to <code>NULL</code> to remove all filters.</p></dd>
 </dl></div>
     <div id="value">
     <h2>Value</h2>

@@ -58,6 +58,15 @@
     <loc>/reference/dummy_caliber_dir_path.html</loc>
   </url>
   <url>
+    <loc>/reference/dummy_clinical_events_tidy.html</loc>
+  </url>
+  <url>
+    <loc>/reference/dummy_icd10_phecode_map_path.html</loc>
+  </url>
+  <url>
+    <loc>/reference/dummy_phecode_lkp_path.html</loc>
+  </url>
+  <url>
     <loc>/reference/dummy_ukb_codings_path.html</loc>
   </url>
   <url>
@@ -110,6 +119,12 @@
   </url>
   <url>
     <loc>/reference/read_caliber_raw.html</loc>
+  </url>
+  <url>
+    <loc>/reference/read_icd10_phecode_map_dummy.html</loc>
+  </url>
+  <url>
+    <loc>/reference/read_phecode_lkp_dummy.html</loc>
   </url>
   <url>
     <loc>/reference/read_ukb_codings_dummy.html</loc>
