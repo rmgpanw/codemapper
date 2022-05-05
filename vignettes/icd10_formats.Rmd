@@ -46,11 +46,13 @@ Searching for ICD10 codes in 'ICD10_FORMAT' will yield no results:
 # ICD10_CODE format - no codes found
 lookup_codes(codes = "E10.9",
              code_type = "icd10",
+             all_lkps_maps = all_lkps_maps_dummy, 
              unrecognised_codes = "warning")
 
 # ALT_CODE format - now recognised
 lookup_codes(codes = "E109",
              code_type = "icd10",
+             all_lkps_maps = all_lkps_maps_dummy, 
              unrecognised_codes = "warning")
 ```
 
