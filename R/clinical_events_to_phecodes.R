@@ -208,32 +208,61 @@ make_phecode_reverse_map <- function(clinical_events_phecodes,
   clinical_events_phecodes <- clinical_events_phecodes %>%
     dplyr::distinct()
 
+  # need to re-append 'X' to undivided 3 character ICD10 codes in 'icd10' col
+  # (e.g. 'I10X' hypertension)
+  icd10_code_alt_code_x_map <-
+    get_icd10_code_alt_code_x_map(
+      icd10_lkp = all_lkps_maps$icd10_lkp,
+      undivided_3char_only = FALSE,
+      as_named_list = "names_no_x"
+    )
+
+  clinical_events_phecodes <-
+    clinical_events_phecodes %>%
+    dplyr::mutate("icd10" = dplyr::recode(.data[["icd10"]],!!!icd10_code_alt_code_x_map))
+
   # append code descriptions
   clinical_events_phecodes_split <- split(
     clinical_events_phecodes,
     clinical_events_phecodes$data_coding
   )
 
-  code_descriptions <- clinical_events_phecodes_split %>%
-    purrr::imap(~  lookup_codes(codes = .x$code,
-                                    code_type = .y,
-                                    all_lkps_maps = all_lkps_maps,
-                                    preferred_description_only = TRUE,
-                                    standardise_output = TRUE,
-                                    unrecognised_codes = "warning",
-                                    col_filters =  default_col_filters()) %>%
-           dplyr::select(tidyselect::all_of(c(
-             "code",
-             "description"
-           ))))
+  # need to re-append 'X' to undivided 3 character ICD10 codes in 'code' col
+  # (e.g. 'I10X' hypertension)
+  clinical_events_phecodes_split$icd10 <-
+    clinical_events_phecodes_split$icd10 %>%
+    dplyr::mutate("code" = dplyr::recode(.data[["code"]],
+                                         !!!icd10_code_alt_code_x_map))
 
-  clinical_events_phecodes <- clinical_events_phecodes_split %>%
+  code_descriptions <- clinical_events_phecodes_split %>%
+    purrr::imap(
+      ~  lookup_codes(
+        codes = .x$code,
+        code_type = .y,
+        all_lkps_maps = all_lkps_maps,
+        preferred_description_only = TRUE,
+        standardise_output = TRUE,
+        unrecognised_codes = "warning",
+        col_filters =  default_col_filters()
+      ) %>%
+        dplyr::select(tidyselect::all_of(c(
+          "code",
+          "description"
+        )))
+    )
+
+  clinical_events_phecodes_split <- clinical_events_phecodes_split %>%
     # append code descriptions
     purrr::imap( ~ .x %>%
                    dplyr::left_join(code_descriptions[[.y]],
-                                    by = "code")) %>%
+                                    by = "code"))
 
-    # combine
+  # strip 'X' from icd10 codes in 'code' col and recombine
+  clinical_events_phecodes_split$icd10 <- clinical_events_phecodes_split$icd10 %>%
+    dplyr::mutate("code" = stringr::str_remove(.data[["code"]],
+                                               "X$"))
+
+  clinical_events_phecodes <- clinical_events_phecodes_split %>%
     dplyr::bind_rows()
 
   # append phecode_description
@@ -264,14 +293,16 @@ make_phecode_reverse_map <- function(clinical_events_phecodes,
     dplyr::select(
       "icd10" = .data[["code"]],
       "icd10_description" = .data[["description"]]
-    ) %>%
-
-    # any warnings will have already appeared above
-    suppressWarnings()
+    )
 
   clinical_events_phecodes <- clinical_events_phecodes %>%
     dplyr::left_join(icd10_descriptions,
               by = c("icd10"))
+
+  # strip 'X' from icd10 codes in 'icd10' column
+  clinical_events_phecodes <- clinical_events_phecodes %>%
+    dplyr::mutate("icd10" = stringr::str_remove(.data[["icd10"]],
+                                               "X$"))
 
   # reorder cols
   clinical_events_phecodes <- clinical_events_phecodes %>%

@@ -1,11 +1,17 @@
 
 # SETUP ---------------------------------------------------------------
 
-caliber_raw <- read_caliber_raw(dummy_caliber_dir_path())
-
 all_lkps_maps <- build_all_lkps_maps_dummy()
 
 clinical_events <- dummy_clinical_events_tidy()
+
+clinical_events_phecodes <- map_clinical_events_to_phecodes(clinical_events = clinical_events,
+                                                            all_lkps_maps = all_lkps_maps,
+                                                            min_date_only = FALSE)
+
+phecode_reverse_map <-
+  make_phecode_reverse_map(clinical_events_phecodes = clinical_events_phecodes,
+                           all_lkps_maps = all_lkps_maps)
 
 # TESTS -------------------------------------------------------------------
 
@@ -18,12 +24,9 @@ clinical_events <- dummy_clinical_events_tidy()
 ## column in final result
 
 test_that("`map_clinical_events_to_phecodes()` returns expected output with default `col_filters`", {
-  result <- map_clinical_events_to_phecodes(clinical_events = clinical_events,
-                                            all_lkps_maps = all_lkps_maps,
-                                            min_date_only = FALSE)
 
   expect_equal(
-    result,
+    clinical_events_phecodes,
     tibble::tribble(
        ~eid,   ~source, ~index,   ~code,        ~date, ~icd10, ~phecode,
           1,  "f40001",  "0_0",      NA, "1917-10-08",  "I10",  "401.1",
@@ -159,4 +162,19 @@ test_that("`map_clinical_events_to_phecodes()` returns expected output with no `
           1,  "f41271",  "0_0",  "4019", "1910-02-19",  "I10",  "401.1"
        )
   )
+})
+
+# `make_phecode_reverse_map()` --------------------------------------------
+
+test_that("`make_phecode_reverse_map()` returns expected results", {
+ expect_equal(phecode_reverse_map,
+              tibble::tribble(
+                ~phecode,                  ~phecode_description, ~data_coding,   ~code,                                     ~description, ~icd10_equivalent,                               ~icd10_description,
+                "401.1",              "Essential hypertension",      "icd10",   "I10",               "Essential (primary) hypertension",             "I10",               "Essential (primary) hypertension",
+                "250.1",                     "Type 1 diabetes",      "icd10",  "E109", "Type 1 diabetes mellitus Without complications",            "E109", "Type 1 diabetes mellitus Without complications",
+                "401.1",              "Essential hypertension",       "icd9",  "4019",           "ESSENTIAL HYPERTENSION NOT SPECIFIED",             "I10",               "Essential (primary) hypertension",
+                "706.2",                      "Sebaceous cyst",      "read3", "XaIP9",                                 "Sebaceous cyst",            "L721",                              "Trichilemmal cyst",
+                "704", "Diseases of hair and hair follicles",      "read3", "XaIP9",                                 "Sebaceous cyst",            "L721",                              "Trichilemmal cyst",
+                "401.1",              "Essential hypertension",      "read3", "XE0Uc",                         "Essential hypertension",             "I10",               "Essential (primary) hypertension"
+              ))
 })
