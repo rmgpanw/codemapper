@@ -139,28 +139,24 @@ update_code_selection <- function(current_selection,
 
 #' Download a file
 #'
-#' First checks if the file already exists at the download path (`download_dir`
-#' + `filename`). If so, the file path is returned invisibly without
-#' re-downloading.
+#' First checks if the file already exists at the download path. If so, the file
+#' path is returned invisibly without re-downloading.
 #'
 #' @param download_url Character
-#' @param filename Character
-#' @param download_dir Character
+#' @param path Character
 #'
 #' @return File path to downloaded file
 #' @noRd
 download_file <- function(download_url,
-                          filename = tempfile(),
-                          download_dir = tempdir()) {
-  file_path <- file.path(download_dir, filename)
+                          path = tempfile()) {
 
-  if (file.exists(file_path)) {
-    invisible(file_path)
+  if (file.exists(path)) {
+    invisible(path)
   } else {
     utils::download.file(url = download_url,
-                  destfile = file_path,
+                  destfile = path,
                   mode = "wb")
-    invisible(file_path)
+    invisible(path)
   }
 }
 
