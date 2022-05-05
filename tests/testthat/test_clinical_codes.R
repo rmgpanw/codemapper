@@ -62,7 +62,7 @@ test_that("`codes_starting_with()` returns the expected nuber of results, escapi
       codes_only = TRUE,
       standardise_output = FALSE
     )),
-    expected = 2)
+    expected = 3)
 
   # return codes and descriptions as a data frame
   expect_equal(nrow(
