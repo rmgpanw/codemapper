@@ -108,18 +108,19 @@ all_lkps_maps_to_db <- function(all_lkps_maps = build_all_lkps_maps(),
 #'   \code{\link{get_ukb_all_lkps_maps}}.
 #' @param ukb_codings The UK Biobank codings file, as returned by
 #'   \code{\link[ukbwranglr]{get_ukb_codings_direct}}.
-#' @param bnf_dmd Optional: a data frame, the NHSBSA BNF-SNOMED mapping table as
-#'   returned by \code{\link{get_nhsbsa_snomed_bnf}}.
-#' @param self_report_med_to_atc_map Optional: a data frame (see
+#' @param bnf_dmd Optional: path to the NHSBSA BNF-SNOMED mapping table (see
+#'   [get_nhsbsa_snomed_bnf()]).
+#' @param self_report_med_to_atc_map Optional: path to a UK Biobank
+#'   self-reported medication to ATC map (see
 #'   [get_ukb_self_report_med_to_atc_map()]).
 #' @param ctv3sctmap2 Optional: path to the NHS TRUD mapping file for Read 3 to
 #'   SNOMEDCT ("ctv3sctmap2_uk_20200401000001.txt").
 #' @param phecode_1_2_lkp Optional: path to the phecode v1.2 lookup file
-#'   ("phecode_definitions1.2.csv.zip").
+#'   (see [get_phecode_definitions()]).
 #' @param icd10_phecode_1_2 Optional: path to the phecode v1.2 to ICD10 mapping
-#'   file ("Phecode_map_v1_2_icd10_beta.csv.zip").
+#'   file (see [get_phecode_icd10_map()]).
 #' @param icd9_phecode_1_2 Optional: path to the phecode v1.2 to ICD10 mapping
-#'   file ("phecode_icd9_map_unrolled.csv.zip").
+#'   file (see [get_phecode_icd9_map()]).
 #'
 #' @return Returns a named list of data frames.
 #' @seealso [all_lkps_maps_to_db()]
@@ -130,9 +131,9 @@ build_all_lkps_maps <-
            bnf_dmd = get_nhsbsa_snomed_bnf(),
            self_report_med_to_atc_map = get_ukb_self_report_med_to_atc_map(),
            ctv3sctmap2 = NULL,
-           phecode_1_2_lkp = NULL,
-           icd10_phecode_1_2 = NULL,
-           icd9_phecode_1_2 = NULL) {
+           phecode_1_2_lkp = get_phecode_definitions(),
+           icd10_phecode_1_2 = get_phecode_icd10_map(),
+           icd9_phecode_1_2 = get_phecode_icd9_map()) {
     # ukb resource 592 ----------------
 
     ## remove metadata footer rows and add row index column -------------------
@@ -205,6 +206,58 @@ build_all_lkps_maps <-
 
     # Add 'extra' tables -------------------------
 
+    ## NHSBSA-SNOMED BNF -----------------------------
+
+    if (!is.null(bnf_dmd)) {
+      message("Reformatting bnf_dmd map")
+      # read file and tidy names
+      bnf_dmd_map_unzipped_dir <- file.path(tempdir(), "bnf_dmd")
+
+      utils::unzip(bnf_dmd,
+                   files = NULL,
+                   exdir = bnf_dmd_map_unzipped_dir)
+
+      bnf_dmd_file <- list.files(bnf_dmd_map_unzipped_dir)
+      assertthat::assert_that(length(bnf_dmd_file) == 1,
+                              msg = "Error! Unexpected number of files after unzipping NHBSA BNF-SNOMED file")
+
+      bnf_dmd <-
+        readxl::read_excel(file.path(bnf_dmd_map_unzipped_dir, bnf_dmd_file))
+
+      names(bnf_dmd) <-
+        ukbwranglr:::remove_special_characters_and_make_lower_case(names(bnf_dmd)) %>%
+        stringr::str_remove_all("plus_")
+    }
+
+    ## Self-reported med to ATC map ------------
+
+    if (!is.null(self_report_med_to_atc_map)) {
+      message("Reformatting self_report_med_to_atc_map")
+      # read file
+      self_report_med_to_atc_map <- readxl::read_excel(
+        self_report_med_to_atc_map,
+        skip = 2,
+        col_names = c(
+          "self_report_medication",
+          "data_coding_4",
+          "atc_code",
+          "drug_name",
+          "rm_1",
+          "rm_2"
+        )
+      )
+
+      # drop redundant cols
+      self_report_med_to_atc_map <- self_report_med_to_atc_map[,-c(5, 6)]
+
+      # append drug_name in brackets
+      self_report_med_to_atc_map$self_report_medication <-
+        paste0(self_report_med_to_atc_map$self_report_medication,
+               " (",
+               self_report_med_to_atc_map$drug_name,
+               ")")
+    }
+
     ## NHS TRUD Read 3 to SNOMEDCT mapping table ---------
     if (!is.null(ctv3sctmap2)) {
       read_ctv3_sct <- readr::read_tsv(ctv3sctmap2)
@@ -219,6 +272,7 @@ build_all_lkps_maps <-
 
     ## Phecode to ICD10 map ---------------------
     if (!is.null(icd10_phecode_1_2)) {
+      message("Reformatting ICD10-Phecode map")
       icd10_phecode <- readr::read_csv(icd10_phecode_1_2,
                                        progress = FALSE,
                                        col_types = readr::cols(.default = "c"))
@@ -228,6 +282,7 @@ build_all_lkps_maps <-
     }
 
     ## Phecode to ICD9 map ------------------
+    message("Reformatting ICD9-Phecode map")
     if (!is.null(icd9_phecode_1_2)) {
       icd9_phecode <- readr::read_csv(icd9_phecode_1_2) %>%
         dplyr::mutate("icd9" = stringr::str_remove(.data[["icd9"]],
@@ -291,37 +346,16 @@ build_all_lkps_maps <-
 #' Mapping table available from
 #' \href{https://www.nhsbsa.nhs.uk/prescription-data/understanding-our-data/bnf-snomed-mapping}{here}.
 #'
-#' @return A data frame.
+#' @param path Path where file will be downloaded to.
+#'
+#' @return File path to downloaded file.
 #' @export
-get_nhsbsa_snomed_bnf <- function() {
-  message("Getting NHSBSA BNF-SNOMED mapping table")
-  # file paths
-  bnf_dmd_map_zip_path <- file.path(tempdir(), "bnf_dmd.zip")
-  bnf_dmd_map_unzipped_dir <- file.path(tempdir(), "bnf_dmd")
-
-  # download file to tempdir, if not already there
-  if (!file.exists(bnf_dmd_map_zip_path)) {
-    utils::download.file(url = "https://www.nhsbsa.nhs.uk/sites/default/files/2021-08/BNF%20Snomed%20Mapping%20data%2020210819.zip",
-                         destfile = bnf_dmd_map_zip_path,
-                         mode = 'wb')
-  }
-
-  # read file and tidy names
-  utils::unzip(bnf_dmd_map_zip_path,
-               files = NULL,
-               exdir = file.path(tempdir(), "bnf_dmd"))
-
-  bnf_dmd_file <- list.files(bnf_dmd_map_unzipped_dir)
-  assertthat::assert_that(length(bnf_dmd_file) == 1,
-                          msg = "Error! Unexpected number of files after unzipping NHBSA BNF-SNOMED file")
-
-  bnf_dmd <-
-    readxl::read_excel(file.path(bnf_dmd_map_unzipped_dir, bnf_dmd_file))
-  names(bnf_dmd) <-
-    ukbwranglr:::remove_special_characters_and_make_lower_case(names(bnf_dmd)) %>%
-    stringr::str_remove_all("plus_")
-
-  return(bnf_dmd)
+#' @examples
+#' \dontrun{ get_nhsbsa_snomed_bnf() }
+get_nhsbsa_snomed_bnf <- function(path = file.path(tempdir(),
+                                                   "bnf_dmd.zip")) {
+  download_file(download_url = "https://www.nhsbsa.nhs.uk/sites/default/files/2021-08/BNF%20Snomed%20Mapping%20data%2020210819.zip",
+                path = path)
 }
 
 #' Get UK Biobank resource 592 directly from UKB
@@ -374,45 +408,16 @@ get_ukb_all_lkps_maps <- function(dir_path = tempdir()) {
 #' 2019](https://www.nature.com/articles/s41467-019-09572-5#Sec23),
 #' Supplementary Data 1.
 #'
-#' @return A data frame.
+#' @param path Path where file will be downloaded to.
+#'
+#' @return File path to downloaded file.
 #' @export
-get_ukb_self_report_med_to_atc_map <- function() {
-  # download file
-  file_path <-
-    file.path(tempdir(), "self_report_med_to_atc_map.xlsx")
-
-  if (!file.exists(file_path)) {
-    utils::download.file(
-      "https://static-content.springer.com/esm/art%3A10.1038%2Fs41467-019-09572-5/MediaObjects/41467_2019_9572_MOESM3_ESM.xlsx",
-      destfile = file.path(tempdir(), "self_report_med_to_atc_map.xlsx")
-    )
-  }
-
-  # read file
-  result <- readxl::read_excel(
-    file_path,
-    skip = 2,
-    col_names = c(
-      "self_report_medication",
-      "data_coding_4",
-      "atc_code",
-      "drug_name",
-      "rm_1",
-      "rm_2"
-    )
-  )
-
-  # drop redundant cols
-  result <- result[,-c(5, 6)]
-
-  # append drug_name in brackets
-  result$self_report_medication <-
-    paste0(result$self_report_medication,
-           " (",
-           result$drug_name,
-           ")")
-
-  return(result)
+#' @examples
+#' \dontrun{ get_nhsbsa_snomed_bnf() }
+get_ukb_self_report_med_to_atc_map <- function(path = file.path(tempdir(),
+                                                                "self_report_med_to_atc_map.xlsx")) {
+  download_file(download_url = "https://static-content.springer.com/esm/art%3A10.1038%2Fs41467-019-09572-5/MediaObjects/41467_2019_9572_MOESM3_ESM.xlsx",
+                path = path)
 }
 
 #' Read UK Biobank resource 592 into a named list
@@ -441,42 +446,48 @@ read_all_lkps_maps <- function(path = get_ukb_all_lkps_maps()) {
 #'
 #' Download link obtained from https://phewascatalog.org/phecodes.
 #'
-#' @return File path to downloaded file in `tempdir()`.
+#' @param path Path where file will be downloaded to.
+#'
+#' @return File path to downloaded file.
 #' @export
 #' @examples
 #' \dontrun{ get_phecode_definitions() }
-get_phecode_definitions <- function() {
+get_phecode_definitions <- function(path = file.path(tempdir(),
+                                                     "phecode_definitions1.2.csv.zip")) {
   download_file(download_url = "https://phewascatalog.org/files/phecode_definitions1.2.csv.zip",
-                download_dir = tempdir(),
-                filename = tempfile())
+                path = path)
 }
 
 #' Download the Phecode 1.2 to ICD9 mapping file
 #'
 #' Download link obtained from https://phewascatalog.org/phecodes.
 #'
-#' @return File path to downloaded file in `tempdir()`.
+#' @param path Path where file will be downloaded to.
+#'
+#' @return File path to downloaded file.
 #' @export
 #' @examples
 #' \dontrun{ get_phecode_icd9_map() }
-get_phecode_icd9_map <- function() {
+get_phecode_icd9_map <- function(path = file.path(tempdir(),
+                                                  "phecode_icd9_map_unrolled.csv.zip")) {
   download_file(download_url = "https://phewascatalog.org/files/phecode_icd9_map_unrolled.csv.zip",
-                download_dir = tempdir(),
-                filename = tempfile())
+                path = path)
 }
 
 #' Download the Phecode 1.2 to ICD10 (beta) mapping file
 #'
 #' Download link obtained from https://phewascatalog.org/phecodes.
 #'
-#' @return File path to downloaded file in `tempdir()`.
+#' @param path Path where file will be downloaded to.
+#'
+#' @return File path to downloaded file.
 #' @export
 #' @examples
 #' \dontrun{ get_phecode_icd10_map() }
-get_phecode_icd10_map <- function() {
+get_phecode_icd10_map <- function(path = file.path(tempdir(),
+                                                   "Phecode_map_v1_2_icd10_beta.csv.zip")) {
   download_file(download_url = "https://phewascatalog.org/files/Phecode_map_v1_2_icd10_beta.csv.zip",
-                download_dir = tempdir(),
-                filename = tempfile())
+                path = path)
 }
 
 # PRIVATE -----------------------------------------------------------------
@@ -651,12 +662,9 @@ reformat_icd10_phecode_map_1_2 <- function(icd10_phecode,
     dplyr::select(tidyselect::all_of(c("ICD10_CODE",
                                        "ALT_CODE"))) %>%
     dplyr::filter(.data[["ALT_CODE"]] %in% !!icd10_codes_in_icd10_phecode) %>%
+    dplyr::collect() %>%
     dplyr::right_join(icd10_phecode,
                       by = c("ICD10_CODE" = "ICD10"))
-
-  # check no empty rows for ALT_CODE
-  assertthat::assert_that(sum(is.na(icd10_phecode$ALT_CODE)) == 0,
-                          msg = "Some rows are missing an ICD10 code (after mapping to ALT_CODE format)")
 
   # remove empty PHECODE rows
   icd10_phecode <- icd10_phecode %>%
