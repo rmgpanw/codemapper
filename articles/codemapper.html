@@ -55,6 +55,15 @@
 <li>
       <a href="../articles/caliber.html">CALIBER code lists</a>
     </li>
+    <li>
+      <a href="../articles/icd10_formats.html">ICD10 code formats</a>
+    </li>
+    <li>
+      <a href="../articles/map_codes.html">Mapping between clinical coding systems</a>
+    </li>
+    <li>
+      <a href="../articles/phecodes.html">Phecodes</a>
+    </li>
   </ul>
 </li>
       </ul>
@@ -93,10 +102,169 @@
 <div class="section level2">
 <h2 id="introduction">Introduction<a class="anchor" aria-label="anchor" href="#introduction"></a>
 </h2>
-<p>The goal of codemapper is to simplify working with clinical codes for research using electronic health records. The first step is to create a local database containing lookup and mapping tables for various clinical coding systems:</p>
+<p>The goal of codemapper is to simplify working with clinical codes for research using electronic health records. The workflow is as follows:</p>
+<ol style="list-style-type: decimal">
+<li>Create a local resource containing lookup and mapping tables for various clinical codings systems (e.g. ICD10 and Read codes)</li>
+<li>Build clinical code lists for conditions of interest by querying this resource</li>
+</ol>
+<p>This vignette demonstrates the above using dummy data included with the package. You can try out the steps either locally by installing codemapper on your own machine, or online by clicking on the following link to RStudio Cloud<a href="#fn1" class="footnote-ref" id="fnref1"><sup>1</sup></a> and navigating to this Rmd file in the ‘vignettes’ directory: <a href="https://rstudio.cloud/project/4007004" class="external-link"><img src="https://img.shields.io/badge/RStudio-Cloud-blue" alt="Launch RStudio Cloud"></a></p>
+<p>Also included are functions for mapping between different clinical coding systems, and using CALIBER code lists<span class="citation">(Kuan et al. 2019)</span> and Phecodes<span class="citation">(Denny, Bastarache, and Roden 2016; Wu et al. 2019)</span> with UK Biobank data. See vignettes <code><a href="../articles/map_codes.html">vignette('map_codes')</a></code> <code><a href="../articles/caliber.html">vignette('caliber')</a></code> and <code><a href="../articles/phecodes.html">vignette('phecodes')</a></code> for further information.</p>
+</div>
+<div class="section level2">
+<h2 id="build-a-local-clinical-codes-lookup-and-mappings-resource">Build a local clinical codes lookup and mappings resource<a class="anchor" aria-label="anchor" href="#build-a-local-clinical-codes-lookup-and-mappings-resource"></a>
+</h2>
+<p>The first step is to create a local database containing lookup and mapping tables for various clinical coding systems using <code><a href="../reference/build_all_lkps_maps.html">build_all_lkps_maps()</a></code>.</p>
+<p>By default this will download the following resources:</p>
+<ul>
+<li><p>UK Biobank resource 592 (<a href="https://biobank.ndph.ox.ac.uk/ukb/refer.cgi?id=592" class="external-link">Clinical coding classification systems and maps</a>)</p></li>
+<li><p>UK Biobank <a href="https://biobank.ctsu.ox.ac.uk/crystal/exinfo.cgi?src=accessing_data_guide" class="external-link">data codings file</a></p></li>
+<li><p><a href="https://phewascatalog.org/" class="external-link">Phecode lookup and mapping files</a> (for ICD9 and ICD10 to phecode)</p></li>
+</ul>
+<p>The tables are imported into R, reformatted, and stored as a named list of data frames:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">all_lkps_maps</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/build_all_lkps_maps.html">build_all_lkps_maps</a></span><span class="op">(</span><span class="op">)</span></code></pre></div>
-<p>By default this will downloads <a href="https://biobank.ndph.ox.ac.uk/ukb/refer.cgi?id=592" class="external-link">UK Biobank resource 592</a>,</p>
+<code class="sourceCode R"><span class="co"># build dummy all_lkps_maps resource (supressing warning messages)</span>
+<span class="va">all_lkps_maps_dummy</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/warning.html" class="external-link">suppressWarnings</a></span><span class="op">(</span><span class="fu"><a href="../reference/build_all_lkps_maps_dummy.html">build_all_lkps_maps_dummy</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span>
+<span class="co">#&gt; Extending tables in UKB resource 592</span>
+<span class="co">#&gt; Reformatting ICD10-Phecode map</span>
+<span class="co">#&gt; The following 1 input ICD10 codes do not have a 1-to-1 ICD10_CODE-to-ALT_CODE mapping: 'M90.0'. There will therefore be *more* output than input codes</span>
+<span class="co">#&gt; Reformatting ICD9-Phecode map</span>
+<span class="co">#&gt; Success!</span>
+
+<span class="co"># view first few rows of ICD10 lookup table</span>
+<span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">all_lkps_maps_dummy</span><span class="op">$</span><span class="va">icd10_lkp</span><span class="op">)</span>
+<span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 13</span></span>
+<span class="co">#&gt;   .rowid ICD10_CODE ALT_CODE USAGE   USAGE_UK DESCRIPTION  MODIFIER_4 MODIFIER_5</span>
+<span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>     </span>
+<span class="co">#&gt; <span style="color: #BCBCBC;">1</span>      1 A00        A00      DEFAULT 3        Cholera      <span style="color: #BB0000;">NA</span>         <span style="color: #BB0000;">NA</span>        </span>
+<span class="co">#&gt; <span style="color: #BCBCBC;">2</span>      2 A00.0      A000     DEFAULT 3        Cholera due… <span style="color: #BB0000;">NA</span>         <span style="color: #BB0000;">NA</span>        </span>
+<span class="co">#&gt; <span style="color: #BCBCBC;">3</span>      3 A00.1      A001     DEFAULT 3        Cholera due… <span style="color: #BB0000;">NA</span>         <span style="color: #BB0000;">NA</span>        </span>
+<span class="co">#&gt; <span style="color: #BCBCBC;">4</span>      4 A00.9      A009     DEFAULT 3        Cholera, un… <span style="color: #BB0000;">NA</span>         <span style="color: #BB0000;">NA</span>        </span>
+<span class="co">#&gt; <span style="color: #BCBCBC;">5</span>      5 A01.0      A010     DEFAULT 3        Typhoid fev… <span style="color: #BB0000;">NA</span>         <span style="color: #BB0000;">NA</span>        </span>
+<span class="co">#&gt; <span style="color: #BCBCBC;">6</span>      6 A02        A02      DEFAULT 3        Other salmo… <span style="color: #BB0000;">NA</span>         <span style="color: #BB0000;">NA</span>        </span>
+<span class="co">#&gt; <span style="color: #949494;"># … with 5 more variables: QUALIFIERS &lt;chr&gt;, GENDER_MASK &lt;chr&gt;, MIN_AGE &lt;chr&gt;,</span></span>
+<span class="co">#&gt; <span style="color: #949494;">#   MAX_AGE &lt;chr&gt;, TREE_DESCRIPTION &lt;chr&gt;</span></span></code></pre></div>
+<p>Many of the functions in this package will require this object (supplied to argument <code>all_lkps_maps</code>). Instead of re-running <code><a href="../reference/build_all_lkps_maps.html">build_all_lkps_maps()</a></code> in each new R session, the output can be saved to a SQLite database file:</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># write to SQLite database file</span>
+<span class="va">db_path</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/message.html" class="external-link">suppressMessages</a></span><span class="op">(</span><span class="fu"><a href="../reference/all_lkps_maps_to_db.html">all_lkps_maps_to_db</a></span><span class="op">(</span>all_lkps_maps <span class="op">=</span> <span class="va">all_lkps_maps_dummy</span>, 
+                               db_path <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempfile</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></code></pre></div>
+<p>Connect to this and create a named list of <code><a href="https://dbplyr.tidyverse.org/reference/tbl.src_dbi.html" class="external-link">dbplyr::tbl_dbi</a></code><a href="#fn2" class="footnote-ref" id="fnref2"><sup>2</sup></a> objects:</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># connect to SQLite database</span>
+<span class="va">con</span> <span class="op">&lt;-</span> <span class="fu">DBI</span><span class="fu">::</span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbConnect.html" class="external-link">dbConnect</a></span><span class="op">(</span><span class="fu">RSQLite</span><span class="fu">::</span><span class="fu"><a href="https://rsqlite.r-dbi.org/reference/SQLite.html" class="external-link">SQLite</a></span><span class="op">(</span><span class="op">)</span>, <span class="va">db_path</span><span class="op">)</span>
+
+<span class="co"># create named list of tbl_db objects</span>
+<span class="va">all_lkps_maps_dummy_db</span> <span class="op">&lt;-</span> <span class="fu">ukbwranglr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/ukbwranglr/man/db_tables_to_list.html" class="external-link">db_tables_to_list</a></span><span class="op">(</span><span class="va">con</span><span class="op">)</span>
+
+<span class="co"># view first few rows of ICD10 lookup table</span>
+<span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">all_lkps_maps_dummy_db</span><span class="op">$</span><span class="va">icd10_lkp</span><span class="op">)</span>
+<span class="co">#&gt; <span style="color: #949494;"># Source:   lazy query [?? x 13]</span></span>
+<span class="co">#&gt; <span style="color: #949494;"># Database: sqlite 3.38.3 [/tmp/RtmpOP1wnY/filee88243a8ebd8]</span></span>
+<span class="co">#&gt;   .rowid ICD10_CODE ALT_CODE USAGE   USAGE_UK DESCRIPTION  MODIFIER_4 MODIFIER_5</span>
+<span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>     </span>
+<span class="co">#&gt; <span style="color: #BCBCBC;">1</span>      1 A00        A00      DEFAULT 3        Cholera      <span style="color: #BB0000;">NA</span>         <span style="color: #BB0000;">NA</span>        </span>
+<span class="co">#&gt; <span style="color: #BCBCBC;">2</span>      2 A00.0      A000     DEFAULT 3        Cholera due… <span style="color: #BB0000;">NA</span>         <span style="color: #BB0000;">NA</span>        </span>
+<span class="co">#&gt; <span style="color: #BCBCBC;">3</span>      3 A00.1      A001     DEFAULT 3        Cholera due… <span style="color: #BB0000;">NA</span>         <span style="color: #BB0000;">NA</span>        </span>
+<span class="co">#&gt; <span style="color: #BCBCBC;">4</span>      4 A00.9      A009     DEFAULT 3        Cholera, un… <span style="color: #BB0000;">NA</span>         <span style="color: #BB0000;">NA</span>        </span>
+<span class="co">#&gt; <span style="color: #BCBCBC;">5</span>      5 A01.0      A010     DEFAULT 3        Typhoid fev… <span style="color: #BB0000;">NA</span>         <span style="color: #BB0000;">NA</span>        </span>
+<span class="co">#&gt; <span style="color: #BCBCBC;">6</span>      6 A02        A02      DEFAULT 3        Other salmo… <span style="color: #BB0000;">NA</span>         <span style="color: #BB0000;">NA</span>        </span>
+<span class="co">#&gt; <span style="color: #949494;"># … with 5 more variables: QUALIFIERS &lt;chr&gt;, GENDER_MASK &lt;chr&gt;, MIN_AGE &lt;chr&gt;,</span></span>
+<span class="co">#&gt; <span style="color: #949494;">#   MAX_AGE &lt;chr&gt;, TREE_DESCRIPTION &lt;chr&gt;</span></span></code></pre></div>
+<p>Either will work with the functions described in the remainder of this vignette, but the SQLite database option is recommended. For convenience, record the path to your SQLite database in a <code>.Renviron</code> file:</p>
+<pre><code>ALL_LKPS_MAPS_DB=/PATH/TO/all_lkps_maps.db</code></pre>
+<p>Assuming you are using a <a href="https://r4ds.had.co.nz/workflow-projects.html#rstudio-projects" title="R for Data Science" class="external-link">RStudio project</a>, this will set an environmental variable called <code>ALL_LKPS_MAPS_DB</code> when you start a new R session. Functions with an <code>all_lkps_maps</code> argument will automatically search for this variable and attempt to connect with the database file at that path, meaning you will not need to repeatedly type this in your self.</p>
+</div>
+<div class="section level2">
+<h2 id="build-a-clinical-code-list">Build a clinical code list<a class="anchor" aria-label="anchor" href="#build-a-clinical-code-list"></a>
+</h2>
+<div class="section level3">
+<h3 id="explore-codes">Explore codes<a class="anchor" aria-label="anchor" href="#explore-codes"></a>
+</h3>
+<p>Codes may be explored with:</p>
+<ul>
+<li>
+<code><a href="../reference/lookup_codes.html">lookup_codes()</a></code>:</li>
+</ul>
+<!-- --><pre><code>```r
+lookup_codes(codes = c("E10", "E11"),
+             code_type = "icd10",
+             all_lkps_maps = all_lkps_maps_dummy_db)
+#&gt;  [38;5;246m# A tibble: 2 × 3 [39m
+#&gt;   code  description              code_type
+#&gt;    [3m [38;5;246m&lt;chr&gt; [39m [23m  [3m [38;5;246m&lt;chr&gt; [39m [23m                     [3m [38;5;246m&lt;chr&gt; [39m [23m    
+#&gt;  [38;5;250m1 [39m E10   Type 1 diabetes mellitus icd10    
+#&gt;  [38;5;250m2 [39m E11   Type 2 diabetes mellitus icd10
+```</code></pre>
+<ul>
+<li>
+<code><a href="../reference/codes_starting_with.html">codes_starting_with()</a></code>:</li>
+</ul>
+<!-- --><pre><code>```r
+codes_starting_with(codes = "E1",
+             code_type = "icd10",
+             all_lkps_maps = all_lkps_maps_dummy_db)
+#&gt;  [38;5;246m# A tibble: 55 × 3 [39m
+#&gt;    code  description                                                   code_type
+#&gt;     [3m [38;5;246m&lt;chr&gt; [39m [23m  [3m [38;5;246m&lt;chr&gt; [39m [23m                                                          [3m [38;5;246m&lt;chr&gt; [39m [23m    
+#&gt;  [38;5;250m 1 [39m E10   Type 1 diabetes mellitus                                      icd10    
+#&gt;  [38;5;250m 2 [39m E100  Type 1 diabetes mellitus With coma                            icd10    
+#&gt;  [38;5;250m 3 [39m E101  Type 1 diabetes mellitus With ketoacidosis                    icd10    
+#&gt;  [38;5;250m 4 [39m E102  Type 1 diabetes mellitus With renal complications             icd10    
+#&gt;  [38;5;250m 5 [39m E103  Type 1 diabetes mellitus With ophthalmic complications        icd10    
+#&gt;  [38;5;250m 6 [39m E104  Type 1 diabetes mellitus With neurological complications      icd10    
+#&gt;  [38;5;250m 7 [39m E105  Type 1 diabetes mellitus With peripheral circulatory complic… icd10    
+#&gt;  [38;5;250m 8 [39m E106  Type 1 diabetes mellitus With other specified complications   icd10    
+#&gt;  [38;5;250m 9 [39m E107  Type 1 diabetes mellitus With multiple complications          icd10    
+#&gt;  [38;5;250m10 [39m E108  Type 1 diabetes mellitus With unspecified complications       icd10    
+#&gt;  [38;5;246m# … with 45 more rows [39m
+```</code></pre>
+<ul>
+<li><code>code_descriptions_like():</code></li>
+</ul>
+<!-- --><pre><code>```r
+code_descriptions_like(
+  reg_expr = "cyst",
+  code_type = "icd10",
+  all_lkps_maps = all_lkps_maps_dummy_db
+)
+#&gt;  [38;5;246m# A tibble: 1 × 3 [39m
+#&gt;   code  description       code_type
+#&gt;    [3m [38;5;246m&lt;chr&gt; [39m [23m  [3m [38;5;246m&lt;chr&gt; [39m [23m              [3m [38;5;246m&lt;chr&gt; [39m [23m    
+#&gt;  [38;5;250m1 [39m L721  Trichilemmal cyst icd10
+```</code></pre>
+</div>
+<div class="section level3">
+<h3 id="r-shiny-app">R Shiny app<a class="anchor" aria-label="anchor" href="#r-shiny-app"></a>
+</h3>
+<p>Use <code><a href="../reference/runCodelistBuilder.html">runCodelistBuilder()</a></code> to launch a R Shiny app for building a clinical code list.<a href="#fn3" class="footnote-ref" id="fnref3"><sup>3</sup></a> The aim is to develop a broad search strategy that captures all clinincal codes that might possibly be included, then download the search results and manually select and sub-categorise the final set of codes:</p>
+<p><img src="runcodelistbuilder.jpg" style="width:100.0%"></p>
+<blockquote>
+<p>Microsoft excel auto-formatting can cause problems with certain codes e.g. Read 3 ‘.7944’ (Creation of permanent gastrostomy) may be reformatted to ‘7944’. Ideally use a different text editor.</p>
+</blockquote>
+</div>
+</div>
+<div class="section level2">
+<h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>
+</h2>
+<div id="refs" class="references">
+<div id="ref-denny2016">
+<p>Denny, Joshua C., Lisa Bastarache, and Dan M. Roden. 2016. “Phenome-Wide Association Studies as a Tool to Advance Precision Medicine.” <em>Annual Review of Genomics and Human Genetics</em> 17 (August): 353–73. <a href="https://doi.org/10.1146/annurev-genom-090314-024956" class="external-link">https://doi.org/10.1146/annurev-genom-090314-024956</a>.</p>
+</div>
+<div id="ref-kuan2019">
+<p>Kuan, Valerie, Spiros Denaxas, Arturo Gonzalez-Izquierdo, Kenan Direk, Osman Bhatti, Shanaz Husain, Shailen Sutaria, et al. 2019. “A Chronological Map of 308 Physical and Mental Health Conditions from 4 Million Individuals in the English National Health Service.” <em>The Lancet. Digital Health</em> 1 (2): e63–e77. <a href="https://doi.org/10.1016/S2589-7500(19)30012-3" class="external-link">https://doi.org/10.1016/S2589-7500(19)30012-3</a>.</p>
+</div>
+<div id="ref-wu2019">
+<p>Wu, Patrick, Aliya Gifford, Xiangrui Meng, Xue Li, Harry Campbell, Tim Varley, Juan Zhao, et al. 2019. “Mapping ICD-10 and ICD-10-CM Codes to Phecodes: Workflow Development and Initial Evaluation.” <em>JMIR Medical Informatics</em> 7 (4): e14325. <a href="https://doi.org/10.2196/14325" class="external-link">https://doi.org/10.2196/14325</a>.</p>
+</div>
+</div>
+</div>
+<div class="footnotes">
+<hr>
+<ol>
+<li id="fn1"><p>You will be asked to sign up for a free account if you do not have one already.<a href="#fnref1" class="footnote-back">↩︎</a></p></li>
+<li id="fn2"><p>If you have not used SQL with R before, I recommend reading the <a href="https://dbplyr.tidyverse.org/articles/dbplyr.html" title="Using SQL with R" class="external-link">Get started</a> vignette from the dbplyr package.<a href="#fnref2" class="footnote-back">↩︎</a></p></li>
+<li id="fn3"><p>This is still quite experimental, but should hopefully work for the basic workflow described here.<a href="#fnref3" class="footnote-back">↩︎</a></p></li>
+</ol>
 </div>
   </div>
 

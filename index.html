@@ -55,6 +55,15 @@
 <li>
       <a href="articles/caliber.html">CALIBER code lists</a>
     </li>
+    <li>
+      <a href="articles/icd10_formats.html">ICD10 code formats</a>
+    </li>
+    <li>
+      <a href="articles/map_codes.html">Mapping between clinical coding systems</a>
+    </li>
+    <li>
+      <a href="articles/phecodes.html">Phecodes</a>
+    </li>
   </ul>
 </li>
       </ul>
@@ -81,7 +90,8 @@
 <div class="page-header"><h1 id="codemapper">codemapper<a class="anchor" aria-label="anchor" href="#codemapper"></a>
 </h1></div>
 <!-- badges: start -->
-<!-- badges: end --><p>The goal of codemapper is to facilitate working with clinical codes used in electronic health records. This package relies primarily on UK Biobank resource 592 (<a href="https://biobank.ndph.ox.ac.uk/ukb/refer.cgi?id=592" class="external-link">Clinical coding classification systems and maps</a>) and the UK Biobank <a href="https://biobank.ctsu.ox.ac.uk/crystal/exinfo.cgi?src=accessing_data_guide" class="external-link">data codings file</a>, both of which are publicly available.</p>
+<!-- badges: end --><p>The goal of codemapper is to facilitate working with clinical codes used in electronic health records.</p>
+<p>This package relies primarily on UK Biobank resource 592 (<a href="https://biobank.ndph.ox.ac.uk/ukb/refer.cgi?id=592" class="external-link">Clinical coding classification systems and maps</a>) and the UK Biobank <a href="https://biobank.ctsu.ox.ac.uk/crystal/exinfo.cgi?src=accessing_data_guide" class="external-link">data codings file</a>, both of which are publicly available.</p>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
@@ -100,6 +110,9 @@
 
 <span class="va">all_lkps_maps_dummy</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/build_all_lkps_maps_dummy.html">build_all_lkps_maps_dummy</a></span><span class="op">(</span><span class="op">)</span>
 <span class="co">#&gt; Extending tables in UKB resource 592</span>
+<span class="co">#&gt; Reformatting ICD10-Phecode map</span>
+<span class="co">#&gt; The following 1 input ICD10 codes do not have a 1-to-1 ICD10_CODE-to-ALT_CODE mapping: 'M90.0'. There will therefore be *more* output than input codes</span>
+<span class="co">#&gt; Reformatting ICD9-Phecode map</span>
 <span class="co">#&gt; Success!</span></code></pre></div>
 <p>Look up Read 2 codes for hypertension:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
@@ -126,6 +139,12 @@
 <span class="co">#&gt;   code  description                      code_type</span>
 <span class="co">#&gt;   &lt;chr&gt; &lt;chr&gt;                            &lt;chr&gt;    </span>
 <span class="co">#&gt; 1 I10X  Essential (primary) hypertension icd10</span></code></pre></div>
+<p>See <code>vignette(codemapper)</code> for further details, including how to build a clinical codelist with R Shiny using <code><a href="reference/runCodelistBuilder.html">runCodelistBuilder()</a></code>.</p>
+</div>
+<div class="section level2">
+<h2 id="uk-biobank">UK Biobank<a class="anchor" aria-label="anchor" href="#uk-biobank"></a>
+</h2>
+<p>Also included are functions for using CALIBER code lists (<code><a href="articles/caliber.html">vignette('caliber')</a></code>) and Phecodes (<code><a href="articles/phecodes.html">vignette('phecodes')</a></code>) with UK Biobank data.</p>
 </div>
 </div>
   </div>
@@ -158,7 +177,7 @@
 <div class="developers">
 <h2 data-toc-skip>Developers</h2>
 <ul class="list-unstyled">
-<li>Alasdair Warwick <br><small class="roles"> Author, maintainer </small> <a href="https://orcid.org/https://orcid.org/0000-0002-0800-2890" target="orcid.widget" aria-label="ORCID" class="external-link"><span class="fab fa-orcid orcid" aria-hidden="true"></span></a> </li>
+<li>Alasdair Warwick <br><small class="roles"> Author, maintainer </small> <a href="https://orcid.org/0000-0002-0800-2890" target="orcid.widget" aria-label="ORCID" class="external-link"><span class="fab fa-orcid orcid" aria-hidden="true"></span></a> </li>
 </ul>
 </div>
 
@@ -168,6 +187,7 @@
 <li><a href="https://github.com/rmgpanw/codemapper/actions" class="external-link"><img src="https://github.com/rmgpanw/codemapper/workflows/R-CMD-check/badge.svg" alt="R-CMD-check"></a></li>
 <li><a href="https://codecov.io/gh/rmgpanw/codemapper?branch=master" class="external-link"><img src="https://codecov.io/gh/rmgpanw/codemapper/branch/master/graph/badge.svg" alt="Codecov test coverage"></a></li>
 <li><a href="https://github.com/rmgpanw/codemapper/actions" class="external-link"><img src="https://github.com/rmgpanw/codemapper/workflows/pkgdown/badge.svg" alt="pkgdown"></a></li>
+<li><a href="https://rstudio.cloud/project/4007004" class="external-link"><img src="https://img.shields.io/badge/RStudio-Cloud-blue" alt="Launch RStudio Cloud"></a></li>
 </ul>
 </div>
 

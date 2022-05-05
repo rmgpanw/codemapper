@@ -38,6 +38,15 @@ expression. Ignores case by default."><!-- mathjax --><script src="https://cdnjs
   <ul class="dropdown-menu" role="menu"><li>
       <a href="../articles/caliber.html">CALIBER code lists</a>
     </li>
+    <li>
+      <a href="../articles/icd10_formats.html">ICD10 code formats</a>
+    </li>
+    <li>
+      <a href="../articles/map_codes.html">Mapping between clinical coding systems</a>
+    </li>
+    <li>
+      <a href="../articles/phecodes.html">Phecodes</a>
+    </li>
   </ul></li>
       </ul><ul class="nav navbar-nav navbar-right"><li>
   <a href="https://github.com/rmgpanw/codemapper/" class="external-link">
@@ -83,8 +92,7 @@ expression. Ignores case by default.</p>
 <dd><p>a regular expression to search for</p></dd>
 <dt>code_type</dt>
 <dd><p>character. The type of clinical code system to be searched.
-Must be one of <code>read2</code>, <code>read3</code>, <code>icd9</code>, <code>icd10</code>,
-<code>bnf</code>, <code>dmd</code>, <code>read2_drugs</code> or <code>opcs4</code>.</p></dd>
+Must be one obnf, dmd, icd9, icd10, read2, read2_drugs, read3, opcs4, data_coding_3, data_coding_4, data_coding_5, data_coding_6, sct, or phecode)`.</p></dd>
 <dt>all_lkps_maps</dt>
 <dd><p>Either a named list of lookup and mapping tables (either
 data frames or <code>tbl_dbi</code> objects), or the path to a SQLite database

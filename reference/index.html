@@ -37,6 +37,15 @@
   <ul class="dropdown-menu" role="menu"><li>
       <a href="../articles/caliber.html">CALIBER code lists</a>
     </li>
+    <li>
+      <a href="../articles/icd10_formats.html">ICD10 code formats</a>
+    </li>
+    <li>
+      <a href="../articles/map_codes.html">Mapping between clinical coding systems</a>
+    </li>
+    <li>
+      <a href="../articles/phecodes.html">Phecodes</a>
+    </li>
   </ul></li>
       </ul><ul class="nav navbar-nav navbar-right"><li>
   <a href="https://github.com/rmgpanw/codemapper/" class="external-link">
@@ -77,26 +86,6 @@ website</p></td>
           <p><code><a href="all_lkps_maps_to_db.html">all_lkps_maps_to_db()</a></code> </p>
         </td>
         <td><p>Build a SQLite database of clinical code look up and mapping tables</p></td>
-      </tr><tr><td>
-          <p><code><a href="get_nhsbsa_snomed_bnf.html">get_nhsbsa_snomed_bnf()</a></code> </p>
-        </td>
-        <td><p>Download and read the NHSBSA BNF_SNOMED mapping file</p></td>
-      </tr><tr><td>
-          <p><code><a href="get_ukb_self_report_med_to_atc_map.html">get_ukb_self_report_med_to_atc_map()</a></code> </p>
-        </td>
-        <td><p>Download and read a UKB welf-reported medication code to ATC mapping file</p></td>
-      </tr><tr><td>
-          <p><code><a href="get_phecode_definitions.html">get_phecode_definitions()</a></code> </p>
-        </td>
-        <td><p>Download the Phecode 1.2 definitions file</p></td>
-      </tr><tr><td>
-          <p><code><a href="get_phecode_icd9_map.html">get_phecode_icd9_map()</a></code> </p>
-        </td>
-        <td><p>Download the Phecode 1.2 to ICD9 mapping file</p></td>
-      </tr><tr><td>
-          <p><code><a href="get_phecode_icd10_map.html">get_phecode_icd10_map()</a></code> </p>
-        </td>
-        <td><p>Download the Phecode 1.2 to ICD10 (beta) mapping file</p></td>
       </tr></tbody><tbody><tr><th colspan="2">
           <h2 id="clinical-codes">Clinical codes <a href="#clinical-codes" class="anchor" aria-hidden="true"></a></h2>
           <p class="section-desc"></p><p>Functions for looking up clinical codes and mapping between different coding systems.</p>
@@ -122,13 +111,13 @@ website</p></td>
         </td>
         <td><p>Get a 'from-to' mapping data frame</p></td>
       </tr><tr><td>
-          <p><code><a href="default_col_filters.html">default_col_filters()</a></code> </p>
-        </td>
-        <td><p>Default filtering parameters for lookup and mapping tables.</p></td>
-      </tr><tr><td>
           <p><code><a href="reformat_icd10_codes.html">reformat_icd10_codes()</a></code> </p>
         </td>
         <td><p>Reformat ICD-10 codes</p></td>
+      </tr><tr><td>
+          <p><code><a href="default_col_filters.html">default_col_filters()</a></code> </p>
+        </td>
+        <td><p>Default filtering parameters for lookup and mapping tables.</p></td>
       </tr><tr><td>
           <p><code><a href="runCodelistBuilder.html">runCodelistBuilder()</a></code> </p>
         </td>
@@ -150,13 +139,13 @@ website</p></td>
         </td>
         <td><p>Reformat and map CALIBER codes for use with UK Biobank data</p></td>
       </tr><tr><td>
-          <p><code><a href="get_caliber_categories_mapping.html">get_caliber_categories_mapping()</a></code> </p>
-        </td>
-        <td><p>Get a mapping table of CALIBER phenotypes/categories</p></td>
-      </tr><tr><td>
           <p><code><a href="default_overlapping_disease_categories_csv.html">default_overlapping_disease_categories_csv()</a></code> </p>
         </td>
         <td><p>CSV file for resolving overlapping disease categories in mapped CALIBER codes</p></td>
+      </tr><tr><td>
+          <p><code><a href="get_caliber_categories_mapping.html">get_caliber_categories_mapping()</a></code> </p>
+        </td>
+        <td><p>Get a mapping table of CALIBER phenotypes/categories</p></td>
       </tr></tbody><tbody><tr><th colspan="2">
           <h2 id="phecodes">Phecodes <a href="#phecodes" class="anchor" aria-hidden="true"></a></h2>
           <p class="section-desc"></p><p>Functions for mapping UK Biobank data to Phecodes</p>
@@ -178,14 +167,6 @@ website</p></td>
         </td>
         <td><p>Create a dummy all_lkps_maps</p></td>
       </tr><tr><td>
-          <p><code><a href="dummy_all_lkps_maps_path.html">dummy_all_lkps_maps_path()</a></code> </p>
-        </td>
-        <td><p>Dummy UK Biobank resource 592 file path</p></td>
-      </tr><tr><td>
-          <p><code><a href="dummy_ukb_codings_path.html">dummy_ukb_codings_path()</a></code> </p>
-        </td>
-        <td><p>Dummy UK Biobank codings file path</p></td>
-      </tr><tr><td>
           <p><code><a href="read_all_lkps_maps_dummy.html">read_all_lkps_maps_dummy()</a></code> </p>
         </td>
         <td><p>Read dummy UK Biobank resource 592 into R</p></td>
@@ -193,14 +174,6 @@ website</p></td>
           <p><code><a href="read_ukb_codings_dummy.html">read_ukb_codings_dummy()</a></code> </p>
         </td>
         <td><p>Read dummy UK Biobank codings into R</p></td>
-      </tr><tr><td>
-          <p><code><a href="dummy_phecode_lkp_path.html">dummy_phecode_lkp_path()</a></code> </p>
-        </td>
-        <td><p>Dummy Phecode definitions file path</p></td>
-      </tr><tr><td>
-          <p><code><a href="dummy_icd10_phecode_map_path.html">dummy_icd10_phecode_map_path()</a></code> </p>
-        </td>
-        <td><p>Dummy Phecode Map 1.2 with ICD-10 codes (beta) file path</p></td>
       </tr><tr><td>
           <p><code><a href="read_phecode_lkp_dummy.html">read_phecode_lkp_dummy()</a></code> </p>
         </td>
@@ -210,13 +183,53 @@ website</p></td>
         </td>
         <td><p>Read dummy Phecode Map 1.2 with ICD-10 codes (beta) file into R</p></td>
       </tr><tr><td>
-          <p><code><a href="dummy_caliber_dir_path.html">dummy_caliber_dir_path()</a></code> </p>
-        </td>
-        <td><p>Dummy CALIBER repository</p></td>
-      </tr><tr><td>
           <p><code><a href="dummy_clinical_events_tidy.html">dummy_clinical_events_tidy()</a></code> </p>
         </td>
         <td><p>Dummy UK Biobank clinical events, tidied</p></td>
+      </tr></tbody><tbody><tr><td>
+          <p><code><a href="codemapper_metadata.html">codemapper_metadata()</a></code> </p>
+        </td>
+        <td><p>Metadata</p></td>
+      </tr><tr><td>
+          <p><code><a href="get_nhsbsa_snomed_bnf.html">get_nhsbsa_snomed_bnf()</a></code> </p>
+        </td>
+        <td><p>Download and read the NHSBSA BNF_SNOMED mapping file</p></td>
+      </tr><tr><td>
+          <p><code><a href="get_ukb_self_report_med_to_atc_map.html">get_ukb_self_report_med_to_atc_map()</a></code> </p>
+        </td>
+        <td><p>Download and read a UKB welf-reported medication code to ATC mapping file</p></td>
+      </tr><tr><td>
+          <p><code><a href="get_phecode_definitions.html">get_phecode_definitions()</a></code> </p>
+        </td>
+        <td><p>Download the Phecode 1.2 definitions file</p></td>
+      </tr><tr><td>
+          <p><code><a href="get_phecode_icd9_map.html">get_phecode_icd9_map()</a></code> </p>
+        </td>
+        <td><p>Download the Phecode 1.2 to ICD9 mapping file</p></td>
+      </tr><tr><td>
+          <p><code><a href="get_phecode_icd10_map.html">get_phecode_icd10_map()</a></code> </p>
+        </td>
+        <td><p>Download the Phecode 1.2 to ICD10 (beta) mapping file</p></td>
+      </tr><tr><td>
+          <p><code><a href="dummy_all_lkps_maps_path.html">dummy_all_lkps_maps_path()</a></code> </p>
+        </td>
+        <td><p>Dummy UK Biobank resource 592 file path</p></td>
+      </tr><tr><td>
+          <p><code><a href="dummy_ukb_codings_path.html">dummy_ukb_codings_path()</a></code> </p>
+        </td>
+        <td><p>Dummy UK Biobank codings file path</p></td>
+      </tr><tr><td>
+          <p><code><a href="dummy_phecode_lkp_path.html">dummy_phecode_lkp_path()</a></code> </p>
+        </td>
+        <td><p>Dummy Phecode definitions file path</p></td>
+      </tr><tr><td>
+          <p><code><a href="dummy_icd10_phecode_map_path.html">dummy_icd10_phecode_map_path()</a></code> </p>
+        </td>
+        <td><p>Dummy Phecode Map 1.2 with ICD-10 codes (beta) file path</p></td>
+      </tr><tr><td>
+          <p><code><a href="dummy_caliber_dir_path.html">dummy_caliber_dir_path()</a></code> </p>
+        </td>
+        <td><p>Dummy CALIBER repository</p></td>
       </tr></tbody><tbody><tr><th colspan="2">
           <h2 id="package-overview">Package overview <a href="#package-overview" class="anchor" aria-hidden="true"></a></h2>
           <p class="section-desc"></p><p>General summary of package contents</p>

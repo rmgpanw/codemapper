@@ -55,6 +55,15 @@
 <li>
       <a href="../articles/caliber.html">CALIBER code lists</a>
     </li>
+    <li>
+      <a href="../articles/icd10_formats.html">ICD10 code formats</a>
+    </li>
+    <li>
+      <a href="../articles/map_codes.html">Mapping between clinical coding systems</a>
+    </li>
+    <li>
+      <a href="../articles/phecodes.html">Phecodes</a>
+    </li>
   </ul>
 </li>
       </ul>
@@ -89,7 +98,16 @@
     
     
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/rmgpanw/codemapper" class="external-link">codemapper</a></span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/rmgpanw/codemapper" class="external-link">codemapper</a></span><span class="op">)</span>
+<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; Attaching package: 'dplyr'</span>
+<span class="co">#&gt; The following objects are masked from 'package:stats':</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt;     filter, lag</span>
+<span class="co">#&gt; The following objects are masked from 'package:base':</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt;     intersect, setdiff, setequal, union</span></code></pre></div>
 <div class="section level2">
 <h2 id="introduction">Introduction<a class="anchor" aria-label="anchor" href="#introduction"></a>
 </h2>
@@ -112,6 +130,108 @@
   all_lkps_maps <span class="op">=</span> <span class="va">all_lkps_maps</span>,
   overlapping_disease_categories_csv <span class="op">=</span> <span class="fu"><a href="../reference/default_overlapping_disease_categories_csv.html">default_overlapping_disease_categories_csv</a></span><span class="op">(</span><span class="op">)</span>
 <span class="op">)</span></code></pre></div>
+<p>Using dummy data:</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># read all codes from dummy CALIBER repo into R</span>
+<span class="va">caliber_raw_dummy</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_caliber_raw.html">read_caliber_raw</a></span><span class="op">(</span><span class="fu"><a href="../reference/dummy_caliber_dir_path.html">dummy_caliber_dir_path</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span>
+<span class="co">#&gt; Reading CALIBER clinical codes lists into R</span>
+<span class="co">#&gt; Primary care Read 2 (1 of 3)</span>
+<span class="co">#&gt; Secondary care ICD10 (2 of 3)</span>
+<span class="co">#&gt; Secondary care OPCS4 (3 of 3)</span>
+
+<span class="co"># build dummy all_lkps_maps resource</span>
+<span class="va">all_lkps_maps_dummy</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/build_all_lkps_maps_dummy.html">build_all_lkps_maps_dummy</a></span><span class="op">(</span><span class="op">)</span>
+<span class="co">#&gt; Extending tables in UKB resource 592</span>
+<span class="co">#&gt; Reformatting ICD10-Phecode map</span>
+<span class="co">#&gt; The following 1 input ICD10 codes do not have a 1-to-1 ICD10_CODE-to-ALT_CODE mapping: 'M90.0'. There will therefore be *more* output than input codes</span>
+<span class="co">#&gt; Reformatting ICD9-Phecode map</span>
+<span class="co">#&gt; Success!</span>
+
+<span class="co"># reformat CALIBER codes for UK Biobank, and map from ICD10 and Read 2 to ICD9 and Read 3 respectively (warnings suppressed)</span>
+<span class="va">caliber_ukb_dummy</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/warning.html" class="external-link">suppressWarnings</a></span><span class="op">(</span><span class="fu"><a href="../reference/reformat_caliber_for_ukb.html">reformat_caliber_for_ukb</a></span><span class="op">(</span>
+  <span class="va">caliber_raw_dummy</span>,
+  all_lkps_maps <span class="op">=</span> <span class="va">all_lkps_maps_dummy</span>,
+  overlapping_disease_categories_csv <span class="op">=</span> <span class="fu"><a href="../reference/default_overlapping_disease_categories_csv.html">default_overlapping_disease_categories_csv</a></span><span class="op">(</span><span class="op">)</span>
+<span class="op">)</span><span class="op">)</span>
+<span class="co">#&gt; Reformatting Read 2 codes</span>
+<span class="co">#&gt; Reformatting ICD10 codes</span>
+<span class="co">#&gt; The following 1 input ICD10 codes do not have a 1-to-1 ICD10_CODE-to-ALT_CODE mapping: 'M90.0'. There will therefore be *more* output than input codes</span>
+<span class="co">#&gt; Reformatting OPCS4 codes</span>
+<span class="co">#&gt; Mapping read2 codes to read3</span>
+<span class="co">#&gt; Mapping icd10 to icd9 codes</span>
+
+<span class="co"># view first few rows</span>
+<span class="va">caliber_ukb_dummy</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> 
+  <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> 
+  <span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span><span class="op">)</span></code></pre></div>
+<table style="width:100%;" class="table">
+<colgroup>
+<col width="7%">
+<col width="47%">
+<col width="24%">
+<col width="8%">
+<col width="5%">
+<col width="6%">
+</colgroup>
+<thead><tr class="header">
+<th align="left">disease</th>
+<th align="left">description</th>
+<th align="left">category</th>
+<th align="left">code_type</th>
+<th align="left">code</th>
+<th align="left">author</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left">Diabetes</td>
+<td align="left">Type 1 diabetes mellitus</td>
+<td align="left">Type I diabetes mellitus (3)</td>
+<td align="left">read2</td>
+<td align="left">C108.</td>
+<td align="left">caliber</td>
+</tr>
+<tr class="even">
+<td align="left">Diabetes</td>
+<td align="left">Type I diabetes mellitus with renal complications</td>
+<td align="left">Type I diabetes mellitus (3)</td>
+<td align="left">read2</td>
+<td align="left">C1080</td>
+<td align="left">caliber</td>
+</tr>
+<tr class="odd">
+<td align="left">Diabetes</td>
+<td align="left">Type I diabetes mellitus with neurological complications</td>
+<td align="left">Type I diabetes mellitus (3)</td>
+<td align="left">read2</td>
+<td align="left">C1082</td>
+<td align="left">caliber</td>
+</tr>
+<tr class="even">
+<td align="left">Diabetes</td>
+<td align="left">Unstable type I diabetes mellitus</td>
+<td align="left">Type I diabetes mellitus (3)</td>
+<td align="left">read2</td>
+<td align="left">C1084</td>
+<td align="left">caliber</td>
+</tr>
+<tr class="odd">
+<td align="left">Diabetes</td>
+<td align="left">Type I diabetes mellitus with ulcer</td>
+<td align="left">Type I diabetes mellitus (3)</td>
+<td align="left">read2</td>
+<td align="left">C1085</td>
+<td align="left">caliber</td>
+</tr>
+<tr class="even">
+<td align="left">Diabetes</td>
+<td align="left">Type I diabetes mellitus with retinopathy</td>
+<td align="left">Type I diabetes mellitus (3)</td>
+<td align="left">read2</td>
+<td align="left">C1087</td>
+<td align="left">caliber</td>
+</tr>
+</tbody>
+</table>
 <p>This vignette outlines the steps performed by <code><a href="../reference/read_caliber_raw.html">read_caliber_raw()</a></code> and <code><a href="../reference/reformat_caliber_for_ukb.html">reformat_caliber_for_ukb()</a></code> to achieve this.</p>
 </div>
 <div class="section level2">
@@ -124,11 +244,160 @@
 <li>Remove the last 2 digits from all Read 2 codes (these indicate whether the associated description is ‘preferred’ or ‘alternative’).</li>
 <li>Filter for just one code description per code (in some cases, one or more alternative descriptions are included because they map to distinct Medcodes e.g. see preferred and alternative descriptions for ‘7K1D0’ under <a href="https://github.com/spiros/chronological-map-phenotypes/blob/master/primary_care/CPRD_fracture_hip.csv" class="external-link">‘Fracture of hip’</a>).</li>
 </ul>
+<p>Before:</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">caliber_raw_dummy</span><span class="op">$</span><span class="va">read2</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> 
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html" class="external-link">arrange</a></span><span class="op">(</span><span class="va">category</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> 
+  <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> 
+  <span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span><span class="op">)</span></code></pre></div>
+<table class="table">
+<colgroup>
+<col width="22%">
+<col width="31%">
+<col width="30%">
+<col width="6%">
+<col width="4%">
+<col width="4%">
+</colgroup>
+<thead><tr class="header">
+<th align="left">disease</th>
+<th align="left">description</th>
+<th align="left">category</th>
+<th align="left">code_type</th>
+<th align="left">code</th>
+<th align="left">author</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left">Diabetic neurological complications</td>
+<td align="left">Diabetes mellitus with neurological manifestation</td>
+<td align="left">Diagnosis of diabetic neurological complications</td>
+<td align="left">Readcode</td>
+<td align="left">C106.00</td>
+<td align="left">caliber</td>
+</tr>
+<tr class="even">
+<td align="left">Diabetic neurological complications</td>
+<td align="left">Diabetes mellitus with neurological manifestation</td>
+<td align="left">Diagnosis of diabetic neurological complications</td>
+<td align="left">Medcode</td>
+<td align="left">16230</td>
+<td align="left">caliber</td>
+</tr>
+<tr class="odd">
+<td align="left">Diabetic neurological complications</td>
+<td align="left">Diabetic amyotrophy</td>
+<td align="left">Diagnosis of diabetic neurological complications</td>
+<td align="left">Readcode</td>
+<td align="left">C106.11</td>
+<td align="left">caliber</td>
+</tr>
+<tr class="even">
+<td align="left">Diabetic neurological complications</td>
+<td align="left">Diabetic amyotrophy</td>
+<td align="left">Diagnosis of diabetic neurological complications</td>
+<td align="left">Medcode</td>
+<td align="left">59903</td>
+<td align="left">caliber</td>
+</tr>
+<tr class="odd">
+<td align="left">Diabetic neurological complications</td>
+<td align="left">Diabetes mellitus with neuropathy</td>
+<td align="left">Diagnosis of diabetic neurological complications</td>
+<td align="left">Readcode</td>
+<td align="left">C106.12</td>
+<td align="left">caliber</td>
+</tr>
+<tr class="even">
+<td align="left">Diabetic neurological complications</td>
+<td align="left">Diabetes mellitus with neuropathy</td>
+<td align="left">Diagnosis of diabetic neurological complications</td>
+<td align="left">Medcode</td>
+<td align="left">7795</td>
+<td align="left">caliber</td>
+</tr>
+</tbody>
+</table>
+<p>After:</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">caliber_ukb_dummy</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> 
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html" class="external-link">arrange</a></span><span class="op">(</span><span class="va">category</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> 
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">code_type</span> <span class="op">==</span> <span class="st">"read2"</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> 
+  <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> 
+  <span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span><span class="op">)</span></code></pre></div>
+<table class="table">
+<colgroup>
+<col width="22%">
+<col width="31%">
+<col width="30%">
+<col width="6%">
+<col width="3%">
+<col width="5%">
+</colgroup>
+<thead><tr class="header">
+<th align="left">disease</th>
+<th align="left">description</th>
+<th align="left">category</th>
+<th align="left">code_type</th>
+<th align="left">code</th>
+<th align="left">author</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left">Diabetic neurological complications</td>
+<td align="left">Diabetes mellitus with neurological manifestation</td>
+<td align="left">Diagnosis of diabetic neurological complications</td>
+<td align="left">read2</td>
+<td align="left">C106.</td>
+<td align="left">caliber</td>
+</tr>
+<tr class="even">
+<td align="left">End stage renal disease</td>
+<td align="left">End stage renal failure</td>
+<td align="left">Diagnosis of End stage renal disease</td>
+<td align="left">read2</td>
+<td align="left">K05..</td>
+<td align="left">caliber</td>
+</tr>
+<tr class="odd">
+<td align="left">End stage renal disease</td>
+<td align="left">End stage renal failure</td>
+<td align="left">Diagnosis of End stage renal disease</td>
+<td align="left">read2</td>
+<td align="left">K050.</td>
+<td align="left">caliber</td>
+</tr>
+<tr class="even">
+<td align="left">Diabetic neurological complications</td>
+<td align="left">Myasthenic syndrome due to diabetic amyotrophy</td>
+<td align="left">History of diabetic neurological complications</td>
+<td align="left">read2</td>
+<td align="left">F3813</td>
+<td align="left">caliber</td>
+</tr>
+<tr class="odd">
+<td align="left">Hypertension</td>
+<td align="left">Essential hypertension</td>
+<td align="left">Hypertension (3)</td>
+<td align="left">read2</td>
+<td align="left">G20..</td>
+<td align="left">caliber</td>
+</tr>
+<tr class="even">
+<td align="left">End stage renal disease</td>
+<td align="left">End-stage renal disease</td>
+<td align="left">Procedure for End stage renal disease</td>
+<td align="left">read2</td>
+<td align="left">K0D..</td>
+<td align="left">caliber</td>
+</tr>
+</tbody>
+</table>
 <p>The following read codes are not present in the Read 2 lookup table provided by UK Biobank resource 592:</p>
 <table class="table">
 <colgroup>
-<col width="27%">
-<col width="72%">
+<col width="25%">
+<col width="75%">
 </colgroup>
 <thead><tr class="header">
 <th>CALIBER disease</th>
@@ -215,6 +484,155 @@
 </li>
 <li>Expand any four character ICD10 codes with a ‘modifier 5’ to include their five character children. For example, ‘M90.0’ (Tuberculosis of bone) is expanded to include ‘M900’, ‘M9000’, ‘M9001’, ‘M9002’, ‘M9003’, ‘M9004’, ‘M9005’, ‘M9006’, ‘M9007’, ‘M9008’ and ‘M9009’.</li>
 </ul>
+<p>Before:</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">caliber_raw_dummy</span><span class="op">$</span><span class="va">icd10</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> 
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html" class="external-link">arrange</a></span><span class="op">(</span><span class="va">category</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> 
+  <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> 
+  <span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span><span class="op">)</span></code></pre></div>
+<table class="table">
+<colgroup>
+<col width="30%">
+<col width="19%">
+<col width="37%">
+<col width="5%">
+<col width="3%">
+<col width="4%">
+</colgroup>
+<thead><tr class="header">
+<th align="left">disease</th>
+<th align="left">description</th>
+<th align="left">category</th>
+<th align="left">code_type</th>
+<th align="left">code</th>
+<th align="left">author</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left">Asthma</td>
+<td align="left">Asthma</td>
+<td align="left">Diagnosis of Asthma</td>
+<td align="left">icd10</td>
+<td align="left">J45</td>
+<td align="left">caliber</td>
+</tr>
+<tr class="even">
+<td align="left">Bacterial Diseases (excl TB)</td>
+<td align="left">Scarlet fever</td>
+<td align="left">Diagnosis of Bacterial Diseases (excl TB)</td>
+<td align="left">icd10</td>
+<td align="left">A38</td>
+<td align="left">caliber</td>
+</tr>
+<tr class="odd">
+<td align="left">Bacterial Diseases (excl TB)</td>
+<td align="left">Osteomyelitis</td>
+<td align="left">Diagnosis of Bacterial Diseases (excl TB)</td>
+<td align="left">icd10</td>
+<td align="left">M86</td>
+<td align="left">caliber</td>
+</tr>
+<tr class="even">
+<td align="left">Postviral fatigue syndrome, neurasthenia and fibromyalgia</td>
+<td align="left">Neurasthenia</td>
+<td align="left">Diagnosis of Postviral fatigue syndrome, neurasthenia and fibromyalgia</td>
+<td align="left">icd10</td>
+<td align="left">F48.0</td>
+<td align="left">caliber</td>
+</tr>
+<tr class="odd">
+<td align="left">Tuberculosis</td>
+<td align="left">Tuberculosis of bone</td>
+<td align="left">Diagnosis of Tuberculosis</td>
+<td align="left">icd10</td>
+<td align="left">M90.0</td>
+<td align="left">caliber</td>
+</tr>
+<tr class="even">
+<td align="left">Diabetes</td>
+<td align="left">Insulin-dependent diabetes mellitus</td>
+<td align="left">Insulin dependent diabetes (3)</td>
+<td align="left">icd10</td>
+<td align="left">E10</td>
+<td align="left">caliber</td>
+</tr>
+</tbody>
+</table>
+<p>After:</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">caliber_ukb_dummy</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> 
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">code_type</span> <span class="op">==</span> <span class="st">"icd10"</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> 
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html" class="external-link">arrange</a></span><span class="op">(</span><span class="va">category</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> 
+  <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> 
+  <span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span><span class="op">)</span></code></pre></div>
+<table class="table">
+<colgroup>
+<col width="23%">
+<col width="24%">
+<col width="33%">
+<col width="8%">
+<col width="4%">
+<col width="6%">
+</colgroup>
+<thead><tr class="header">
+<th align="left">disease</th>
+<th align="left">description</th>
+<th align="left">category</th>
+<th align="left">code_type</th>
+<th align="left">code</th>
+<th align="left">author</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left">Asthma</td>
+<td align="left">Asthma</td>
+<td align="left">Diagnosis of Asthma</td>
+<td align="left">icd10</td>
+<td align="left">J45</td>
+<td align="left">caliber</td>
+</tr>
+<tr class="even">
+<td align="left">Asthma</td>
+<td align="left">Predominantly allergic asthma</td>
+<td align="left">Diagnosis of Asthma</td>
+<td align="left">icd10</td>
+<td align="left">J450</td>
+<td align="left">caliber</td>
+</tr>
+<tr class="odd">
+<td align="left">Asthma</td>
+<td align="left">Nonallergic asthma</td>
+<td align="left">Diagnosis of Asthma</td>
+<td align="left">icd10</td>
+<td align="left">J451</td>
+<td align="left">caliber</td>
+</tr>
+<tr class="even">
+<td align="left">Asthma</td>
+<td align="left">Mixed asthma</td>
+<td align="left">Diagnosis of Asthma</td>
+<td align="left">icd10</td>
+<td align="left">J458</td>
+<td align="left">caliber</td>
+</tr>
+<tr class="odd">
+<td align="left">Asthma</td>
+<td align="left">Asthma, unspecified</td>
+<td align="left">Diagnosis of Asthma</td>
+<td align="left">icd10</td>
+<td align="left">J459</td>
+<td align="left">caliber</td>
+</tr>
+<tr class="even">
+<td align="left">Bacterial Diseases (excl TB)</td>
+<td align="left">Scarlet fever</td>
+<td align="left">Diagnosis of Bacterial Diseases (excl TB)</td>
+<td align="left">icd10</td>
+<td align="left">A38</td>
+<td align="left">caliber</td>
+</tr>
+</tbody>
+</table>
 <p>The following ICD10 codes are not present in the ICD10 lookup table provided by UK Biobank resource 592:<a href="#fn3" class="footnote-ref" id="fnref3"><sup>3</sup></a></p>
 <table class="table">
 <thead><tr class="header">
@@ -239,6 +657,139 @@
 <ul>
 <li>Remove ‘.’ from all codes (e.g. ‘H01.1’ becomes ‘H011’).</li>
 </ul>
+<p>Before:</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">caliber_raw_dummy</span><span class="op">$</span><span class="va">opcs4</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> 
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html" class="external-link">arrange</a></span><span class="op">(</span><span class="va">category</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> 
+  <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> 
+  <span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span><span class="op">)</span></code></pre></div>
+<table class="table">
+<colgroup>
+<col width="10%">
+<col width="47%">
+<col width="22%">
+<col width="8%">
+<col width="4%">
+<col width="6%">
+</colgroup>
+<thead><tr class="header">
+<th align="left">disease</th>
+<th align="left">description</th>
+<th align="left">category</th>
+<th align="left">code_type</th>
+<th align="left">code</th>
+<th align="left">author</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left">Appendicitis</td>
+<td align="left">Emergency excision of appendix</td>
+<td align="left">Procedure for Appendicitis</td>
+<td align="left">opcs4</td>
+<td align="left">H01</td>
+<td align="left">caliber</td>
+</tr>
+<tr class="even">
+<td align="left">Appendicitis</td>
+<td align="left">Emergency excision of abnormal appendix and drainage HFQ</td>
+<td align="left">Procedure for Appendicitis</td>
+<td align="left">opcs4</td>
+<td align="left">H01.1</td>
+<td align="left">caliber</td>
+</tr>
+<tr class="odd">
+<td align="left">Appendicitis</td>
+<td align="left">Emergency excision of abnormal appendix NEC</td>
+<td align="left">Procedure for Appendicitis</td>
+<td align="left">opcs4</td>
+<td align="left">H01.2</td>
+<td align="left">caliber</td>
+</tr>
+<tr class="even">
+<td align="left">Appendicitis</td>
+<td align="left">Other specified emergency excision of appendix</td>
+<td align="left">Procedure for Appendicitis</td>
+<td align="left">opcs4</td>
+<td align="left">H01.8</td>
+<td align="left">caliber</td>
+</tr>
+<tr class="odd">
+<td align="left">Appendicitis</td>
+<td align="left">Unspecified emergency excision of appendix</td>
+<td align="left">Procedure for Appendicitis</td>
+<td align="left">opcs4</td>
+<td align="left">H01.9</td>
+<td align="left">caliber</td>
+</tr>
+</tbody>
+</table>
+<p>After:</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">caliber_ukb_dummy</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> 
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">code_type</span> <span class="op">==</span> <span class="st">"opcs4"</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> 
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html" class="external-link">arrange</a></span><span class="op">(</span><span class="va">category</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> 
+  <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> 
+  <span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span><span class="op">)</span></code></pre></div>
+<table style="width:100%;" class="table">
+<colgroup>
+<col width="10%">
+<col width="47%">
+<col width="22%">
+<col width="8%">
+<col width="4%">
+<col width="6%">
+</colgroup>
+<thead><tr class="header">
+<th align="left">disease</th>
+<th align="left">description</th>
+<th align="left">category</th>
+<th align="left">code_type</th>
+<th align="left">code</th>
+<th align="left">author</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left">Appendicitis</td>
+<td align="left">Emergency excision of appendix</td>
+<td align="left">Procedure for Appendicitis</td>
+<td align="left">opcs4</td>
+<td align="left">H01</td>
+<td align="left">caliber</td>
+</tr>
+<tr class="even">
+<td align="left">Appendicitis</td>
+<td align="left">Emergency excision of abnormal appendix and drainage HFQ</td>
+<td align="left">Procedure for Appendicitis</td>
+<td align="left">opcs4</td>
+<td align="left">H011</td>
+<td align="left">caliber</td>
+</tr>
+<tr class="odd">
+<td align="left">Appendicitis</td>
+<td align="left">Emergency excision of abnormal appendix NEC</td>
+<td align="left">Procedure for Appendicitis</td>
+<td align="left">opcs4</td>
+<td align="left">H012</td>
+<td align="left">caliber</td>
+</tr>
+<tr class="even">
+<td align="left">Appendicitis</td>
+<td align="left">Other specified emergency excision of appendix</td>
+<td align="left">Procedure for Appendicitis</td>
+<td align="left">opcs4</td>
+<td align="left">H018</td>
+<td align="left">caliber</td>
+</tr>
+<tr class="odd">
+<td align="left">Appendicitis</td>
+<td align="left">Unspecified emergency excision of appendix</td>
+<td align="left">Procedure for Appendicitis</td>
+<td align="left">opcs4</td>
+<td align="left">H019</td>
+<td align="left">caliber</td>
+</tr>
+</tbody>
+</table>
 </div>
 </div>
 <div class="section level2">
@@ -265,8 +816,8 @@
 <h3 id="overlapping-disease-categories">Overlapping disease categories<a class="anchor" aria-label="anchor" href="#overlapping-disease-categories"></a>
 </h3>
 <p>The mapping process results in some codes appearing under more than one disease category within a single disease. As a general rule, subcategories within a clinical code list should be mutually exclusive (e.g. a clinical code list for diabetes may be sub categorised into type 1 and type 2 diabetes - a clinical code for type 1 diabetes should not also be used for type 2 diabetes).<a href="#fn6" class="footnote-ref" id="fnref6"><sup>6</sup></a></p>
-<p>By default, these cases are dealt with by setting argument <code>overlapping_disease_categories_csv = default_overlapping_disease_categories_csv()</code> in <code><a href="../reference/reformat_caliber_for_ukb.html">reformat_caliber_for_ukb()</a></code>. This uses a csv file which has been manually annotated (‘Y’ in column ‘keep’) to indicate which disease category a code should belong to:</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<p>By default, these cases are dealt with by using <code><a href="../reference/default_overlapping_disease_categories_csv.html">default_overlapping_disease_categories_csv()</a></code> with <code><a href="../reference/reformat_caliber_for_ukb.html">reformat_caliber_for_ukb()</a></code>. This uses the following csv file, which has been manually annotated (‘Y’ in column ‘keep’) to indicate which disease category a code should belong to:</p>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.csv</a></span><span class="op">(</span><span class="fu"><a href="../reference/default_overlapping_disease_categories_csv.html">default_overlapping_disease_categories_csv</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> 
   <span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span><span class="op">)</span></code></pre></div>
 <table style="width:100%;" class="table">

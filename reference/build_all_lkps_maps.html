@@ -43,6 +43,15 @@ here)."><!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/math
   <ul class="dropdown-menu" role="menu"><li>
       <a href="../articles/caliber.html">CALIBER code lists</a>
     </li>
+    <li>
+      <a href="../articles/icd10_formats.html">ICD10 code formats</a>
+    </li>
+    <li>
+      <a href="../articles/map_codes.html">Mapping between clinical coding systems</a>
+    </li>
+    <li>
+      <a href="../articles/phecodes.html">Phecodes</a>
+    </li>
   </ul></li>
       </ul><ul class="nav navbar-nav navbar-right"><li>
   <a href="https://github.com/rmgpanw/codemapper/" class="external-link">
@@ -81,9 +90,9 @@ UK Biobank codings file (available
   bnf_dmd <span class="op">=</span> <span class="fu"><a href="get_nhsbsa_snomed_bnf.html">get_nhsbsa_snomed_bnf</a></span><span class="op">(</span><span class="op">)</span>,
   self_report_med_to_atc_map <span class="op">=</span> <span class="fu"><a href="get_ukb_self_report_med_to_atc_map.html">get_ukb_self_report_med_to_atc_map</a></span><span class="op">(</span><span class="op">)</span>,
   ctv3sctmap2 <span class="op">=</span> <span class="cn">NULL</span>,
-  phecode_1_2_lkp <span class="op">=</span> <span class="cn">NULL</span>,
-  icd10_phecode_1_2 <span class="op">=</span> <span class="cn">NULL</span>,
-  icd9_phecode_1_2 <span class="op">=</span> <span class="cn">NULL</span>
+  phecode_1_2_lkp <span class="op">=</span> <span class="fu"><a href="get_phecode_definitions.html">get_phecode_definitions</a></span><span class="op">(</span><span class="op">)</span>,
+  icd10_phecode_1_2 <span class="op">=</span> <span class="fu"><a href="get_phecode_icd10_map.html">get_phecode_icd10_map</a></span><span class="op">(</span><span class="op">)</span>,
+  icd9_phecode_1_2 <span class="op">=</span> <span class="fu"><a href="get_phecode_icd9_map.html">get_phecode_icd9_map</a></span><span class="op">(</span><span class="op">)</span>
 <span class="op">)</span></code></pre></div>
     </div>
 
@@ -96,23 +105,24 @@ UK Biobank codings file (available
 <dd><p>The UK Biobank codings file, as returned by
 <code><a href="https://rdrr.io/pkg/ukbwranglr/man/get_ukb_codings_direct.html" class="external-link">get_ukb_codings_direct</a></code>.</p></dd>
 <dt>bnf_dmd</dt>
-<dd><p>Optional: a data frame, the NHSBSA BNF-SNOMED mapping table as
-returned by <code><a href="get_nhsbsa_snomed_bnf.html">get_nhsbsa_snomed_bnf</a></code>.</p></dd>
+<dd><p>Optional: path to the NHSBSA BNF-SNOMED mapping table (see
+<code><a href="get_nhsbsa_snomed_bnf.html">get_nhsbsa_snomed_bnf()</a></code>).</p></dd>
 <dt>self_report_med_to_atc_map</dt>
-<dd><p>Optional: a data frame (see
+<dd><p>Optional: path to a UK Biobank
+self-reported medication to ATC map (see
 <code><a href="get_ukb_self_report_med_to_atc_map.html">get_ukb_self_report_med_to_atc_map()</a></code>).</p></dd>
 <dt>ctv3sctmap2</dt>
 <dd><p>Optional: path to the NHS TRUD mapping file for Read 3 to
 SNOMEDCT ("ctv3sctmap2_uk_20200401000001.txt").</p></dd>
 <dt>phecode_1_2_lkp</dt>
 <dd><p>Optional: path to the phecode v1.2 lookup file
-("phecode_definitions1.2.csv.zip").</p></dd>
+(see <code><a href="get_phecode_definitions.html">get_phecode_definitions()</a></code>).</p></dd>
 <dt>icd10_phecode_1_2</dt>
 <dd><p>Optional: path to the phecode v1.2 to ICD10 mapping
-file ("Phecode_map_v1_2_icd10_beta.csv.zip").</p></dd>
+file (see <code><a href="get_phecode_icd10_map.html">get_phecode_icd10_map()</a></code>).</p></dd>
 <dt>icd9_phecode_1_2</dt>
 <dd><p>Optional: path to the phecode v1.2 to ICD10 mapping
-file ("phecode_icd9_map_unrolled.csv.zip").</p></dd>
+file (see <code><a href="get_phecode_icd9_map.html">get_phecode_icd9_map()</a></code>).</p></dd>
 </dl></div>
     <div id="value">
     <h2>Value</h2>

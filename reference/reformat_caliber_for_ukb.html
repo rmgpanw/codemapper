@@ -39,6 +39,15 @@ ICD9. See vignette("caliber") for further details.'><!-- mathjax --><script src=
   <ul class="dropdown-menu" role="menu"><li>
       <a href="../articles/caliber.html">CALIBER code lists</a>
     </li>
+    <li>
+      <a href="../articles/icd10_formats.html">ICD10 code formats</a>
+    </li>
+    <li>
+      <a href="../articles/map_codes.html">Mapping between clinical coding systems</a>
+    </li>
+    <li>
+      <a href="../articles/phecodes.html">Phecodes</a>
+    </li>
   </ul></li>
       </ul><ul class="nav navbar-nav navbar-right"><li>
   <a href="https://github.com/rmgpanw/codemapper/" class="external-link">
@@ -135,7 +144,9 @@ set to <code><a href="default_overlapping_disease_categories_csv.html">default_o
 <span class="r-in"><span class="co"># build dummy all_lkps_maps</span></span>
 <span class="r-in"><span class="va">all_lkps_maps</span> <span class="op">&lt;-</span> <span class="fu"><a href="build_all_lkps_maps_dummy.html">build_all_lkps_maps_dummy</a></span><span class="op">(</span><span class="op">)</span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Extending tables in UKB resource 592</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Reformatting ICD10-Phecode map</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> The following 1 input ICD10 codes do not have a 1-to-1 ICD10_CODE-to-ALT_CODE mapping: 'M90.0'. There will therefore be *more* output than input codes</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Reformatting ICD9-Phecode map</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Success!</span>
 <span class="r-in"></span>
 <span class="r-in"><span class="co"># reformat CALIBER codes for UK Biobank</span></span>

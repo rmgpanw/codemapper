@@ -38,6 +38,15 @@ included with this package."><!-- mathjax --><script src="https://cdnjs.cloudfla
   <ul class="dropdown-menu" role="menu"><li>
       <a href="../articles/caliber.html">CALIBER code lists</a>
     </li>
+    <li>
+      <a href="../articles/icd10_formats.html">ICD10 code formats</a>
+    </li>
+    <li>
+      <a href="../articles/map_codes.html">Mapping between clinical coding systems</a>
+    </li>
+    <li>
+      <a href="../articles/phecodes.html">Phecodes</a>
+    </li>
   </ul></li>
       </ul><ul class="nav navbar-nav navbar-right"><li>
   <a href="https://github.com/rmgpanw/codemapper/" class="external-link">
@@ -92,7 +101,9 @@ included with this package.</p>
     <h2>Examples</h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span class="fu">build_all_lkps_maps_dummy</span><span class="op">(</span><span class="op">)</span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Extending tables in UKB resource 592</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Reformatting ICD10-Phecode map</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> The following 1 input ICD10 codes do not have a 1-to-1 ICD10_CODE-to-ALT_CODE mapping: 'M90.0'. There will therefore be *more* output than input codes</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Reformatting ICD9-Phecode map</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Success!</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $bnf_lkp</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 25 × 10</span></span>
