@@ -4,10 +4,15 @@
 \alias{get_phecode_icd10_map}
 \title{Download the Phecode 1.2 to ICD10 (beta) mapping file}
 \usage{
-get_phecode_icd10_map()
+get_phecode_icd10_map(
+  path = file.path(tempdir(), "Phecode_map_v1_2_icd10_beta.csv.zip")
+)
+}
+\arguments{
+\item{path}{Path where file will be downloaded to.}
 }
 \value{
-File path to downloaded file in \code{tempdir()}.
+File path to downloaded file.
 }
 \description{
 Download link obtained from https://phewascatalog.org/phecodes.

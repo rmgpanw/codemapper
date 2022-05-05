@@ -56,6 +56,22 @@ dataset}. This function converts from one format to the other, with the
 option to strip the final 'X' from undivided 3 character codes if converting
 to \code{ALT_CODE} format.
 }
+\examples{
+# build dummy all_lkps_maps
+all_lkps_maps_dummy <- suppressMessages(build_all_lkps_maps_dummy())
+
+# reformat from ICD10_CODE to ALT_CODE
+reformat_icd10_codes(icd10_codes = c("E10.9"),
+  all_lkps_maps = all_lkps_maps_dummy,
+  input_icd10_format = "ICD10_CODE",
+  output_icd10_format = "ALT_CODE")
+
+# reformat from ALT_CODE to ICD10_CODE
+reformat_icd10_codes(icd10_codes = c("E109"),
+  all_lkps_maps = all_lkps_maps_dummy,
+  input_icd10_format = "ALT_CODE",
+  output_icd10_format = "ICD10_CODE")
+}
 \seealso{
 Other Clinical code lookups and mappings: 
 \code{\link{codes_starting_with}()},

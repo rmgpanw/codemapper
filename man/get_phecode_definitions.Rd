@@ -4,10 +4,15 @@
 \alias{get_phecode_definitions}
 \title{Download the Phecode 1.2 definitions file}
 \usage{
-get_phecode_definitions()
+get_phecode_definitions(
+  path = file.path(tempdir(), "phecode_definitions1.2.csv.zip")
+)
+}
+\arguments{
+\item{path}{Path where file will be downloaded to.}
 }
 \value{
-File path to downloaded file in \code{tempdir()}.
+File path to downloaded file.
 }
 \description{
 Download link obtained from https://phewascatalog.org/phecodes.

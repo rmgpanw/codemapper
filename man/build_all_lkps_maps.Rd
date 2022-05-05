@@ -10,9 +10,9 @@ build_all_lkps_maps(
   bnf_dmd = get_nhsbsa_snomed_bnf(),
   self_report_med_to_atc_map = get_ukb_self_report_med_to_atc_map(),
   ctv3sctmap2 = NULL,
-  phecode_1_2_lkp = NULL,
-  icd10_phecode_1_2 = NULL,
-  icd9_phecode_1_2 = NULL
+  phecode_1_2_lkp = get_phecode_definitions(),
+  icd10_phecode_1_2 = get_phecode_icd10_map(),
+  icd9_phecode_1_2 = get_phecode_icd9_map()
 )
 }
 \arguments{
@@ -22,23 +22,24 @@ build_all_lkps_maps(
 \item{ukb_codings}{The UK Biobank codings file, as returned by
 \code{\link[ukbwranglr]{get_ukb_codings_direct}}.}
 
-\item{bnf_dmd}{Optional: a data frame, the NHSBSA BNF-SNOMED mapping table as
-returned by \code{\link{get_nhsbsa_snomed_bnf}}.}
+\item{bnf_dmd}{Optional: path to the NHSBSA BNF-SNOMED mapping table (see
+\code{\link[=get_nhsbsa_snomed_bnf]{get_nhsbsa_snomed_bnf()}}).}
 
-\item{self_report_med_to_atc_map}{Optional: a data frame (see
+\item{self_report_med_to_atc_map}{Optional: path to a UK Biobank
+self-reported medication to ATC map (see
 \code{\link[=get_ukb_self_report_med_to_atc_map]{get_ukb_self_report_med_to_atc_map()}}).}
 
 \item{ctv3sctmap2}{Optional: path to the NHS TRUD mapping file for Read 3 to
 SNOMEDCT ("ctv3sctmap2_uk_20200401000001.txt").}
 
 \item{phecode_1_2_lkp}{Optional: path to the phecode v1.2 lookup file
-("phecode_definitions1.2.csv.zip").}
+(see \code{\link[=get_phecode_definitions]{get_phecode_definitions()}}).}
 
 \item{icd10_phecode_1_2}{Optional: path to the phecode v1.2 to ICD10 mapping
-file ("Phecode_map_v1_2_icd10_beta.csv.zip").}
+file (see \code{\link[=get_phecode_icd10_map]{get_phecode_icd10_map()}}).}
 
 \item{icd9_phecode_1_2}{Optional: path to the phecode v1.2 to ICD10 mapping
-file ("phecode_icd9_map_unrolled.csv.zip").}
+file (see \code{\link[=get_phecode_icd9_map]{get_phecode_icd9_map()}}).}
 }
 \value{
 Returns a named list of data frames.

@@ -4,12 +4,18 @@
 \alias{get_nhsbsa_snomed_bnf}
 \title{Download and read the NHSBSA BNF_SNOMED mapping file}
 \usage{
-get_nhsbsa_snomed_bnf()
+get_nhsbsa_snomed_bnf(path = file.path(tempdir(), "bnf_dmd.zip"))
+}
+\arguments{
+\item{path}{Path where file will be downloaded to.}
 }
 \value{
-A data frame.
+File path to downloaded file.
 }
 \description{
 Mapping table available from
 \href{https://www.nhsbsa.nhs.uk/prescription-data/understanding-our-data/bnf-snomed-mapping}{here}.
+}
+\examples{
+\dontrun{ get_nhsbsa_snomed_bnf() }
 }

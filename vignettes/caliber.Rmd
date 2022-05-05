@@ -59,7 +59,7 @@ This vignette outlines the steps performed by `read_caliber_raw()` and `reformat
 The following read codes are not present in the Read 2 lookup table provided by UK Biobank resource 592:
 
 | CALIBER disease                          | Unrecognised Read 2 code                                                                                                                          |
-|--------------------|----------------------------------------------------|
+|------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------|
 | Alcohol Problems                         | Z191.; Z1911; Z1912; Z4B1.                                                                                                                        |
 | Anxiety disorders                        | Z481.; Z4L1.                                                                                                                                      |
 | Coeliac disease                          | ZC2C2                                                                                                                                             |
@@ -125,12 +125,11 @@ The mapping process results in some codes appearing under more than one disease 
 
 [^6]: Note that clinical codes *may* appropriately appear under more than one disease however (e.g. 'E103' Type 1 diabetes mellitus With ophthalmic complications, is listed under both 'Diabetes' and 'Diabetic ophthalmic complications' by CALIBER)
 
-By default, these cases are dealt with by setting argument `overlapping_disease_categories_csv = default_overlapping_disease_categories_csv()` in `reformat_caliber_for_ukb()`. This uses a csv file which has been manually annotated ('Y' in column 'keep') to indicate which disease category a code should belong to:
+By default, these cases are dealt with by using `default_overlapping_disease_categories_csv()` with `reformat_caliber_for_ukb()`. This uses the following csv file, which has been manually annotated ('Y' in column 'keep') to indicate which disease category a code should belong to:
 
 ```{r}
 read.csv(default_overlapping_disease_categories_csv()) %>% 
   knitr::kable()
 ```
-
 
 # References

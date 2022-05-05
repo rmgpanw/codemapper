@@ -4,12 +4,20 @@
 \alias{get_ukb_self_report_med_to_atc_map}
 \title{Download and read a UKB welf-reported medication code to ATC mapping file}
 \usage{
-get_ukb_self_report_med_to_atc_map()
+get_ukb_self_report_med_to_atc_map(
+  path = file.path(tempdir(), "self_report_med_to_atc_map.xlsx")
+)
+}
+\arguments{
+\item{path}{Path where file will be downloaded to.}
 }
 \value{
-A data frame.
+File path to downloaded file.
 }
 \description{
 Mapping table obtained from \href{https://www.nature.com/articles/s41467-019-09572-5#Sec23}{Wray et al 2019},
 Supplementary Data 1.
+}
+\examples{
+\dontrun{ get_nhsbsa_snomed_bnf() }
 }

@@ -4,10 +4,15 @@
 \alias{get_phecode_icd9_map}
 \title{Download the Phecode 1.2 to ICD9 mapping file}
 \usage{
-get_phecode_icd9_map()
+get_phecode_icd9_map(
+  path = file.path(tempdir(), "phecode_icd9_map_unrolled.csv.zip")
+)
+}
+\arguments{
+\item{path}{Path where file will be downloaded to.}
 }
 \value{
-File path to downloaded file in \code{tempdir()}.
+File path to downloaded file.
 }
 \description{
 Download link obtained from https://phewascatalog.org/phecodes.

@@ -15,8 +15,10 @@ Cloud](https://img.shields.io/badge/RStudio-Cloud-blue)](https://rstudio.cloud/p
 <!-- badges: end -->
 
 The goal of codemapper is to facilitate working with clinical codes used
-in electronic health records. This package relies primarily on UK
-Biobank resource 592 ([Clinical coding classification systems and
+in electronic health records.
+
+This package relies primarily on UK Biobank resource 592 ([Clinical
+coding classification systems and
 maps](https://biobank.ndph.ox.ac.uk/ukb/refer.cgi?id=592)) and the UK
 Biobank [data codings
 file](https://biobank.ctsu.ox.ac.uk/crystal/exinfo.cgi?src=accessing_data_guide),
@@ -82,3 +84,12 @@ htn_icd10
 #>   <chr> <chr>                            <chr>    
 #> 1 I10X  Essential (primary) hypertension icd10
 ```
+
+See `vignette(codemapper)` for further details, including how to build a
+clinical codelist with R Shiny using `runCodelistBuilder()`.
+
+## UK Biobank
+
+Also included are functions for using CALIBER code lists
+(`vignette('caliber')`) and Phecodes (`vignette('phecodes')`) with UK
+Biobank data.
