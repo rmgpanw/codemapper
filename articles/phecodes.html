@@ -98,7 +98,7 @@
     
     
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/rmgpanw/codemapper" class="external-link">codemapper</a></span><span class="op">)</span>
+<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://rmgpanw.github.io/codemapper/" class="external-link">codemapper</a></span><span class="op">)</span>
 <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; Attaching package: 'dplyr'</span>
@@ -109,7 +109,7 @@
 <span class="co">#&gt; </span>
 <span class="co">#&gt;     intersect, setdiff, setequal, union</span>
 
-<span class="va">all_lkps_maps_dummy</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/message.html" class="external-link">suppressMessages</a></span><span class="op">(</span><span class="fu"><a href="../reference/build_all_lkps_maps_dummy.html">build_all_lkps_maps_dummy</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></code></pre></div>
+<span class="va">all_lkps_maps_dummy</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/build_all_lkps_maps_dummy.html">build_all_lkps_maps_dummy</a></span><span class="op">(</span><span class="op">)</span></code></pre></div>
 <div class="section level2">
 <h2 id="introduction">Introduction<a class="anchor" aria-label="anchor" href="#introduction"></a>
 </h2>
@@ -125,7 +125,7 @@
 <span class="va">dummy_clinical_events</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/dummy_clinical_events_tidy.html">dummy_clinical_events_tidy</a></span><span class="op">(</span><span class="op">)</span>
 
 <span class="co"># map to Phecodes</span>
-<span class="va">clinical_events_phecodes</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/map_clinical_events_to_phecodes.html">map_clinical_events_to_phecodes</a></span><span class="op">(</span>clinical_events <span class="op">=</span> <span class="va">dummy_clinical_events</span>,
+<span class="va">dummy_clinical_events_phecodes</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/map_clinical_events_to_phecodes.html">map_clinical_events_to_phecodes</a></span><span class="op">(</span>clinical_events <span class="op">=</span> <span class="va">dummy_clinical_events</span>,
                                                             all_lkps_maps <span class="op">=</span> <span class="va">all_lkps_maps_dummy</span>,
                                                             min_date_only <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span>
 <span class="co">#&gt; Identified the following 5 data sources to map to phecodes: [1] **Death register** - Underlying (primary) cause of death, [2] **Death register** - Contributory (secondary) cause of death, [3] **Primary care** - `read_2` column, data provider England (Vision), [4] **Primary care** - `read_3` column, data provider England (TPP), [5] **Summary Diagnoses - Hospital inpatient - Health-related outcomes** - Diagnoses - ICD9</span>
@@ -138,7 +138,7 @@
 <span class="co">#&gt; [5] **Summary Diagnoses - Hospital inpatient - Health-related outcomes** - Diagnoses - ICD9</span>
 <span class="co">#&gt; Time taken: 0 minutes, 0 seconds.</span>
 
-<span class="va">clinical_events_phecodes</span>
+<span class="va">dummy_clinical_events_phecodes</span>
 <span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 7</span></span>
 <span class="co">#&gt;     eid source  index code  date       icd10 phecode</span>
 <span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>  </span>
@@ -281,14 +281,29 @@
 </tr>
 </tbody>
 </table>
-<p>This may be reformatted for running a phenome-wide association study using the <a href="https://github.com/PheWAS/PheWAS" class="external-link">PheWAS package</a></p>
+<p>The the output from <code><a href="../reference/map_clinical_events_to_phecodes.html">map_clinical_events_to_phecodes()</a></code> may be reformatted for running a phenome-wide association study using the <a href="https://github.com/PheWAS/PheWAS" class="external-link">PheWAS package</a> as follows:</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">dummy_clinical_events_phecodes</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span>
+               <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">eid</span>,
+                      <span class="va">phecode</span>,
+                      <span class="va">date</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span>
+               <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>date <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span>
+               <span class="co"># ensure one phecode only per eid</span>
+               <span class="fu"><a href="https://dplyr.tidyverse.org/reference/distinct.html" class="external-link">distinct</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span>
+               <span class="fu">tidyr</span><span class="fu">::</span><span class="fu"><a href="https://tidyr.tidyverse.org/reference/pivot_wider.html" class="external-link">pivot_wider</a></span><span class="op">(</span>names_from <span class="op">=</span> <span class="va">phecode</span>,
+                           values_from <span class="op">=</span> <span class="va">date</span>,
+                           values_fill <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span>
+<span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 5</span></span>
+<span class="co">#&gt;     eid `401.1` `250.1` `706.2` `704`</span>
+<span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span></span>
+<span class="co">#&gt; <span style="color: #BCBCBC;">1</span>     1 TRUE    TRUE    TRUE    TRUE</span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="reverse-mapping">Reverse mapping<a class="anchor" aria-label="anchor" href="#reverse-mapping"></a>
 </h2>
 <p>Ideally all Read and ICD9 code to phecode mappings should be manually checked prior to their use. At the very least, any findings of interest should be manually reviewed to ascertain exactly which clinical codes were used. Use <code><a href="../reference/make_phecode_reverse_map.html">make_phecode_reverse_map()</a></code> to achieve this</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="../reference/make_phecode_reverse_map.html">make_phecode_reverse_map</a></span><span class="op">(</span>clinical_events_phecodes <span class="op">=</span> <span class="va">clinical_events_phecodes</span>,
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="../reference/make_phecode_reverse_map.html">make_phecode_reverse_map</a></span><span class="op">(</span>clinical_events_phecodes <span class="op">=</span> <span class="va">dummy_clinical_events_phecodes</span>,
                            all_lkps_maps <span class="op">=</span> <span class="va">all_lkps_maps_dummy</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> 
   <span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span><span class="op">)</span>
 <span class="co">#&gt; Time taken: 0 minutes, 0 seconds.</span></code></pre></div>

@@ -98,7 +98,7 @@
     
     
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/rmgpanw/codemapper" class="external-link">codemapper</a></span><span class="op">)</span>
+<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://rmgpanw.github.io/codemapper/" class="external-link">codemapper</a></span><span class="op">)</span>
 <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; Attaching package: 'dplyr'</span>
@@ -141,11 +141,6 @@
 
 <span class="co"># build dummy all_lkps_maps resource</span>
 <span class="va">all_lkps_maps_dummy</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/build_all_lkps_maps_dummy.html">build_all_lkps_maps_dummy</a></span><span class="op">(</span><span class="op">)</span>
-<span class="co">#&gt; Extending tables in UKB resource 592</span>
-<span class="co">#&gt; Reformatting ICD10-Phecode map</span>
-<span class="co">#&gt; The following 1 input ICD10 codes do not have a 1-to-1 ICD10_CODE-to-ALT_CODE mapping: 'M90.0'. There will therefore be *more* output than input codes</span>
-<span class="co">#&gt; Reformatting ICD9-Phecode map</span>
-<span class="co">#&gt; Success!</span>
 
 <span class="co"># reformat CALIBER codes for UK Biobank, and map from ICD10 and Read 2 to ICD9 and Read 3 respectively (warnings suppressed)</span>
 <span class="va">caliber_ukb_dummy</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/warning.html" class="external-link">suppressWarnings</a></span><span class="op">(</span><span class="fu"><a href="../reference/reformat_caliber_for_ukb.html">reformat_caliber_for_ukb</a></span><span class="op">(</span>
@@ -396,8 +391,8 @@
 <p>The following read codes are not present in the Read 2 lookup table provided by UK Biobank resource 592:</p>
 <table class="table">
 <colgroup>
-<col width="25%">
-<col width="75%">
+<col width="22%">
+<col width="77%">
 </colgroup>
 <thead><tr class="header">
 <th>CALIBER disease</th>

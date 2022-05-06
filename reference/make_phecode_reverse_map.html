@@ -112,6 +112,45 @@ method will be used in preference.</p></dd>
 codes, with code type indicated by the 'data_coding' column.</p>
     </div>
 
+    <div id="ref-examples">
+    <h2>Examples</h2>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span class="co"># build dummy all_lkps_maps</span></span>
+<span class="r-in"><span class="va">all_lkps_maps_dummy</span> <span class="op">&lt;-</span> <span class="fu"><a href="build_all_lkps_maps_dummy.html">build_all_lkps_maps_dummy</a></span><span class="op">(</span><span class="op">)</span></span>
+<span class="r-in"></span>
+<span class="r-in"><span class="co"># map dummy clinical events df to phecodes</span></span>
+<span class="r-in"><span class="va">clinical_events_phecodes_dummy</span> <span class="op">&lt;-</span> <span class="fu"><a href="map_clinical_events_to_phecodes.html">map_clinical_events_to_phecodes</a></span><span class="op">(</span></span>
+<span class="r-in">  clinical_events <span class="op">=</span> <span class="fu"><a href="dummy_clinical_events_tidy.html">dummy_clinical_events_tidy</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span class="r-in">  all_lkps_maps <span class="op">=</span> <span class="va">all_lkps_maps_dummy</span>,</span>
+<span class="r-in">  min_date_only <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span class="r-in"><span class="op">)</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Identified the following 5 data sources to map to phecodes: [1] **Death register** - Underlying (primary) cause of death, [2] **Death register** - Contributory (secondary) cause of death, [3] **Primary care** - `read_2` column, data provider England (Vision), [4] **Primary care** - `read_3` column, data provider England (TPP), [5] **Summary Diagnoses - Hospital inpatient - Health-related outcomes** - Diagnoses - ICD9</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> ***MAPPING clinical_events TO PHECODES***</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> [1] **Death register** - Underlying (primary) cause of death</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> [2] **Death register** - Contributory (secondary) cause of death</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> [3] **Primary care** - `read_2` column, data provider England (Vision)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> [4] **Primary care** - `read_3` column, data provider England (TPP)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> [5] **Summary Diagnoses - Hospital inpatient - Health-related outcomes** - Diagnoses - ICD9</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Time taken: 0 minutes, 0 seconds.</span>
+<span class="r-in"></span>
+<span class="r-in"><span class="co"># create reverse map</span></span>
+<span class="r-in"><span class="fu">make_phecode_reverse_map</span><span class="op">(</span></span>
+<span class="r-in">  clinical_events_phecodes <span class="op">=</span> <span class="va">clinical_events_phecodes_dummy</span>,</span>
+<span class="r-in">  all_lkps_maps <span class="op">=</span> <span class="va">all_lkps_maps_dummy</span></span>
+<span class="r-in"><span class="op">)</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Time taken: 0 minutes, 0 seconds.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 6 × 7</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   phecode phecode_description     data_coding code  description icd10_equivalent</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>           </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> 401.1   Essential hypertension  icd10       I10   Essential … I10             </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> 250.1   Type 1 diabetes         icd10       E109  Type 1 dia… E109            </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span> 401.1   Essential hypertension  icd9        4019  ESSENTIAL … I10             </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">4</span> 706.2   Sebaceous cyst          read3       XaIP9 Sebaceous … L721            </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">5</span> 704     Diseases of hair and h… read3       XaIP9 Sebaceous … L721            </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">6</span> 401.1   Essential hypertension  read3       XE0Uc Essential … I10             </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># … with 1 more variable: icd10_description &lt;chr&gt;</span></span>
+</code></pre></div>
+    </div>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top"><h2 data-toc-skip>Contents</h2>

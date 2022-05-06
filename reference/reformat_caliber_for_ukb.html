@@ -143,11 +143,6 @@ set to <code><a href="default_overlapping_disease_categories_csv.html">default_o
 <span class="r-in"></span>
 <span class="r-in"><span class="co"># build dummy all_lkps_maps</span></span>
 <span class="r-in"><span class="va">all_lkps_maps</span> <span class="op">&lt;-</span> <span class="fu"><a href="build_all_lkps_maps_dummy.html">build_all_lkps_maps_dummy</a></span><span class="op">(</span><span class="op">)</span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Extending tables in UKB resource 592</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Reformatting ICD10-Phecode map</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> The following 1 input ICD10 codes do not have a 1-to-1 ICD10_CODE-to-ALT_CODE mapping: 'M90.0'. There will therefore be *more* output than input codes</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Reformatting ICD9-Phecode map</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Success!</span>
 <span class="r-in"></span>
 <span class="r-in"><span class="co"># reformat CALIBER codes for UK Biobank</span></span>
 <span class="r-in"><span class="va">caliber_ukb</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/warning.html" class="external-link">suppressWarnings</a></span><span class="op">(</span><span class="fu">reformat_caliber_for_ukb</span><span class="op">(</span><span class="va">caliber_raw</span>,</span>

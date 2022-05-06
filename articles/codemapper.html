@@ -98,7 +98,7 @@
     
     
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/rmgpanw/codemapper" class="external-link">codemapper</a></span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://rmgpanw.github.io/codemapper/" class="external-link">codemapper</a></span><span class="op">)</span></code></pre></div>
 <div class="section level2">
 <h2 id="introduction">Introduction<a class="anchor" aria-label="anchor" href="#introduction"></a>
 </h2>
@@ -123,12 +123,7 @@
 <p>The tables are imported into R, reformatted, and stored as a named list of data frames:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># build dummy all_lkps_maps resource (supressing warning messages)</span>
-<span class="va">all_lkps_maps_dummy</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/warning.html" class="external-link">suppressWarnings</a></span><span class="op">(</span><span class="fu"><a href="../reference/build_all_lkps_maps_dummy.html">build_all_lkps_maps_dummy</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span>
-<span class="co">#&gt; Extending tables in UKB resource 592</span>
-<span class="co">#&gt; Reformatting ICD10-Phecode map</span>
-<span class="co">#&gt; The following 1 input ICD10 codes do not have a 1-to-1 ICD10_CODE-to-ALT_CODE mapping: 'M90.0'. There will therefore be *more* output than input codes</span>
-<span class="co">#&gt; Reformatting ICD9-Phecode map</span>
-<span class="co">#&gt; Success!</span>
+<span class="va">all_lkps_maps_dummy</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/build_all_lkps_maps_dummy.html">build_all_lkps_maps_dummy</a></span><span class="op">(</span><span class="op">)</span>
 
 <span class="co"># view first few rows of ICD10 lookup table</span>
 <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">all_lkps_maps_dummy</span><span class="op">$</span><span class="va">icd10_lkp</span><span class="op">)</span>
@@ -143,7 +138,8 @@
 <span class="co">#&gt; <span style="color: #BCBCBC;">6</span>      6 A02        A02      DEFAULT 3        Other salmo… <span style="color: #BB0000;">NA</span>         <span style="color: #BB0000;">NA</span>        </span>
 <span class="co">#&gt; <span style="color: #949494;"># … with 5 more variables: QUALIFIERS &lt;chr&gt;, GENDER_MASK &lt;chr&gt;, MIN_AGE &lt;chr&gt;,</span></span>
 <span class="co">#&gt; <span style="color: #949494;">#   MAX_AGE &lt;chr&gt;, TREE_DESCRIPTION &lt;chr&gt;</span></span></code></pre></div>
-<p>Many of the functions in this package will require this object (supplied to argument <code>all_lkps_maps</code>). Instead of re-running <code><a href="../reference/build_all_lkps_maps.html">build_all_lkps_maps()</a></code> in each new R session, the output can be saved to a SQLite database file:</p>
+<p>Many of the functions in this package will require this object (supplied to argument <code>all_lkps_maps</code>).</p>
+<p>Instead of re-running <code><a href="../reference/build_all_lkps_maps.html">build_all_lkps_maps()</a></code> in each new R session, the output can be saved to a SQLite database file:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># write to SQLite database file</span>
 <span class="va">db_path</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/message.html" class="external-link">suppressMessages</a></span><span class="op">(</span><span class="fu"><a href="../reference/all_lkps_maps_to_db.html">all_lkps_maps_to_db</a></span><span class="op">(</span>all_lkps_maps <span class="op">=</span> <span class="va">all_lkps_maps_dummy</span>, 
@@ -159,7 +155,7 @@
 <span class="co"># view first few rows of ICD10 lookup table</span>
 <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">all_lkps_maps_dummy_db</span><span class="op">$</span><span class="va">icd10_lkp</span><span class="op">)</span>
 <span class="co">#&gt; <span style="color: #949494;"># Source:   lazy query [?? x 13]</span></span>
-<span class="co">#&gt; <span style="color: #949494;"># Database: sqlite 3.38.3 [/tmp/RtmpOP1wnY/filee88243a8ebd8]</span></span>
+<span class="co">#&gt; <span style="color: #949494;"># Database: sqlite 3.38.3 [/tmp/RtmpZJ8UwR/filee94743108520]</span></span>
 <span class="co">#&gt;   .rowid ICD10_CODE ALT_CODE USAGE   USAGE_UK DESCRIPTION  MODIFIER_4 MODIFIER_5</span>
 <span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>     </span>
 <span class="co">#&gt; <span style="color: #BCBCBC;">1</span>      1 A00        A00      DEFAULT 3        Cholera      <span style="color: #BB0000;">NA</span>         <span style="color: #BB0000;">NA</span>        </span>
@@ -236,16 +232,13 @@ code_descriptions_like(
 <div class="section level3">
 <h3 id="r-shiny-app">R Shiny app<a class="anchor" aria-label="anchor" href="#r-shiny-app"></a>
 </h3>
-<p>Use <code><a href="../reference/runCodelistBuilder.html">runCodelistBuilder()</a></code> to launch a R Shiny app for building a clinical code list.<a href="#fn3" class="footnote-ref" id="fnref3"><sup>3</sup></a> The aim is to develop a broad search strategy that captures all clinincal codes that might possibly be included, then download the search results and manually select and sub-categorise the final set of codes:</p>
-<p><img src="runcodelistbuilder.jpg" style="width:100.0%"></p>
+<p>Use <code>runCodelistBuilder()</code> to launch a R Shiny app for building a clinical code list.<a href="#fn3" class="footnote-ref" id="fnref3"><sup>3</sup></a> The aim is to develop a broad search strategy that captures all clinincal codes that might possibly be included, then download the search results and manually select and sub-categorise the final set of codes:</p>
+<div class="figure">
+<img src="runcodelistbuilder.jpg" style="width:100.0%" alt=""><p class="caption">Build a clinical code list in R Shiny</p>
+</div>
 <blockquote>
 <p>Microsoft excel auto-formatting can cause problems with certain codes e.g. Read 3 ‘.7944’ (Creation of permanent gastrostomy) may be reformatted to ‘7944’. Ideally use a different text editor.</p>
 </blockquote>
-</div>
-</div>
-<div class="section level2">
-<h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>
-</h2>
 <div id="refs" class="references">
 <div id="ref-denny2016">
 <p>Denny, Joshua C., Lisa Bastarache, and Dan M. Roden. 2016. “Phenome-Wide Association Studies as a Tool to Advance Precision Medicine.” <em>Annual Review of Genomics and Human Genetics</em> 17 (August): 353–73. <a href="https://doi.org/10.1146/annurev-genom-090314-024956" class="external-link">https://doi.org/10.1146/annurev-genom-090314-024956</a>.</p>
@@ -255,6 +248,7 @@ code_descriptions_like(
 </div>
 <div id="ref-wu2019">
 <p>Wu, Patrick, Aliya Gifford, Xiangrui Meng, Xue Li, Harry Campbell, Tim Varley, Juan Zhao, et al. 2019. “Mapping ICD-10 and ICD-10-CM Codes to Phecodes: Workflow Development and Initial Evaluation.” <em>JMIR Medical Informatics</em> 7 (4): e14325. <a href="https://doi.org/10.2196/14325" class="external-link">https://doi.org/10.2196/14325</a>.</p>
+</div>
 </div>
 </div>
 </div>
