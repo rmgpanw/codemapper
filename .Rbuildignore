@@ -11,3 +11,4 @@
 ^docs/*
 ^cran-comments\.md$
 ^data-raw$
+^codemeta\.json$
