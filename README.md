@@ -88,8 +88,8 @@ htn_icd10
 #> 1 I10X  Essential (primary) hypertension icd10
 ```
 
-See `vignette(codemapper)` for further details, including how to build a
-clinical codelist with R Shiny using `runCodelistBuilder()`.
+See `vignette('codemapper')` for further details, including how to build
+a clinical codelist with R Shiny using `RunCodelistBuilder()`.
 
 ## UK Biobank
 

@@ -24,7 +24,7 @@ caliber_ukb_no_filter <- suppressWarnings(
 
 # TESTS -------------------------------------------------------------------
 
-# `caliber_raw()` -------------------------------------------------------
+# `read_caliber_raw()` -------------------------------------------------------
 
 test_that("`read_caliber_raw()` output is expected format", {
   expect_equal(names(caliber_raw),

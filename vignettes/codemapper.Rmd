@@ -93,9 +93,8 @@ Codes may be explored with:
 
 -   `lookup_codes()`:
 
-```{=html}
 <!-- -->
-```
+
     ```{r}
     lookup_codes(codes = c("E10", "E11"),
                  code_type = "icd10",
@@ -104,9 +103,8 @@ Codes may be explored with:
 
 -   `codes_starting_with()`:
 
-```{=html}
 <!-- -->
-```
+
     ```{r}
     codes_starting_with(codes = "E1",
                  code_type = "icd10",
@@ -115,9 +113,8 @@ Codes may be explored with:
 
 -   `code_descriptions_like():`
 
-```{=html}
 <!-- -->
-```
+
     ```{r}
     code_descriptions_like(
       reg_expr = "cyst",
@@ -128,7 +125,7 @@ Codes may be explored with:
 
 ## R Shiny app
 
-Use `runCodelistBuilder()` to launch a R Shiny app for building a clinical code list.[^3] The aim is to develop a broad search strategy that captures all clinincal codes that might possibly be included, then download the search results and manually select and sub-categorise the final set of codes:
+Use `RunCodelistBuilder()` to launch a R Shiny app for building a clinical code list.[^3] The aim is to develop a broad search strategy that captures all clinincal codes that might possibly be included, then download the search results and manually select and sub-categorise the final set of codes:
 
 [^3]: This is still quite experimental, but should hopefully work for the basic workflow described here.
 
