@@ -101,7 +101,7 @@ caliber_ukb_dummy %>%
 The following read codes are not present in the Read 2 lookup table provided by UK Biobank resource 592:
 
 | CALIBER disease                          | Unrecognised Read 2 code                                                                                                                          |
-|------------------|------------------------------------------------------|
+|------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------|
 | Alcohol Problems                         | Z191.; Z1911; Z1912; Z4B1.                                                                                                                        |
 | Anxiety disorders                        | Z481.; Z4L1.                                                                                                                                      |
 | Coeliac disease                          | ZC2C2                                                                                                                                             |

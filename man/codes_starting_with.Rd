@@ -55,6 +55,15 @@ default. Set to \code{NULL} to remove all filters.}
 \description{
 This is case \emph{sensitive} (important for read codes especially).
 }
+\examples{
+# build dummy all_lkps_maps
+all_lkps_maps_dummy <- build_all_lkps_maps_dummy()
+
+# lookup codes
+lookup_codes(codes = c("E10", "E11"),
+  code_type = "icd10",
+  all_lkps_maps = all_lkps_maps_dummy)
+}
 \seealso{
 Other Clinical code lookups and mappings: 
 \code{\link{default_col_filters}()},

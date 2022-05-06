@@ -15,6 +15,26 @@
 #' @return Returns \code{db_path} invisibly
 #' @seealso [build_all_lkps_maps()]
 #' @export
+#' @examples
+#' # build dummy all_lkps_maps resource (supressing warning messages)
+#' all_lkps_maps_dummy <- build_all_lkps_maps_dummy()
+#'
+#' # write to SQLite database file
+#' db_path <- suppressMessages(
+#'   all_lkps_maps_to_db(all_lkps_maps = all_lkps_maps_dummy,
+#'   db_path = tempfile())
+#' )
+#'
+#' # connect to SQLite database
+#' con <- DBI::dbConnect(RSQLite::SQLite(), db_path)
+#'
+#' # create named list of tbl_dbi objects
+#' all_lkps_maps_dummy_db <- ukbwranglr::db_tables_to_list(con)
+#'
+#' head(all_lkps_maps_dummy_db$icd10_lkp)
+#'
+#' # import to R with dplyr::collect()
+#' dplyr::collect(all_lkps_maps_dummy_db$icd10_lkp)
 all_lkps_maps_to_db <- function(all_lkps_maps = build_all_lkps_maps(),
                                 db_path = "all_lkps_maps.db",
                                 overwrite = FALSE) {
@@ -127,6 +147,18 @@ all_lkps_maps_to_db <- function(all_lkps_maps = build_all_lkps_maps(),
 #' @return Returns a named list of data frames.
 #' @seealso [all_lkps_maps_to_db()]
 #' @export
+#' @examples
+#' # build dummy all_lkps_maps using just UKB resource 592 and UKB codings file
+#' build_all_lkps_maps(
+#'   all_lkps_maps = read_all_lkps_maps_dummy(),
+#'   ukb_codings = read_ukb_codings_dummy(),
+#'   bnf_dmd = NULL,
+#'   self_report_med_to_atc_map = NULL,
+#'   ctv3sctmap2 = NULL,
+#'   phecode_1_2_lkp = NULL,
+#'   icd10_phecode_1_2 = NULL,
+#'   icd9_phecode_1_2 = NULL
+#')
 build_all_lkps_maps <-
   function(all_lkps_maps = read_all_lkps_maps(),
            ukb_codings = ukbwranglr::get_ukb_codings_direct(),
@@ -373,6 +405,14 @@ get_nhsbsa_snomed_bnf <- function(path = file.path(tempdir(),
 #'
 #' @return File path to downloaded `all_lkps_maps_v3.xlsx`.
 #' @export
+#' @examples
+#' \dontrun{
+#'  # download UKB resource 592, returning file path invisibly
+#'  file_path <- get_ukb_all_lkps_maps()
+#'
+#'  # view path to downloaded file
+#'  file_path
+#' }
 get_ukb_all_lkps_maps <- function(dir_path = tempdir()) {
   message("Getting UKB resource 592")
   # name of resource 592 excel file
@@ -435,6 +475,8 @@ get_ukb_self_report_med_to_atc_map <- function(path = file.path(tempdir(),
 #'
 #' @return A named list of data frames.
 #' @export
+#' @examples
+#' read_all_lkps_maps(dummy_all_lkps_maps_path())
 read_all_lkps_maps <- function(path = get_ukb_all_lkps_maps()) {
   read_excel_to_named_list(
     path = path,

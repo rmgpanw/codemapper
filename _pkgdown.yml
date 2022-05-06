@@ -19,7 +19,7 @@ reference:
   - get_mapping_df
   - reformat_icd10_codes
   - default_col_filters
-  - runCodelistBuilder
+  - RunCodelistBuilder
 
 - title: CALIBER
   desc:  Functions for reformatting CALIBER codelists to use with UK Biobank data
@@ -60,8 +60,3 @@ reference:
   - dummy_phecode_lkp_path
   - dummy_icd10_phecode_map_path
   - dummy_caliber_dir_path
-
-- title: Package overview
-  desc: General summary of package contents
-- contents:
-  - codemapper

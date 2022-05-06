@@ -1,17 +1,17 @@
 
 # SETUP ---------------------------------------------------------------
 
-all_lkps_maps <- build_all_lkps_maps_dummy()
+all_lkps_maps_dummy <- build_all_lkps_maps_dummy()
 
-clinical_events <- dummy_clinical_events_tidy()
+clinical_events_dummy <- dummy_clinical_events_tidy()
 
-clinical_events_phecodes <- map_clinical_events_to_phecodes(clinical_events = clinical_events,
-                                                            all_lkps_maps = all_lkps_maps,
+clinical_events_phecodes_dummy <- map_clinical_events_to_phecodes(clinical_events = clinical_events_dummy,
+                                                            all_lkps_maps = all_lkps_maps_dummy,
                                                             min_date_only = FALSE)
 
-phecode_reverse_map <-
-  make_phecode_reverse_map(clinical_events_phecodes = clinical_events_phecodes,
-                           all_lkps_maps = all_lkps_maps)
+phecode_reverse_map_dummy <-
+  make_phecode_reverse_map(clinical_events_phecodes = clinical_events_phecodes_dummy,
+                           all_lkps_maps = all_lkps_maps_dummy)
 
 # TESTS -------------------------------------------------------------------
 
@@ -26,7 +26,7 @@ phecode_reverse_map <-
 test_that("`map_clinical_events_to_phecodes()` returns expected output with default `col_filters`", {
 
   expect_equal(
-    clinical_events_phecodes,
+    clinical_events_phecodes_dummy,
     tibble::tribble(
        ~eid,   ~source, ~index,   ~code,        ~date, ~icd10, ~phecode,
           1,  "f40001",  "0_0",      NA, "1917-10-08",  "I10",  "401.1",
@@ -47,8 +47,8 @@ test_that("`map_clinical_events_to_phecodes()` returns expected output with defa
 # note that Read 2 "C10.." (Diabetes mellitus) now maps to all diabetes subtypes
 test_that("`map_clinical_events_to_phecodes()` returns expected output with no `col_filters`", {
 
-  result_no_filters <- map_clinical_events_to_phecodes(clinical_events = clinical_events,
-                                                       all_lkps_maps = all_lkps_maps,
+  result_no_filters <- map_clinical_events_to_phecodes(clinical_events = clinical_events_dummy,
+                                                       all_lkps_maps = all_lkps_maps_dummy,
                                                        min_date_only = FALSE,
                                                        col_filters = NULL)
 
@@ -167,7 +167,7 @@ test_that("`map_clinical_events_to_phecodes()` returns expected output with no `
 # `make_phecode_reverse_map()` --------------------------------------------
 
 test_that("`make_phecode_reverse_map()` returns expected results", {
- expect_equal(phecode_reverse_map,
+ expect_equal(phecode_reverse_map_dummy,
               tibble::tribble(
                 ~phecode,                  ~phecode_description, ~data_coding,   ~code,                                     ~description, ~icd10_equivalent,                               ~icd10_description,
                 "401.1",              "Essential hypertension",      "icd10",   "I10",               "Essential (primary) hypertension",             "I10",               "Essential (primary) hypertension",

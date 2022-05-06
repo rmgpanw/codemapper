@@ -44,7 +44,11 @@ dummy_all_lkps_maps_path <- function() {
 #' @examples
 #' read_ukb_codings_dummy()
 read_ukb_codings_dummy <- function() {
-  ukb_codings <- ukbwranglr:::fread_tsv_as_character(dummy_ukb_codings_path())
+  readr::read_tsv(
+    dummy_ukb_codings_path(),
+    progress = FALSE,
+    col_types = readr::cols(.default = "c")
+  )
 }
 
 #' Read dummy UK Biobank resource 592 into R
@@ -75,7 +79,7 @@ read_all_lkps_maps_dummy <- function() {
 #' @examples
 #' build_all_lkps_maps_dummy()
 build_all_lkps_maps_dummy <- function() {
-    build_all_lkps_maps(
+  suppressMessages(build_all_lkps_maps(
       all_lkps_maps = read_all_lkps_maps_dummy(),
       ukb_codings = read_ukb_codings_dummy(),
       bnf_dmd = NULL,
@@ -84,7 +88,7 @@ build_all_lkps_maps_dummy <- function() {
       phecode_1_2_lkp = dummy_phecode_lkp_path(),
       icd10_phecode_1_2 = dummy_icd10_phecode_map_path(),
       icd9_phecode_1_2 = NULL
-    )
+    ))
 }
 
 ## CALIBER -----------------------------------------------------------------
@@ -97,6 +101,8 @@ build_all_lkps_maps_dummy <- function() {
 #' @return A string.
 #' @export
 #' @family Dummy data
+#' @examples
+#' dummy_caliber_dir_path()
 dummy_caliber_dir_path <- function() {
   system.file("extdata", "test_caliber_repo", package = "codemapper")
 }

@@ -21,3 +21,6 @@ a named list of data frames.
 \details{
 \strong{Note:} This is a large object (>450 MB)
 }
+\examples{
+read_all_lkps_maps(dummy_all_lkps_maps_path())
+}

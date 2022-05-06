@@ -16,13 +16,19 @@
 #' @examples
 #' get_caliber_categories_mapping()
 get_caliber_categories_mapping <- function() {
-  readr::read_csv(file = system.file("extdata", "caliber_phenotype_categories_mapping.csv", package = "codemapper"),
-                  col_types = list(
-                    phenotype = readr::col_character(),
-                    category = readr::col_character(),
-                    groupnum = readr::col_integer(),
-                    colour = readr::col_character()
-                  ))
+  readr::read_csv(
+    file = system.file(
+      "extdata",
+      "caliber_phenotype_categories_mapping.csv",
+      package = "codemapper"
+    ),
+    col_types = list(
+      phenotype = readr::col_character(),
+      category = readr::col_character(),
+      groupnum = readr::col_integer(),
+      colour = readr::col_character()
+    )
+  )
 }
 
 #' Download the caliber github repository

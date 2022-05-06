@@ -53,6 +53,19 @@ and OPCS4, self-reported medical conditions/medications/operations from the
 UK Biobank codings file (available
 \href{https://biobank.ctsu.ox.ac.uk/crystal/exinfo.cgi?src=accessing_data_guide}{here}).
 }
+\examples{
+# build dummy all_lkps_maps using just UKB resource 592 and UKB codings file
+build_all_lkps_maps(
+  all_lkps_maps = read_all_lkps_maps_dummy(),
+  ukb_codings = read_ukb_codings_dummy(),
+  bnf_dmd = NULL,
+  self_report_med_to_atc_map = NULL,
+  ctv3sctmap2 = NULL,
+  phecode_1_2_lkp = NULL,
+  icd10_phecode_1_2 = NULL,
+  icd9_phecode_1_2 = NULL
+)
+}
 \seealso{
 \code{\link[=all_lkps_maps_to_db]{all_lkps_maps_to_db()}}
 }

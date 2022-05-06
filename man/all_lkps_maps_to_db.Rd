@@ -27,6 +27,27 @@ Returns \code{db_path} invisibly
 \description{
 Write the output from \code{\link{build_all_lkps_maps}} to a SQLite database.
 }
+\examples{
+# build dummy all_lkps_maps resource (supressing warning messages)
+all_lkps_maps_dummy <- build_all_lkps_maps_dummy()
+
+# write to SQLite database file
+db_path <- suppressMessages(
+  all_lkps_maps_to_db(all_lkps_maps = all_lkps_maps_dummy,
+  db_path = tempfile())
+)
+
+# connect to SQLite database
+con <- DBI::dbConnect(RSQLite::SQLite(), db_path)
+
+# create named list of tbl_dbi objects
+all_lkps_maps_dummy_db <- ukbwranglr::db_tables_to_list(con)
+
+head(all_lkps_maps_dummy_db$icd10_lkp)
+
+# import to R with dplyr::collect()
+dplyr::collect(all_lkps_maps_dummy_db$icd10_lkp)
+}
 \seealso{
 \code{\link[=build_all_lkps_maps]{build_all_lkps_maps()}}
 }

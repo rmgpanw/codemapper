@@ -52,12 +52,15 @@ ICD10.
 Maps the following UK Biobank clinical events sources to phecodes: f40001, f40002, f20002_icd10, f40006, f41270, f40013, f41271, gpc1_r3, gpc2_r3, gpc3_r3, gpc4_r3, gpc1_r2, gpc2_r2, gpc3_r2, gpc4_r2.
 }
 \examples{
+# build dummy all_lkps_maps
+all_lkps_maps_dummy <- build_all_lkps_maps_dummy()
+
 # dummy clinical events data frame
-# ukbwranglr:::DUMMY_CLINICAL_EVENTS
+dummy_clinical_events_tidy()
 
 # map to phecodes
-# map_clinical_events_to_phecodes(
-# clinical_events = ukbwranglr:::DUMMY_CLINICAL_EVENTS,
-#  all_lkps_maps = ALL_LKPS_MAPS,
-#  min_date_only = FALSE)
+map_clinical_events_to_phecodes(
+  clinical_events = dummy_clinical_events_tidy(),
+  all_lkps_maps = all_lkps_maps_dummy,
+  min_date_only = FALSE)
 }

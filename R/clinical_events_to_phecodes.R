@@ -46,14 +46,17 @@ CLINICAL_EVENTS_SOURCES_MAPPED_TO_PHECODES <- c(
 #'   'icd10', 'phecode' and 'date'.
 #' @export
 #' @examples
+#' # build dummy all_lkps_maps
+#' all_lkps_maps_dummy <- build_all_lkps_maps_dummy()
+#'
 #' # dummy clinical events data frame
-#' # ukbwranglr:::DUMMY_CLINICAL_EVENTS
+#' dummy_clinical_events_tidy()
 #'
 #' # map to phecodes
-#' # map_clinical_events_to_phecodes(
-#' # clinical_events = ukbwranglr:::DUMMY_CLINICAL_EVENTS,
-#' #  all_lkps_maps = ALL_LKPS_MAPS,
-#' #  min_date_only = FALSE)
+#' map_clinical_events_to_phecodes(
+#'   clinical_events = dummy_clinical_events_tidy(),
+#'   all_lkps_maps = all_lkps_maps_dummy,
+#'   min_date_only = FALSE)
 map_clinical_events_to_phecodes <- function(clinical_events,
                                             all_lkps_maps = NULL,
                                             min_date_only = FALSE,
@@ -159,6 +162,22 @@ map_clinical_events_to_phecodes <- function(clinical_events,
 #'   "icd10_description". Column 'code' contains the original 'raw' UK clinical
 #'   codes, with code type indicated by the 'data_coding' column.
 #' @export
+#' @examples
+#' # build dummy all_lkps_maps
+#' all_lkps_maps_dummy <- build_all_lkps_maps_dummy()
+#'
+#' # map dummy clinical events df to phecodes
+#' clinical_events_phecodes_dummy <- map_clinical_events_to_phecodes(
+#'   clinical_events = dummy_clinical_events_tidy(),
+#'   all_lkps_maps = all_lkps_maps_dummy,
+#'   min_date_only = FALSE
+#' )
+#'
+#' # create reverse map
+#' make_phecode_reverse_map(
+#'   clinical_events_phecodes = clinical_events_phecodes_dummy,
+#'   all_lkps_maps = all_lkps_maps_dummy
+#' )
 make_phecode_reverse_map <- function(clinical_events_phecodes,
                                      all_lkps_maps) {
 

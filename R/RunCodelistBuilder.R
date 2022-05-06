@@ -42,7 +42,15 @@
 #' @return \code{NULL}
 #' @export
 #' @import shiny
-runCodelistBuilder <- function(all_lkps_maps = NULL,
+#' @examples
+#' \dontrun{
+#' # build dummy all_lkps_maps
+#' all_lkps_maps_dummy <- build_all_lkps_maps_dummy()
+#'
+#'  # launch app
+#'  RunCodelistBuilder(all_lkps_maps = all_lkps_maps_dummy)
+#' }
+RunCodelistBuilder <- function(all_lkps_maps = NULL,
                           options = list(launch.browser = TRUE),
                           ...) {
   # connect to database file path if `all_lkps_maps` is a string, or `NULL`

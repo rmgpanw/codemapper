@@ -47,6 +47,14 @@
 #' @inheritParams lookup_codes
 #' @export
 #' @family Clinical code lookups and mappings
+#' @examples
+#' # build dummy all_lkps_maps
+#' all_lkps_maps_dummy <- build_all_lkps_maps_dummy()
+#'
+#' # lookup codes
+#' lookup_codes(codes = c("E10", "E11"),
+#'   code_type = "icd10",
+#'   all_lkps_maps = all_lkps_maps_dummy)
 codes_starting_with <- function(codes,
                                 code_type,
                                 all_lkps_maps = NULL,
@@ -191,6 +199,14 @@ codes_starting_with <- function(codes,
 #' @return data frame
 #' @export
 #' @family Clinical code lookups and mappings
+#' @examples
+#' # build dummy all_lkps_maps
+#' all_lkps_maps_dummy <- build_all_lkps_maps_dummy()
+#'
+#' # look up ICD10 codes
+#' lookup_codes(codes = c("E10", "E11"),
+#'   code_type = "icd10",
+#'   all_lkps_maps = all_lkps_maps_dummy)
 lookup_codes <- function(codes,
                          code_type,
                          all_lkps_maps = NULL,
@@ -327,6 +343,16 @@ lookup_codes <- function(codes,
 #' @return data frame by default, or a character vector of codes if
 #'   \code{codes_only} is \code{TRUE}.
 #' @export
+#' @examples
+#' # build dummy all_lkps_maps
+#' all_lkps_maps_dummy <- build_all_lkps_maps_dummy()
+#'
+#' # lookup ICD10 code descriptions matching 'cyst'
+#' code_descriptions_like(
+#'  reg_expr = "cyst",
+#'  code_type = "icd10",
+#'  all_lkps_maps = all_lkps_maps_dummy
+#' )
 code_descriptions_like <- function(reg_expr,
                                    code_type,
                                    all_lkps_maps = NULL,
@@ -471,6 +497,15 @@ code_descriptions_like <- function(reg_expr,
 #'
 #' @export
 #' @family Clinical code lookups and mappings
+#' @examples
+#' # build dummy all_lkps_maps
+#' all_lkps_maps_dummy <- build_all_lkps_maps_dummy()
+#'
+#' # map codes from Read 2 to ICD10
+#' map_codes(codes = "G20..",
+#'          from = "read2",
+#'          to = "icd10",
+#'          all_lkps_maps = all_lkps_maps_dummy)
 map_codes <- function(codes,
                       from,
                       to,
@@ -622,6 +657,14 @@ map_codes <- function(codes,
 #' @export
 #'
 #' @family Clinical code lookups and mappings
+#' @examples
+#' # build dummy all_lkps_maps
+#' all_lkps_maps_dummy <- build_all_lkps_maps_dummy()
+#'
+#' # get mapping data frame for Read 2 to ICD10
+#' get_mapping_df(from = "read3",
+#'               to = "icd10",
+#'               all_lkps_maps = all_lkps_maps_dummy)
 get_mapping_df <- function(from,
                            to,
                            all_lkps_maps = NULL,
@@ -754,7 +797,7 @@ get_mapping_df <- function(from,
 #' @family Clinical code lookups and mappings
 #' @examples
 #' # build dummy all_lkps_maps
-#' all_lkps_maps_dummy <- suppressMessages(build_all_lkps_maps_dummy())
+#' all_lkps_maps_dummy <- build_all_lkps_maps_dummy()
 #'
 #' # reformat from ICD10_CODE to ALT_CODE
 #' reformat_icd10_codes(icd10_codes = c("E10.9"),

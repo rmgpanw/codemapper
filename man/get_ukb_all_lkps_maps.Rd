@@ -21,3 +21,12 @@ directly from the UKB website.
 \details{
 \strong{Note:} This is a large object (>450 MB)
 }
+\examples{
+\dontrun{
+ # download UKB resource 592, returning file path invisibly
+ file_path <- get_ukb_all_lkps_maps()
+
+ # view path to downloaded file
+ file_path
+}
+}

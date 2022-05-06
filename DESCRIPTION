@@ -9,7 +9,8 @@ Authors@R:
            comment = c(ORCID = "0000-0002-0800-2890"))
 Description: Functions for mapping between clinical coding systems.
 License: MIT + file LICENSE
-URL: https://github.com/rmgpanw/codemapper
+URL: https://rmgpanw.github.io/codemapper/,
+  https://github.com/rmgpanw/codemapper
 BugReports: https://github.com/rmgpanw/codemapper/issues
 Encoding: UTF-8
 LazyData: true
@@ -20,6 +21,7 @@ Suggests:
     knitr,
     PheWAS,
     rmarkdown,
+    shinytest,
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
 Imports: 

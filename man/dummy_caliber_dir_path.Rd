@@ -13,6 +13,9 @@ A string.
 Returns the file path to a dummy data
 \href{https://github.com/spiros/chronological-map-phenotypes}{CALIBER} repository.
 }
+\examples{
+dummy_caliber_dir_path()
+}
 \seealso{
 Other Dummy data: 
 \code{\link{build_all_lkps_maps_dummy}()},

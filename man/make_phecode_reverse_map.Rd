@@ -36,3 +36,20 @@ the output from \code{\link[=map_clinical_events_to_phecodes]{map_clinical_event
 phecodes to Read 2, Read 3, ICD-9 and ICD-10. This is useful for checking
 which raw clinical codes have been used in any phecode-defined phenotypes.
 }
+\examples{
+# build dummy all_lkps_maps
+all_lkps_maps_dummy <- build_all_lkps_maps_dummy()
+
+# map dummy clinical events df to phecodes
+clinical_events_phecodes_dummy <- map_clinical_events_to_phecodes(
+  clinical_events = dummy_clinical_events_tidy(),
+  all_lkps_maps = all_lkps_maps_dummy,
+  min_date_only = FALSE
+)
+
+# create reverse map
+make_phecode_reverse_map(
+  clinical_events_phecodes = clinical_events_phecodes_dummy,
+  all_lkps_maps = all_lkps_maps_dummy
+)
+}

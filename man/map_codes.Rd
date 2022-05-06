@@ -76,6 +76,16 @@ The values for arguments \code{from} and \code{to} must be one of
 \code{read2}, \code{read3}, \code{icd9}, \code{icd10}, \code{bnf},
 \code{dmd}, \code{read2_drugs} or \code{opcs4}.
 }
+\examples{
+# build dummy all_lkps_maps
+all_lkps_maps_dummy <- build_all_lkps_maps_dummy()
+
+# map codes from Read 2 to ICD10
+map_codes(codes = "G20..",
+         from = "read2",
+         to = "icd10",
+         all_lkps_maps = all_lkps_maps_dummy)
+}
 \seealso{
 Other Clinical code lookups and mappings: 
 \code{\link{codes_starting_with}()},

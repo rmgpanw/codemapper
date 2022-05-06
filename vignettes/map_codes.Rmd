@@ -18,7 +18,7 @@ knitr::opts_chunk$set(
 library(codemapper)
 library(dplyr)
 
-all_lkps_maps_dummy <- suppressMessages(build_all_lkps_maps_dummy())
+all_lkps_maps_dummy <- build_all_lkps_maps_dummy()
 ```
 
 # Basic usage

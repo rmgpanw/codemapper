@@ -18,7 +18,7 @@ knitr::opts_chunk$set(
 library(codemapper)
 library(dplyr)
 
-all_lkps_maps_dummy <- suppressMessages(build_all_lkps_maps_dummy())
+all_lkps_maps_dummy <- build_all_lkps_maps_dummy()
 ```
 
 # Introduction
@@ -73,7 +73,7 @@ dummy_clinical_events_phecodes %>%
 Ideally all Read and ICD9 code to phecode mappings should be manually checked prior to their use. At the very least, any findings of interest should be manually reviewed to ascertain exactly which clinical codes were used. Use `make_phecode_reverse_map()` to achieve this
 
 ```{r}
-make_phecode_reverse_map(clinical_events_phecodes = clinical_events_phecodes,
+make_phecode_reverse_map(clinical_events_phecodes = dummy_clinical_events_phecodes,
                            all_lkps_maps = all_lkps_maps_dummy) %>% 
   knitr::kable()
 ```
