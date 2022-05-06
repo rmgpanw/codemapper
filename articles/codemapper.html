@@ -155,7 +155,7 @@
 <span class="co"># view first few rows of ICD10 lookup table</span>
 <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">all_lkps_maps_dummy_db</span><span class="op">$</span><span class="va">icd10_lkp</span><span class="op">)</span>
 <span class="co">#&gt; <span style="color: #949494;"># Source:   lazy query [?? x 13]</span></span>
-<span class="co">#&gt; <span style="color: #949494;"># Database: sqlite 3.38.3 [/tmp/RtmpDV5yn9/filee9cf414ed94e]</span></span>
+<span class="co">#&gt; <span style="color: #949494;"># Database: sqlite 3.38.3 [/tmp/RtmpD2ijeo/filee9ed35d950d7]</span></span>
 <span class="co">#&gt;   .rowid ICD10_CODE ALT_CODE USAGE   USAGE_UK DESCRIPTION  MODIFIER_4 MODIFIER_5</span>
 <span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>     </span>
 <span class="co">#&gt; <span style="color: #BCBCBC;">1</span>      1 A00        A00      DEFAULT 3        Cholera      <span style="color: #BB0000;">NA</span>         <span style="color: #BB0000;">NA</span>        </span>
@@ -232,7 +232,7 @@ code_descriptions_like(
 <div class="section level3">
 <h3 id="r-shiny-app">R Shiny app<a class="anchor" aria-label="anchor" href="#r-shiny-app"></a>
 </h3>
-<p>Use <code>runCodelistBuilder()</code> to launch a R Shiny app for building a clinical code list.<a href="#fn3" class="footnote-ref" id="fnref3"><sup>3</sup></a> The aim is to develop a broad search strategy that captures all clinincal codes that might possibly be included, then download the search results and manually select and sub-categorise the final set of codes:</p>
+<p>Use <code><a href="../reference/runCodelistBuilder.html">RunCodelistBuilder()</a></code> to launch a R Shiny app for building a clinical code list.<a href="#fn3" class="footnote-ref" id="fnref3"><sup>3</sup></a> The aim is to develop a broad search strategy that captures all clinincal codes that might possibly be included, then download the search results and manually select and sub-categorise the final set of codes:</p>
 <div class="figure">
 <img src="runcodelistbuilder.jpg" style="width:100.0%" alt=""><p class="caption">Build a clinical code list in R Shiny</p>
 </div>
