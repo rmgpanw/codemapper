@@ -41,7 +41,7 @@ all_lkps_maps_to_db <- function(all_lkps_maps = build_all_lkps_maps(),
   # If database already exists at db_path, check if tables to be written are
   # already present
   if (file.exists(db_path)) {
-    warning(paste0("File found at ",
+    message(paste0("Existing file found at ",
                    db_path))
 
     check_tables_do_not_already_exist <- TRUE

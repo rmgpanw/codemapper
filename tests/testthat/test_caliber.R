@@ -159,3 +159,9 @@ test_that("Read 3 has been mapped to", {
                  dplyr::pull(code),
                "X40J4")
 })
+
+# `get_caliber_categories_mapping()` --------------------------------------
+
+test_that("`get_caliber_categories_mapping()` returns a tibble", {
+  expect_true(tibble::is_tibble(get_caliber_categories_mapping()))
+})
