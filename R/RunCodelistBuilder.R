@@ -51,8 +51,8 @@
 #'  RunCodelistBuilder(all_lkps_maps = all_lkps_maps_dummy)
 #' }
 RunCodelistBuilder <- function(all_lkps_maps = NULL,
-                          options = list(launch.browser = TRUE),
-                          ...) {
+                               options = list(launch.browser = TRUE),
+                               ...) {
   # connect to database file path if `all_lkps_maps` is a string, or `NULL`
   if (is.character(all_lkps_maps)) {
     con <- check_all_lkps_maps_path(all_lkps_maps)
@@ -77,8 +77,27 @@ RunCodelistBuilder <- function(all_lkps_maps = NULL,
 
   # UI ----------------------------------------------------------------------
 
-
   ui <- fluidPage(
+    RunCodelistBuilder_ui("RunCodelistBuilder")
+  )
+  # Server ------------------------------------------------------------------
+  server <- function(input, output, session) {
+    RunCodelistBuilder_server("RunCodelistBuilder", all_lkps_maps = all_lkps_maps)
+  }
+
+  shinyApp(ui, server, options = options, ...)
+}
+
+# PRIVATE -----------------------------------------------------------------
+
+#' RunCodelistBuilder UI module
+#'
+#' @param id id
+#' @import shiny
+#'
+#' @noRd
+RunCodelistBuilder_ui <- function(id) {
+  tagList(
     # Application title
     shinyFeedback::useShinyFeedback(),
     titlePanel("Build a clinical codes list"),
@@ -87,17 +106,17 @@ RunCodelistBuilder <- function(all_lkps_maps = NULL,
     sidebarLayout(
       sidebarPanel(
         width = 2,
-        textInput("disease",
+        textInput(NS(id, "disease"),
                   "Disease",
                   value = "DISEASE"),
-        textInput("category",
+        textInput(NS(id, "category"),
                   "Category",
                   value = ""),
-        textInput("author",
+        textInput(NS(id, "author"),
                   "Author",
                   value = "Anon"),
         checkboxGroupInput(
-          inputId = "code_type",
+          inputId = NS(id, "code_type"),
           label = "Code types",
           choices = stats::setNames(object = CODE_TYPE_TO_LKP_TABLE_MAP$code,
                                     nm = CODE_TYPE_TO_LKP_TABLE_MAP$code_label),
@@ -117,54 +136,58 @@ RunCodelistBuilder <- function(all_lkps_maps = NULL,
           )
         ),
         h4("Upload codelist"),
-        fileInput("upload",
+        fileInput(NS(id, "upload"),
                   label = NULL,
                   buttonLabel = "Upload"),
         h4("Download codes"),
-        downloadButton("download_confirmed_codes",
+        downloadButton(NS(id, "download_confirmed_codes"),
                        label = "Download all"),
-        downloadButton("download_confirmed_codes_selected_only",
-                       label = "Download selected")
+        downloadButton(NS(
+          id, "download_confirmed_codes_selected_only"
+        ),
+        label = "Download selected")
 
       ),
 
       # Show clinical codes matching input settings
       mainPanel(
+        width = 9,
         tabsetPanel(
+          id = "tabs",
           type = "pills",
           tabPanel(
             "Search strategy",
             fluidRow(
               h4("Run query"),
               actionButton(
-                inputId = "new_search",
+                inputId = NS(id, "new_search"),
                 label = "Search",
                 class = "btn-lg btn-success"
               ),
             ),
             column(
               h4("Code descriptions like..."),
-              textInput("description_search",
+              textInput(NS(id, "description_search"),
                         "",
                         value = ""),
               checkboxInput(
-                "description_search_ignore_case",
+                NS(id, "description_search_ignore_case"),
                 label = "Ignore case",
                 value = TRUE
               ),
-              textInput("description_search_and",
+              textInput(NS(id, "description_search_and"),
                         "and... ",
                         value = ""),
               checkboxInput(
-                "description_search_and_ignore_case",
+                NS(id, "description_search_and_ignore_case"),
                 label = "Ignore case",
                 value = TRUE
               ),
-              textInput("description_search_not",
+              textInput(NS(id, "description_search_not"),
                         "but not...",
                         value = ""),
               checkboxInput(
-                "description_search_not_ignore_case",
+                NS(id, "description_search_not_ignore_case"),
                 label = "Ignore case",
                 value = TRUE
               ),
@@ -172,56 +195,66 @@ RunCodelistBuilder <- function(all_lkps_maps = NULL,
             ),
             column(
               h4("Codes starting with..."),
-              textInput("bnf_starts",
+              textInput(NS(id, "bnf_starts"),
                         "BNF",
                         value = ""),
-              textInput("dmd_starts",
+              textInput(NS(id, "dmd_starts"),
                         "DMD",
                         value = ""),
-              textInput("icd9_starts",
+              textInput(NS(id, "icd9_starts"),
                         "ICD-9",
                         value = ""),
-              textInput("icd10_starts",
+              textInput(NS(id, "icd10_starts"),
                         "ICD-10",
                         value = ""),
-              textInput("read2_starts",
+              textInput(NS(id, "read2_starts"),
                         "Read 2",
                         value = ""),
-              textInput("read2_drugs_starts",
+              textInput(NS(id, "read2_drugs_starts"),
                         "Read 2 drugs",
                         value = ""),
-              textInput("read3_starts",
+              textInput(NS(id, "read3_starts"),
                         "Read 3",
                         value = ""),
-              textInput("opcs4_starts",
+              textInput(NS(id, "opcs4_starts"),
                         "OPCS4",
                         value = ""),
               width = 6
             ),
-            fluidRow(verbatimTextOutput("n_matching_codes"))
+            fluidRow(verbatimTextOutput(NS(
+              id, "n_matching_codes"
+            )))
           ),
+
           tabPanel(
             "Matching clinical codes",
             h4("Select codes"),
-            reactable::reactableOutput("matching_codes")
+            reactable::reactableOutput(NS(id, "matching_codes"))
           ),
           tabPanel(
             "Preview selected codes only",
-            reactable::reactableOutput("selected_matching_codes_preview"),
+            reactable::reactableOutput(NS(id, "selected_matching_codes_preview")),
           ),
           tabPanel(
             "Uploaded codelist",
-            tableOutput("uploaded_file"),
-            reactable::reactableOutput("uploaded_codelist")
+            tableOutput(NS(id, "uploaded_file")),
+            reactable::reactableOutput(NS(id, "uploaded_codelist"))
           )
-        ),
-        width = 9
+        )
       )
     )
   )
+}
 
-  # Server ------------------------------------------------------------------
-  server <- function(input, output, session) {
+#' RunCodelistBuilder server module
+#'
+#' @param id id
+#' @param all_lkps_maps all_lkps_maps
+#' @import shiny
+#'
+#' @noRd
+RunCodelistBuilder_server <- function(id, all_lkps_maps) {
+  moduleServer(id, function(input, output, session) {
     # Search for codes --------------------------------------------------------
 
 
@@ -358,7 +391,7 @@ RunCodelistBuilder <- function(all_lkps_maps = NULL,
           purrr::set_names() %>%
           purrr::map(
             ~ codes_starting_with(
-              codes = code_starts_params[code_starts_params$code_type == .x,]$starts_with,
+              codes = code_starts_params[code_starts_params$code_type == .x, ]$starts_with,
               code_type = .x,
               all_lkps_maps = all_lkps_maps,
               codes_only = FALSE,
@@ -407,13 +440,15 @@ RunCodelistBuilder <- function(all_lkps_maps = NULL,
       if (!is.null(matching_codes_starts_with)) {
         code_starts_search_strategy <- paste0(code_starts_params$code_type,
                                               ": '",
-                                              code_starts_params$starts_with, "'") %>%
+                                              code_starts_params$starts_with,
+                                              "'") %>%
           stringr::str_c(sep = "", collapse = "; ")
 
         code_starts_search_strategy <- paste0("STARTS WITH - ",
                                               code_starts_search_strategy)
 
-        matching_codes$code_starts_search_strategy <- code_starts_search_strategy
+        matching_codes$code_starts_search_strategy <-
+          code_starts_search_strategy
       }
 
       # add column showing included code types
@@ -444,7 +479,8 @@ RunCodelistBuilder <- function(all_lkps_maps = NULL,
 
     # Display matching codes --------------------------------------------------
 
-    output$n_matching_codes <- renderText(paste0("N matching codes: ", nrow(matching_codes())))
+    output$n_matching_codes <-
+      renderText(paste0("N matching codes: ", nrow(matching_codes())))
 
     output$matching_codes <- reactable::renderReactable({
       req(matching_codes())
@@ -664,10 +700,10 @@ RunCodelistBuilder <- function(all_lkps_maps = NULL,
         content = function(file) {
           if (is.null(input$upload)) {
             result <-
-              selected_matching_codes_preview()[(selected_matching_codes_preview()$selected) == "Yes", ]
+              selected_matching_codes_preview()[(selected_matching_codes_preview()$selected) == "Yes",]
           } else {
             result <-
-              update_code_selection(current_selection = selected_matching_codes_preview()[(selected_matching_codes_preview()$selected) == "Yes", ],
+              update_code_selection(current_selection = selected_matching_codes_preview()[(selected_matching_codes_preview()$selected) == "Yes",],
                                     previous_codelist = uploaded_codelist())
           }
 
@@ -680,9 +716,5 @@ RunCodelistBuilder <- function(all_lkps_maps = NULL,
           readr::write_csv(result, file, na = "")
         }
       )
-  }
-
-
-
-  shinyApp(ui, server, options = options, ...)
+  })
 }

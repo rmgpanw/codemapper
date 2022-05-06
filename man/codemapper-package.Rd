@@ -4,7 +4,7 @@
 \name{codemapper-package}
 \alias{codemapper}
 \alias{codemapper-package}
-\title{codemapper: Functions for mapping between clinical coding systems}
+\title{codemapper: Functions for Mapping Between Clinical Coding Systems}
 \description{
 Functions for mapping between clinical coding systems.
 }
