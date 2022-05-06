@@ -68,7 +68,7 @@ jobs:
           remotes::install_cran("rcmdcheck")
         shell: Rscript {0}
 
-      # PhantomJS required for shinytest: see https://github.com/rstudio/shinytest/actions/runs/1151256359/workflow
+# PhantomJS required for shinytest: see https://github.com/rstudio/shinytest/actions/runs/1151256359/workflow
       - name: Find PhantomJS path
         id: phantomjs
         run: |
@@ -84,6 +84,12 @@ jobs:
           Rscript
           -e "options(install.packages.check.source = 'no')"
           -e "if (!shinytest::dependenciesInstalled()) shinytest::installDependencies()"
+
+# test will fail for Windows without this. See https://github.com/rstudio/shinytest/issues/371
+      - name: Windows git setup
+        if: runner.os == 'Windows'
+        run:
+          git config --global core.autocrlf false
 
       - name: Check
         env:
