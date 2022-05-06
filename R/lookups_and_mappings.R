@@ -129,7 +129,7 @@ all_lkps_maps_to_db <- function(all_lkps_maps = build_all_lkps_maps(),
 #' @param all_lkps_maps UK Biobank resource 592, as returned by
 #'   \code{\link{get_ukb_all_lkps_maps}}.
 #' @param ukb_codings The UK Biobank codings file, as returned by
-#'   \code{\link[ukbwranglr]{get_ukb_codings_direct}}.
+#'   \code{\link[ukbwranglr]{get_ukb_codings}}.
 #' @param bnf_dmd Optional: path to the NHSBSA BNF-SNOMED mapping table (see
 #'   [get_nhsbsa_snomed_bnf()]).
 #' @param self_report_med_to_atc_map Optional: path to a UK Biobank
@@ -161,7 +161,7 @@ all_lkps_maps_to_db <- function(all_lkps_maps = build_all_lkps_maps(),
 #')
 build_all_lkps_maps <-
   function(all_lkps_maps = read_all_lkps_maps(),
-           ukb_codings = ukbwranglr::get_ukb_codings_direct(),
+           ukb_codings = ukbwranglr::get_ukb_codings(),
            bnf_dmd = get_nhsbsa_snomed_bnf(),
            self_report_med_to_atc_map = get_ukb_self_report_med_to_atc_map(),
            ctv3sctmap2 = NULL,
