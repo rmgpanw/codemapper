@@ -183,9 +183,6 @@ read_icd10_phecode_map_dummy <- function() {
   )
 }
 
-# TODO: Make 'reformat_phecode' function and write tests
-# for lookups_and_mapping.R. Write tests for clinical_Events_to_phecodes.R. ukbwranglr
-
 ## UKB clinical events -----------------------------------------------------
 
 #' Dummy UK Biobank clinical events, tidied
