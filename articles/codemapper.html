@@ -150,12 +150,12 @@
 <span class="va">con</span> <span class="op">&lt;-</span> <span class="fu">DBI</span><span class="fu">::</span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbConnect.html" class="external-link">dbConnect</a></span><span class="op">(</span><span class="fu">RSQLite</span><span class="fu">::</span><span class="fu"><a href="https://rsqlite.r-dbi.org/reference/SQLite.html" class="external-link">SQLite</a></span><span class="op">(</span><span class="op">)</span>, <span class="va">db_path</span><span class="op">)</span>
 
 <span class="co"># create named list of tbl_db objects</span>
-<span class="va">all_lkps_maps_dummy_db</span> <span class="op">&lt;-</span> <span class="fu">ukbwranglr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/ukbwranglr/man/db_tables_to_list.html" class="external-link">db_tables_to_list</a></span><span class="op">(</span><span class="va">con</span><span class="op">)</span>
+<span class="va">all_lkps_maps_dummy_db</span> <span class="op">&lt;-</span> <span class="fu">ukbwranglr</span><span class="fu">::</span><span class="fu"><a href="https://rmgpanw.github.io/ukbwranglr/reference/db_tables_to_list.html" class="external-link">db_tables_to_list</a></span><span class="op">(</span><span class="va">con</span><span class="op">)</span>
 
 <span class="co"># view first few rows of ICD10 lookup table</span>
 <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">all_lkps_maps_dummy_db</span><span class="op">$</span><span class="va">icd10_lkp</span><span class="op">)</span>
 <span class="co">#&gt; <span style="color: #949494;"># Source:   lazy query [?? x 13]</span></span>
-<span class="co">#&gt; <span style="color: #949494;"># Database: sqlite 3.38.5 [/tmp/RtmpW94vWV/fileea5e38fc1f6e]</span></span>
+<span class="co">#&gt; <span style="color: #949494;"># Database: sqlite 3.38.5 [/tmp/Rtmp4TSaLx/fileeab5525b778a]</span></span>
 <span class="co">#&gt;   .rowid ICD10_CODE ALT_CODE USAGE   USAGE_UK DESCRIPTION  MODIFIER_4 MODIFIER_5</span>
 <span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>     </span>
 <span class="co">#&gt; <span style="color: #BCBCBC;">1</span>      1 A00        A00      DEFAULT 3        Cholera      <span style="color: #BB0000;">NA</span>         <span style="color: #BB0000;">NA</span>        </span>

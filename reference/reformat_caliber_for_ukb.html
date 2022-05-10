@@ -114,7 +114,7 @@ if any overlapping disease categories are present after mapping. Specify
 <dt>overlapping_disease_categories_csv</dt>
 <dd><p>File path to a csv containing codes
 that are listed under more than one disease category within a disease. This
-should have the same format as <code><a href="https://rdrr.io/pkg/ukbwranglr/man/example_clinical_codes.html" class="external-link">ukbwranglr::example_clinical_codes()</a></code>, with
+should have the same format as <code><a href="https://rmgpanw.github.io/ukbwranglr/reference/example_clinical_codes.html" class="external-link">ukbwranglr::example_clinical_codes()</a></code>, with
 the author column set to 'caliber' for all rows, plus an additional 'keep'
 column with 'Y' values indicating which rows to keep. By default, this is
 set to <code><a href="default_overlapping_disease_categories_csv.html">default_overlapping_disease_categories_csv()</a></code>.</p></dd>
@@ -146,7 +146,8 @@ set to <code><a href="default_overlapping_disease_categories_csv.html">default_o
 <span class="r-in"></span>
 <span class="r-in"><span class="co"># reformat CALIBER codes for UK Biobank</span></span>
 <span class="r-in"><span class="va">caliber_ukb</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/warning.html" class="external-link">suppressWarnings</a></span><span class="op">(</span><span class="fu">reformat_caliber_for_ukb</span><span class="op">(</span><span class="va">caliber_raw</span>,</span>
-<span class="r-in"> all_lkps_maps <span class="op">=</span> <span class="va">all_lkps_maps</span><span class="op">)</span><span class="op">)</span></span>
+<span class="r-in">  all_lkps_maps <span class="op">=</span> <span class="va">all_lkps_maps</span></span>
+<span class="r-in"><span class="op">)</span><span class="op">)</span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Reformatting Read 2 codes</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Reformatting ICD10 codes</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> The following 1 input ICD10 codes do not have a 1-to-1 ICD10_CODE-to-ALT_CODE mapping: 'M90.0'. There will therefore be *more* output than input codes</span>

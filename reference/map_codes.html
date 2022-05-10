@@ -162,10 +162,12 @@ default. Set to <code>NULL</code> to remove all filters.</p></dd>
 <span class="r-in"><span class="va">all_lkps_maps_dummy</span> <span class="op">&lt;-</span> <span class="fu"><a href="build_all_lkps_maps_dummy.html">build_all_lkps_maps_dummy</a></span><span class="op">(</span><span class="op">)</span></span>
 <span class="r-in"></span>
 <span class="r-in"><span class="co"># map codes from Read 2 to ICD10</span></span>
-<span class="r-in"><span class="fu">map_codes</span><span class="op">(</span>codes <span class="op">=</span> <span class="st">"G20.."</span>,</span>
-<span class="r-in">         from <span class="op">=</span> <span class="st">"read2"</span>,</span>
-<span class="r-in">         to <span class="op">=</span> <span class="st">"icd10"</span>,</span>
-<span class="r-in">         all_lkps_maps <span class="op">=</span> <span class="va">all_lkps_maps_dummy</span><span class="op">)</span></span>
+<span class="r-in"><span class="fu">map_codes</span><span class="op">(</span></span>
+<span class="r-in">  codes <span class="op">=</span> <span class="st">"G20.."</span>,</span>
+<span class="r-in">  from <span class="op">=</span> <span class="st">"read2"</span>,</span>
+<span class="r-in">  to <span class="op">=</span> <span class="st">"icd10"</span>,</span>
+<span class="r-in">  all_lkps_maps <span class="op">=</span> <span class="va">all_lkps_maps_dummy</span></span>
+<span class="r-in"><span class="op">)</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 1 × 3</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   code  description                      code_type</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                            <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    </span>

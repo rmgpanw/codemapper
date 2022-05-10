@@ -88,8 +88,8 @@ ICD10.</p>
     <h2>Arguments</h2>
     <dl><dt>clinical_events</dt>
 <dd><p>A long format data frame created by
-<code><a href="https://rdrr.io/pkg/ukbwranglr/man/tidy_clinical_events.html" class="external-link">tidy_clinical_events</a></code>, <code><a href="https://rdrr.io/pkg/ukbwranglr/man/tidy_gp_clinical.html" class="external-link">tidy_gp_clinical</a></code>,
-<code><a href="https://rdrr.io/pkg/ukbwranglr/man/tidy_gp_scripts.html" class="external-link">tidy_gp_scripts</a></code> or <code><a href="https://rdrr.io/pkg/ukbwranglr/man/make_clinical_events_db.html" class="external-link">make_clinical_events_db</a></code>.
+<code><a href="https://rmgpanw.github.io/ukbwranglr/reference/tidy_clinical_events.html" class="external-link">tidy_clinical_events</a></code>, <code><a href="https://rmgpanw.github.io/ukbwranglr/reference/tidy_gp_clinical.html" class="external-link">tidy_gp_clinical</a></code>,
+<code><a href="https://rmgpanw.github.io/ukbwranglr/reference/tidy_gp_scripts.html" class="external-link">tidy_gp_scripts</a></code> or <code><a href="https://rmgpanw.github.io/ukbwranglr/reference/make_clinical_events_db.html" class="external-link">make_clinical_events_db</a></code>.
 This can also be a <code><a href="https://dbplyr.tidyverse.org/reference/tbl.src_dbi.html" class="external-link">tbl_dbi</a></code> object.</p></dd>
 <dt>all_lkps_maps</dt>
 <dd><p>Either a named list of lookup and mapping tables (either
@@ -146,7 +146,8 @@ default. Set to <code>NULL</code> to remove all filters.</p></dd>
 <span class="r-in"><span class="fu">map_clinical_events_to_phecodes</span><span class="op">(</span></span>
 <span class="r-in">  clinical_events <span class="op">=</span> <span class="fu"><a href="dummy_clinical_events_tidy.html">dummy_clinical_events_tidy</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span class="r-in">  all_lkps_maps <span class="op">=</span> <span class="va">all_lkps_maps_dummy</span>,</span>
-<span class="r-in">  min_date_only <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<span class="r-in">  min_date_only <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span class="r-in"><span class="op">)</span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Identified the following 5 data sources to map to phecodes: [1] **Death register** - Underlying (primary) cause of death, [2] **Death register** - Contributory (secondary) cause of death, [3] **Primary care** - `read_2` column, data provider England (Vision), [4] **Primary care** - `read_3` column, data provider England (TPP), [5] **Summary Diagnoses - Hospital inpatient - Health-related outcomes** - Diagnoses - ICD9</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> ***MAPPING clinical_events TO PHECODES***</span>
