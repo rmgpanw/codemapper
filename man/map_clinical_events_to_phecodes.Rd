@@ -62,5 +62,6 @@ dummy_clinical_events_tidy()
 map_clinical_events_to_phecodes(
   clinical_events = dummy_clinical_events_tidy(),
   all_lkps_maps = all_lkps_maps_dummy,
-  min_date_only = FALSE)
+  min_date_only = FALSE
+)
 }

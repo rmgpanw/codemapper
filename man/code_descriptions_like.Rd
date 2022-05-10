@@ -68,8 +68,8 @@ all_lkps_maps_dummy <- build_all_lkps_maps_dummy()
 
 # lookup ICD10 code descriptions matching 'cyst'
 code_descriptions_like(
- reg_expr = "cyst",
- code_type = "icd10",
- all_lkps_maps = all_lkps_maps_dummy
+  reg_expr = "cyst",
+  code_type = "icd10",
+  all_lkps_maps = all_lkps_maps_dummy
 )
 }

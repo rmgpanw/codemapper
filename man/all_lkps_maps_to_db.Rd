@@ -33,8 +33,10 @@ all_lkps_maps_dummy <- build_all_lkps_maps_dummy()
 
 # write to SQLite database file
 db_path <- suppressMessages(
-  all_lkps_maps_to_db(all_lkps_maps = all_lkps_maps_dummy,
-  db_path = tempfile())
+  all_lkps_maps_to_db(
+    all_lkps_maps = all_lkps_maps_dummy,
+    db_path = tempfile()
+  )
 )
 
 # connect to SQLite database

@@ -16,8 +16,10 @@ all_lkps_maps <-
     icd9_phecode_1_2 = NULL
   )
 
-all_lkps_maps_db <- all_lkps_maps_to_db(all_lkps_maps = all_lkps_maps,
-                                        db_path = tempfile(fileext = ".db"))
+all_lkps_maps_db <- all_lkps_maps_to_db(
+  all_lkps_maps = all_lkps_maps,
+  db_path = tempfile(fileext = ".db")
+)
 
 # TESTS -------------------------------------------------------------------
 
@@ -49,9 +51,9 @@ test_that("`codes_starting_with()` returns the expected nuber of results, escapi
       all_lkps_maps = all_lkps_maps,
       codes_only = TRUE,
       standardise_output = FALSE
-    )
-  ,
-  expected = "C10E.")
+    ),
+    expected = "C10E."
+  )
 
   # no '.'
   expect_equal(
@@ -62,7 +64,8 @@ test_that("`codes_starting_with()` returns the expected nuber of results, escapi
       codes_only = TRUE,
       standardise_output = FALSE
     )),
-    expected = 3)
+    expected = 3
+  )
 
   # return codes and descriptions as a data frame
   expect_equal(nrow(
@@ -74,7 +77,8 @@ test_that("`codes_starting_with()` returns the expected nuber of results, escapi
       preferred_description_only = FALSE
     )
   ),
-  expected = 3)
+  expected = 3
+  )
 
   expect_equal(nrow(
     codes_starting_with(
@@ -85,7 +89,8 @@ test_that("`codes_starting_with()` returns the expected nuber of results, escapi
       preferred_description_only = TRUE
     )
   ),
-  expected = 1)
+  expected = 1
+  )
 })
 
 # `lookup_codes()` --------------------------------------------------------
@@ -99,7 +104,8 @@ test_that("`lookup_codes()` returns the expected number of results", {
       preferred_description_only = FALSE
     )
   ),
-  expected = 7)
+  expected = 7
+  )
 
   expect_equal(nrow(
     lookup_codes(
@@ -109,7 +115,8 @@ test_that("`lookup_codes()` returns the expected number of results", {
       preferred_description_only = TRUE
     )
   ),
-  expected = 2)
+  expected = 2
+  )
 })
 
 test_that(
@@ -125,14 +132,19 @@ test_that(
 
     expect_equal(names(result), c("code", "description", "code_type"))
 
-    expect_equal(result$description,
-                 c("Type 1 diabetes mellitus",
-                   "Type 1 diabetes mellitus With coma"))
+    expect_equal(
+      result$description,
+      c(
+        "Type 1 diabetes mellitus",
+        "Type 1 diabetes mellitus With coma"
+      )
+    )
   }
-  )
+)
 
 test_that(
-  "`lookup_codes()` returns unrecognised codes only when requested", {
+  "`lookup_codes()` returns unrecognised codes only when requested",
+  {
     result <- lookup_codes(
       codes = c("E10", "E100", "UNRECOGNISED"),
       code_type = "icd10",
@@ -167,13 +179,16 @@ test_that("`code_descriptions_like()` returns expected results", {
 # `map_codes()` -----------------------------------------------------------
 
 test_that(
-  "`map_codes()` raises warning if any of the supplied codes are not present in the coding system being mapped from", {
+  "`map_codes()` raises warning if any of the supplied codes are not present in the coding system being mapped from",
+  {
     expect_warning(
-      map_codes(codes = c("C10E.", "foo", "bar"),
-                from = "read2",
-                to = "read3",
-                all_lkps_maps = all_lkps_maps,
-                unrecognised_codes = "warning"),
+      map_codes(
+        codes = c("C10E.", "foo", "bar"),
+        from = "read2",
+        to = "read3",
+        all_lkps_maps = all_lkps_maps,
+        unrecognised_codes = "warning"
+      ),
       regexp = "The following 2 codes were not found for 'read2' in table 'read_v2_read_ctv3': 'foo', 'bar'",
       fixed = TRUE
     )
@@ -181,29 +196,34 @@ test_that(
 )
 
 test_that(
-  "`map_codes()` returns the expected codes", {
+  "`map_codes()` returns the expected codes",
+  {
     # codes only
     expect_equal(
-      map_codes(codes = c("C10E."),
-                from = "read2",
-                to = "read3",
-                all_lkps_maps = all_lkps_maps,
-                unrecognised_codes = "error",
-                codes_only = TRUE,
-                standardise_output = FALSE),
+      map_codes(
+        codes = c("C10E."),
+        from = "read2",
+        to = "read3",
+        all_lkps_maps = all_lkps_maps,
+        unrecognised_codes = "error",
+        codes_only = TRUE,
+        standardise_output = FALSE
+      ),
       "X40J4"
     )
 
     # codes and ALL descriptions
     expect_equal(
-      nrow(map_codes(codes = c("C10E."),
-                     from = "read2",
-                     to = "read3",
-                     all_lkps_maps = all_lkps_maps,
-                     unrecognised_codes = "error",
-                     codes_only = FALSE,
-                     preferred_description_only = FALSE,
-                     standardise_output = FALSE)),
+      nrow(map_codes(
+        codes = c("C10E."),
+        from = "read2",
+        to = "read3",
+        all_lkps_maps = all_lkps_maps,
+        unrecognised_codes = "error",
+        codes_only = FALSE,
+        preferred_description_only = FALSE,
+        standardise_output = FALSE
+      )),
       3
     )
 
@@ -248,17 +268,18 @@ test_that(
 test_that("`map_codes()` works as expected for mapping icd10 to icd9 codes", {
   expect_equal(
     suppressWarnings(map_codes(
-    codes = "D751",
-    from = "icd10",
-    to = "icd9",
-    all_lkps_maps = all_lkps_maps,
-    unrecognised_codes = "error",
-    codes_only = FALSE,
-    preferred_description_only = TRUE,
-    standardise_output = TRUE,
-    reverse_mapping = "warning"
-  )$code),
-  "2890")
+      codes = "D751",
+      from = "icd10",
+      to = "icd9",
+      all_lkps_maps = all_lkps_maps,
+      unrecognised_codes = "error",
+      codes_only = FALSE,
+      preferred_description_only = TRUE,
+      standardise_output = TRUE,
+      reverse_mapping = "warning"
+    )$code),
+    "2890"
+  )
 })
 
 test_that("`map_codes()` works when mapping icd9 to icd10", {
@@ -299,9 +320,11 @@ all_lkps_maps_db
 
 # `get_mapping_df()` --------------------------
 test_that("`get_mapping_df()` returns the expected output", {
-  read2_icd10_df <- get_mapping_df(from = "read2",
-                                   to = "icd10",
-                                   all_lkps_maps = all_lkps_maps) %>%
+  read2_icd10_df <- get_mapping_df(
+    from = "read2",
+    to = "icd10",
+    all_lkps_maps = all_lkps_maps
+  ) %>%
     head(n = 1)
 
   read2_icd10_df_renamed <- get_mapping_df(
@@ -330,14 +353,18 @@ test_that("`get_mapping_df()` returns the expected output", {
 
   expect_equal(
     read2_icd10_df,
-    tibble::tibble(read2 = "A153.",
-                   icd10 = "A180")
+    tibble::tibble(
+      read2 = "A153.",
+      icd10 = "A180"
+    )
   )
 
   expect_equal(
     read2_icd10_df_renamed,
-    tibble::tibble(from = "A153.",
-                   to = "A180")
+    tibble::tibble(
+      from = "A153.",
+      to = "A180"
+    )
   )
 
   # should be the same as above
@@ -348,92 +375,97 @@ test_that("`get_mapping_df()` returns the expected output", {
 
   expect_equal(
     icd10_read2_df,
-    tibble::tibble(icd10 = "A180",
-                   read2 = "A153.")
+    tibble::tibble(
+      icd10 = "A180",
+      read2 = "A153."
+    )
   )
 })
 
 test_that("`get_mapping_df()` returns the expected results with/without `col_filters` for Read 2 to Read 3", {
-  read2_read3_df <- get_mapping_df(from = "read2",
-                                   to = "read3",
-                                   all_lkps_maps = all_lkps_maps,
-                                   col_filters = default_col_filters())
+  read2_read3_df <- get_mapping_df(
+    from = "read2",
+    to = "read3",
+    all_lkps_maps = all_lkps_maps,
+    col_filters = default_col_filters()
+  )
 
-  read2_read3_df_no_col_filter <- get_mapping_df(from = "read2",
-                                         to = "read3",
-                                         all_lkps_maps = all_lkps_maps,
-                                         col_filters = NULL)
+  read2_read3_df_no_col_filter <- get_mapping_df(
+    from = "read2",
+    to = "read3",
+    all_lkps_maps = all_lkps_maps,
+    col_filters = NULL
+  )
 
   expect_equal(
     read2_read3_df,
     tibble::tribble(
-        ~read2,  ~read3,
-       "C106.", "XE10H",
-       "C106.", "X00Ag",
-       "C106.", "XE15k",
-       "C106.", "XaPmX",
-       "C108.", "X40J4",
-       "C10E.", "X40J4",
-       "F3813", "XE15n",
-       "F3813", "XaPmX",
-       "J5310", "J5311",
-       "K05..", "X30J0",
-       "K050.", "X30J0",
-       "K0D..", "X30J0"
-       )
+      ~read2, ~read3,
+      "C106.", "XE10H",
+      "C106.", "X00Ag",
+      "C106.", "XE15k",
+      "C106.", "XaPmX",
+      "C108.", "X40J4",
+      "C10E.", "X40J4",
+      "F3813", "XE15n",
+      "F3813", "XaPmX",
+      "J5310", "J5311",
+      "K05..", "X30J0",
+      "K050.", "X30J0",
+      "K0D..", "X30J0"
+    )
   )
 
   expect_equal(
-      read2_read3_df_no_col_filter,
-      tibble::tribble(
-          ~read2,  ~read3,
-         "C106.", "XE10H",
-         "C106.", "X00Ag",
-         "C106.", "XE15k",
-         "C106.", "Xa0lK",
-         "C106.", "XaPmX",
-         "C108.", "X40J4",
-         "C10E.", "X40J4",
-         "F3813", "XE15n",
-         "F3813", "Xa0lK",
-         "F3813", "XaPmX",
-         "J5310", "J5311",
-         "J5311", "J5311",
-         "K05..", "X30J0",
-         "K050.", "X30J0",
-         "K0D..", "X30J0"
-         )
+    read2_read3_df_no_col_filter,
+    tibble::tribble(
+      ~read2, ~read3,
+      "C106.", "XE10H",
+      "C106.", "X00Ag",
+      "C106.", "XE15k",
+      "C106.", "Xa0lK",
+      "C106.", "XaPmX",
+      "C108.", "X40J4",
+      "C10E.", "X40J4",
+      "F3813", "XE15n",
+      "F3813", "Xa0lK",
+      "F3813", "XaPmX",
+      "J5310", "J5311",
+      "J5311", "J5311",
+      "K05..", "X30J0",
+      "K050.", "X30J0",
+      "K0D..", "X30J0"
     )
+  )
 })
 
 # `reformat_standardised_codelist()` --------------------------------------
 
-test_that("`reformat_standardised_codelist()` returns the expected output format",
-          {
-            expect_equal(
-              lookup_codes(
-                codes = c("C10E.", "C108."),
-                code_type = "read2",
-                all_lkps_maps = all_lkps_maps,
-                preferred_description_only = TRUE
-              ) %>%
-                reformat_standardised_codelist(
-                  code_type = "read2",
-                  disease = "T1DM",
-                  disease_category = "T1DM GP diagnosis",
-                  author = "test"
-                ) %>%
-                names(),
-              c(
-                'disease',
-                'description',
-                'category',
-                'code_type',
-                'code',
-                'author'
-              )
-            )
-          })
+test_that("`reformat_standardised_codelist()` returns the expected output format", {
+  expect_equal(
+    lookup_codes(
+      codes = c("C10E.", "C108."),
+      code_type = "read2",
+      all_lkps_maps = all_lkps_maps,
+      preferred_description_only = TRUE
+    ) %>%
+      reformat_standardised_codelist(
+        code_type = "read2",
+        disease = "T1DM",
+        disease_category = "T1DM GP diagnosis",
+        author = "test"
+      ) %>%
+      names(),
+    c(
+      "disease",
+      "description",
+      "category",
+      "code_type",
+      "code",
+      "author"
+    )
+  )
+})
 
 test_that("`reformat_standardised_codelist()` raises error with invalid args", {
   expect_error(
@@ -470,15 +502,22 @@ test_that("`reformat_standardised_codelist()` raises error with invalid args", {
 # `get_from_to_mapping_sheet()` -------------------------------------------
 
 test_that(
-  "`get_from_to_mapping_sheet()` returns the correct mapping table for various 'from'/'to' combinations", {
-    expect_equal(get_from_to_mapping_sheet(from = "read2", "read3"),
-                 "read_v2_read_ctv3")
+  "`get_from_to_mapping_sheet()` returns the correct mapping table for various 'from'/'to' combinations",
+  {
+    expect_equal(
+      get_from_to_mapping_sheet(from = "read2", "read3"),
+      "read_v2_read_ctv3"
+    )
 
-    expect_equal(get_from_to_mapping_sheet(from = "read3", "read2"),
-                 "read_ctv3_read_v2")
+    expect_equal(
+      get_from_to_mapping_sheet(from = "read3", "read2"),
+      "read_ctv3_read_v2"
+    )
 
-    expect_equal(get_from_to_mapping_sheet(from = "read2_drugs", "bnf"),
-                 "read_v2_drugs_bnf")
+    expect_equal(
+      get_from_to_mapping_sheet(from = "read2_drugs", "bnf"),
+      "read_v2_drugs_bnf"
+    )
   }
 )
 
@@ -488,19 +527,23 @@ test_that("`handle_unrecognised_codes()` produces an error/warning message appro
 
   # should raise an error
   expect_error(
-    handle_unrecognised_codes(unrecognised_codes = "error",
-                              missing_codes = "foo",
-                              table_name = "table",
-                              code_type = "imaginary_coding_system"),
+    handle_unrecognised_codes(
+      unrecognised_codes = "error",
+      missing_codes = "foo",
+      table_name = "table",
+      code_type = "imaginary_coding_system"
+    ),
     regexp = "The following 1 codes were not found for 'imaginary_coding_system' in table 'table'"
   )
 
   # should raise a warning
   expect_warning(
-    handle_unrecognised_codes(unrecognised_codes = "warning",
-                              missing_codes = "foo",
-                              table_name = "table",
-                               code_type = "imaginary_coding_system"),
+    handle_unrecognised_codes(
+      unrecognised_codes = "warning",
+      missing_codes = "foo",
+      table_name = "table",
+      code_type = "imaginary_coding_system"
+    ),
     regexp = "The following 1 codes were not found for 'imaginary_coding_system' in table 'table': 'foo'"
   )
 
@@ -521,16 +564,18 @@ test_that("`reformat_icd10_codes()` returns the expected values for ICD10_CODE t
     # warning raised because "I714" not present in ICD10_CODE col of icd10_lkp
     # table
     suppressWarnings(reformat_icd10_codes(
-        icd10_codes = c("D75.1",
-                        "I11", # will be the same for ICD10_CODE and ALT_CODE
-                        "I11.0",
-                        "I792", # not in ICD10_CODE col
-                        "M90.0"), # multiple associated ALT_CODEs
-        all_lkps_maps = all_lkps_maps,
-        input_icd10_format = "ICD10_CODE",
-        output_icd10_format = "ALT_CODE",
-        unrecognised_codes = "warning"
-      )),
+      icd10_codes = c(
+        "D75.1",
+        "I11", # will be the same for ICD10_CODE and ALT_CODE
+        "I11.0",
+        "I792", # not in ICD10_CODE col
+        "M90.0"
+      ), # multiple associated ALT_CODEs
+      all_lkps_maps = all_lkps_maps,
+      input_icd10_format = "ICD10_CODE",
+      output_icd10_format = "ALT_CODE",
+      unrecognised_codes = "warning"
+    )),
     c("D751", "I11", "I110", "M900", "M9000", "M9001", "M9002", "M9003", "M9004", "M9005", "M9006", "M9007", "M9008", "M9009")
   )
 })
@@ -538,17 +583,19 @@ test_that("`reformat_icd10_codes()` returns the expected values for ICD10_CODE t
 test_that("`reformat_icd10_codes()` returns the expected values for ALT_CODE to ICD10_CODE", {
   expect_equal(
     reformat_icd10_codes(
-        icd10_codes = c("D751",
-                        "I11", # will be the same for ICD10_CODE and ALT_CODE
-                        "I110",
-                        "I792", # not in ICD10_CODE col
-                        "M900", # multiple associated ALT_CODEs - all map to "M00.0"
-                        "M9001",
-                        "M9002"),
-        all_lkps_maps = all_lkps_maps,
-        input_icd10_format = "ALT_CODE",
-        output_icd10_format = "ICD10_CODE"
+      icd10_codes = c(
+        "D751",
+        "I11", # will be the same for ICD10_CODE and ALT_CODE
+        "I110",
+        "I792", # not in ICD10_CODE col
+        "M900", # multiple associated ALT_CODEs - all map to "M00.0"
+        "M9001",
+        "M9002"
       ),
+      all_lkps_maps = all_lkps_maps,
+      input_icd10_format = "ALT_CODE",
+      output_icd10_format = "ICD10_CODE"
+    ),
     c("D75.1", "I11", "I11.0", "I79.2", "M90.0")
   )
 })
@@ -592,44 +639,52 @@ test_that("`filter_cols` filters columns as expected (or returns `df` unchanged,
     dplyr::mutate(Species = as.character(Species))
 
   # check returns expected number of rows for single/multiple column/value combinations
-  expect_equal(nrow(
-    filter_cols(
+  expect_equal(
+    nrow(
+      filter_cols(
+        df = iris_chr,
+        df_name = "iris",
+        col_filters = list(iris = list(Species = c("setosa")))
+      )
+    ),
+    50
+  )
+
+  expect_equal(
+    nrow(
+      filter_cols(
+        df = iris_chr,
+        df_name = "iris",
+        col_filters = list(iris = list(Species = c("setosa", "virginica")))
+      )
+    ),
+    100
+  )
+
+  expect_equal(
+    nrow(filter_cols(
       df = iris_chr,
       df_name = "iris",
-      col_filters = list(iris = list(Species = c("setosa")))
-    )
-  ),
-  50)
-
-  expect_equal(nrow(
-    filter_cols(
-      df = iris_chr,
-      df_name = "iris",
-      col_filters = list(iris = list(Species = c("setosa", "virginica")))
-    )
-  ),
-  100)
-
-  expect_equal(nrow(filter_cols(
-    df = iris_chr,
-    df_name = "iris",
-    col_filters = list(iris = list(
-      Species = c("setosa", "virginica"),
-      Petal.Width = c(0.5, 0.6)
-    ))
-  )),
-  2)
+      col_filters = list(iris = list(
+        Species = c("setosa", "virginica"),
+        Petal.Width = c(0.5, 0.6)
+      ))
+    )),
+    2
+  )
 
   # returns df unchanged if `df_name` not in `names(col_filters)`
-  expect_equal(nrow(filter_cols(
-    df = iris_chr,
-    df_name = "iris",
-    col_filters = list(FOO = list(
-      Species = c("setosa", "virginica"),
-      Petal.Width = c(0.5, 0.6)
-    ))
-  )),
-  150)
+  expect_equal(
+    nrow(filter_cols(
+      df = iris_chr,
+      df_name = "iris",
+      col_filters = list(FOO = list(
+        Species = c("setosa", "virginica"),
+        Petal.Width = c(0.5, 0.6)
+      ))
+    )),
+    150
+  )
 })
 
 test_that("`filter_cols` raises error if `col_filters` includes unrecognised/missing column names", {
@@ -638,8 +693,10 @@ test_that("`filter_cols` raises error if `col_filters` includes unrecognised/mis
     filter_cols(
       df = iris,
       df_name = "iris",
-      col_filters = list(iris = list(Species2 = c("setosa"),
-                                     Foo = c("setosa")))
+      col_filters = list(iris = list(
+        Species2 = c("setosa"),
+        Foo = c("setosa")
+      ))
     ),
     "are not present in"
   )
@@ -649,8 +706,10 @@ test_that("`filter_cols` raises error if `col_filters` includes unrecognised/mis
     filter_cols(
       df = iris,
       df_name = "iris",
-      col_filters = list(iris = list(Species2 = c("setosa"),
-                                     c("setosa")))
+      col_filters = list(iris = list(
+        Species2 = c("setosa"),
+        c("setosa")
+      ))
     ),
     "must be named"
   )
@@ -768,24 +827,30 @@ test_that("`get_icd10_code_range()` returns expected codes", {
 # `rm_or_extract_appended_icd10_dxa()` -----------------------------
 
 test_that("`rm_or_extract_appended_icd10_dxa()` works", {
-  icd10_codes <- c("A00",
-                   "A408",
-                   "A390D",
-                   "A38X",
-                   "G01XA")
+  icd10_codes <- c(
+    "A00",
+    "A408",
+    "A390D",
+    "A38X",
+    "G01XA"
+  )
 
   # remove
-  rm_expected_result <- c("A00",
-                          "A408",
-                          "A390",
-                          "A38X",
-                          "G01X")
+  rm_expected_result <- c(
+    "A00",
+    "A408",
+    "A390",
+    "A38X",
+    "G01X"
+  )
 
-  rm_expected_result_x_rm <- c("A00",
-                               "A408",
-                               "A390",
-                               "A38",
-                               "G01")
+  rm_expected_result_x_rm <- c(
+    "A00",
+    "A408",
+    "A390",
+    "A38",
+    "G01"
+  )
 
   expect_equal(
     rm_or_extract_appended_icd10_dxa(icd10_codes),
@@ -802,31 +867,38 @@ test_that("`rm_or_extract_appended_icd10_dxa()` works", {
   # remove 'X'
   expect_equal(
     rm_or_extract_appended_icd10_dxa(icd10_codes,
-                                     keep_x = FALSE),
+      keep_x = FALSE
+    ),
     rm_expected_result_x_rm
   )
 
   # extract
   expect_equal(
     rm_or_extract_appended_icd10_dxa(icd10_codes,
-                                         rm_extract = "extract"),
-    c(NA,
+      rm_extract = "extract"
+    ),
+    c(
+      NA,
       NA,
       "D",
       NA,
-      "A")
+      "A"
+    )
   )
 
   # extract 'X'
   expect_equal(
     rm_or_extract_appended_icd10_dxa(icd10_codes,
-                                     keep_x = FALSE,
-                                     rm_extract = "extract"),
-    c(NA,
+      keep_x = FALSE,
+      rm_extract = "extract"
+    ),
+    c(
+      NA,
       NA,
       "D",
       "X",
-      "XA")
+      "XA"
+    )
   )
 })
 
@@ -836,10 +908,11 @@ test_that("`rm_or_extract_appended_icd10_dxa()` works", {
 test_that("`check_codes()` raises an error appropriately", {
   # NA value
   expect_error(check_codes(c(NA, "A")),
-               regexp = "cannot contain `NA` values")
+    regexp = "cannot contain `NA` values"
+  )
 
   # not character
   expect_error(check_codes(1:2),
-               regexp = "must be a character vector")
+    regexp = "must be a character vector"
+  )
 })
-

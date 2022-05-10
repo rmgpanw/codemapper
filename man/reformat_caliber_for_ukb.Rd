@@ -61,7 +61,8 @@ all_lkps_maps <- build_all_lkps_maps_dummy()
 
 # reformat CALIBER codes for UK Biobank
 caliber_ukb <- suppressWarnings(reformat_caliber_for_ukb(caliber_raw,
- all_lkps_maps = all_lkps_maps))
+  all_lkps_maps = all_lkps_maps
+))
 
 # view first few rows
 head(caliber_ukb)

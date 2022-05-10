@@ -73,7 +73,7 @@ descriptions like...' \strong{OR} 'Codes starting with...'. \item
 # build dummy all_lkps_maps
 all_lkps_maps_dummy <- build_all_lkps_maps_dummy()
 
- # launch app
- RunCodelistBuilder(all_lkps_maps = all_lkps_maps_dummy)
+# launch app
+RunCodelistBuilder(all_lkps_maps = all_lkps_maps_dummy)
 }
 }

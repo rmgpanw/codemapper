@@ -17,5 +17,7 @@ Mapping table available from
 \href{https://www.nhsbsa.nhs.uk/prescription-data/understanding-our-data/bnf-snomed-mapping}{here}.
 }
 \examples{
-\dontrun{ get_nhsbsa_snomed_bnf() }
+\dontrun{
+get_nhsbsa_snomed_bnf()
+}
 }

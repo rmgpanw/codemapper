@@ -63,9 +63,11 @@ coding systems.
 all_lkps_maps_dummy <- build_all_lkps_maps_dummy()
 
 # get mapping data frame for Read 2 to ICD10
-get_mapping_df(from = "read3",
-              to = "icd10",
-              all_lkps_maps = all_lkps_maps_dummy)
+get_mapping_df(
+  from = "read3",
+  to = "icd10",
+  all_lkps_maps = all_lkps_maps_dummy
+)
 }
 \seealso{
 Other Clinical code lookups and mappings: 

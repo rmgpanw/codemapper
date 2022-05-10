@@ -21,8 +21,10 @@
 #'
 #' # write to SQLite database file
 #' db_path <- suppressMessages(
-#'   all_lkps_maps_to_db(all_lkps_maps = all_lkps_maps_dummy,
-#'   db_path = tempfile())
+#'   all_lkps_maps_to_db(
+#'     all_lkps_maps = all_lkps_maps_dummy,
+#'     db_path = tempfile()
+#'   )
 #' )
 #'
 #' # connect to SQLite database
@@ -41,8 +43,10 @@ all_lkps_maps_to_db <- function(all_lkps_maps = build_all_lkps_maps(),
   # If database already exists at db_path, check if tables to be written are
   # already present
   if (file.exists(db_path)) {
-    message(paste0("Existing file found at ",
-                   db_path))
+    message(paste0(
+      "Existing file found at ",
+      db_path
+    ))
 
     check_tables_do_not_already_exist <- TRUE
   } else {
@@ -61,8 +65,10 @@ all_lkps_maps_to_db <- function(all_lkps_maps = build_all_lkps_maps(),
 
     tables_already_in_db <- DBI::dbListTables(con)
 
-    tables_already_present_in_db <- subset(tables_to_be_written,
-                                           tables_to_be_written %in% tables_already_in_db)
+    tables_already_present_in_db <- subset(
+      tables_to_be_written,
+      tables_to_be_written %in% tables_already_in_db
+    )
 
     if (!overwrite) {
       assertthat::assert_that(
@@ -79,7 +85,7 @@ all_lkps_maps_to_db <- function(all_lkps_maps = build_all_lkps_maps(),
         )
       )
     } else if (overwrite &
-               !rlang::is_empty(tables_already_present_in_db)) {
+      !rlang::is_empty(tables_already_present_in_db)) {
       warning(
         "The following tables are already present in the database at ",
         db_path,
@@ -110,9 +116,11 @@ all_lkps_maps_to_db <- function(all_lkps_maps = build_all_lkps_maps(),
     )
   }
 
-  message(paste0("Success! Connect to database with `con <- DBI::dbConnect(RSQLite::SQLite(), '",
-                 db_path,
-                 "')`, then access all tables with `all_lkps_maps <- ukbwranglr::db_tables_to_list(con)`"))
+  message(paste0(
+    "Success! Connect to database with `con <- DBI::dbConnect(RSQLite::SQLite(), '",
+    db_path,
+    "')`, then access all tables with `all_lkps_maps <- ukbwranglr::db_tables_to_list(con)`"
+  ))
   invisible(db_path)
 }
 
@@ -158,7 +166,7 @@ all_lkps_maps_to_db <- function(all_lkps_maps = build_all_lkps_maps(),
 #'   phecode_1_2_lkp = NULL,
 #'   icd10_phecode_1_2 = NULL,
 #'   icd9_phecode_1_2 = NULL
-#')
+#' )
 build_all_lkps_maps <-
   function(all_lkps_maps = read_all_lkps_maps(),
            ukb_codings = ukbwranglr::get_ukb_codings(),
@@ -173,8 +181,10 @@ build_all_lkps_maps <-
     ## remove metadata footer rows and add row index column -------------------
     all_lkps_maps <- all_lkps_maps %>%
       purrr::map(rm_footer_rows_all_lkps_maps_df) %>%
-      purrr::map(~ tibble::rowid_to_column(.data = .x,
-                                           var = ".rowid"))
+      purrr::map(~ tibble::rowid_to_column(
+        .data = .x,
+        var = ".rowid"
+      ))
 
     ## reformat tables individually ---------------
 
@@ -185,7 +195,8 @@ build_all_lkps_maps <-
     ### read2_icd10 ------------------------
 
     all_lkps_maps$read_v2_icd10 <- reformat_read_v2_icd10(all_lkps_maps$read_v2_icd10,
-                                                          icd10_lkp = all_lkps_maps$icd10_lkp)
+      icd10_lkp = all_lkps_maps$icd10_lkp
+    )
 
     ### read3_icd10 ------------------------
 
@@ -248,12 +259,14 @@ build_all_lkps_maps <-
       bnf_dmd_map_unzipped_dir <- file.path(tempdir(), "bnf_dmd")
 
       utils::unzip(bnf_dmd,
-                   files = NULL,
-                   exdir = bnf_dmd_map_unzipped_dir)
+        files = NULL,
+        exdir = bnf_dmd_map_unzipped_dir
+      )
 
       bnf_dmd_file <- list.files(bnf_dmd_map_unzipped_dir)
       assertthat::assert_that(length(bnf_dmd_file) == 1,
-                              msg = "Error! Unexpected number of files after unzipping NHBSA BNF-SNOMED file")
+        msg = "Error! Unexpected number of files after unzipping NHBSA BNF-SNOMED file"
+      )
 
       bnf_dmd <-
         readxl::read_excel(file.path(bnf_dmd_map_unzipped_dir, bnf_dmd_file))
@@ -282,14 +295,16 @@ build_all_lkps_maps <-
       )
 
       # drop redundant cols
-      self_report_med_to_atc_map <- self_report_med_to_atc_map[,-c(5, 6)]
+      self_report_med_to_atc_map <- self_report_med_to_atc_map[, -c(5, 6)]
 
       # append drug_name in brackets
       self_report_med_to_atc_map$self_report_medication <-
-        paste0(self_report_med_to_atc_map$self_report_medication,
-               " (",
-               self_report_med_to_atc_map$drug_name,
-               ")")
+        paste0(
+          self_report_med_to_atc_map$self_report_medication,
+          " (",
+          self_report_med_to_atc_map$drug_name,
+          ")"
+        )
     }
 
     ## NHS TRUD Read 3 to SNOMEDCT mapping table ---------
@@ -300,19 +315,22 @@ build_all_lkps_maps <-
     ## Phecode lookup ----------------
     if (!is.null(phecode_1_2_lkp)) {
       phecode_lkp <- readr::read_csv(phecode_1_2_lkp,
-                                     progress = FALSE,
-                                     col_types = readr::cols(.default = "c"))
+        progress = FALSE,
+        col_types = readr::cols(.default = "c")
+      )
     }
 
     ## Phecode to ICD10 map ---------------------
     if (!is.null(icd10_phecode_1_2)) {
       message("Reformatting ICD10-Phecode map")
       icd10_phecode <- readr::read_csv(icd10_phecode_1_2,
-                                       progress = FALSE,
-                                       col_types = readr::cols(.default = "c"))
+        progress = FALSE,
+        col_types = readr::cols(.default = "c")
+      )
 
       icd10_phecode <- reformat_icd10_phecode_map_1_2(icd10_phecode,
-                                                      all_lkps_maps = all_lkps_maps)
+        all_lkps_maps = all_lkps_maps
+      )
     }
 
     ## Phecode to ICD9 map ------------------
@@ -320,7 +338,8 @@ build_all_lkps_maps <-
     if (!is.null(icd9_phecode_1_2)) {
       icd9_phecode <- readr::read_csv(icd9_phecode_1_2) %>%
         dplyr::mutate("icd9" = stringr::str_remove(.data[["icd9"]],
-                                                   pattern = "\\."))
+          pattern = "\\."
+        ))
     }
 
     # Combine -----------------------
@@ -337,33 +356,45 @@ build_all_lkps_maps <-
 
     # Append 'extra' lookup/mapping tables
     if (!is.null(bnf_dmd)) {
-      all_lkps_maps <- c(all_lkps_maps,
-                         list(bnf_dmd = bnf_dmd))
+      all_lkps_maps <- c(
+        all_lkps_maps,
+        list(bnf_dmd = bnf_dmd)
+      )
     }
 
     if (!is.null(self_report_med_to_atc_map)) {
-      all_lkps_maps <- c(all_lkps_maps,
-                         list(self_report_med_to_atc_map = self_report_med_to_atc_map))
+      all_lkps_maps <- c(
+        all_lkps_maps,
+        list(self_report_med_to_atc_map = self_report_med_to_atc_map)
+      )
     }
 
     if (!is.null(ctv3sctmap2)) {
-      all_lkps_maps <- c(all_lkps_maps,
-                         list(read_ctv3_sct = read_ctv3_sct))
+      all_lkps_maps <- c(
+        all_lkps_maps,
+        list(read_ctv3_sct = read_ctv3_sct)
+      )
     }
 
     if (!is.null(phecode_1_2_lkp)) {
-      all_lkps_maps <- c(all_lkps_maps,
-                         list(phecode_lkp = phecode_lkp))
+      all_lkps_maps <- c(
+        all_lkps_maps,
+        list(phecode_lkp = phecode_lkp)
+      )
     }
 
     if (!is.null(icd10_phecode_1_2)) {
-      all_lkps_maps <- c(all_lkps_maps,
-                         list(icd10_phecode = icd10_phecode))
+      all_lkps_maps <- c(
+        all_lkps_maps,
+        list(icd10_phecode = icd10_phecode)
+      )
     }
 
     if (!is.null(icd9_phecode_1_2)) {
-      all_lkps_maps <- c(all_lkps_maps,
-                         list(icd9_phecode = icd9_phecode))
+      all_lkps_maps <- c(
+        all_lkps_maps,
+        list(icd9_phecode = icd9_phecode)
+      )
     }
 
     # convert all to tibbles (avoids potential problems when writing to SQLite
@@ -385,11 +416,17 @@ build_all_lkps_maps <-
 #' @return File path to downloaded file.
 #' @export
 #' @examples
-#' \dontrun{ get_nhsbsa_snomed_bnf() }
-get_nhsbsa_snomed_bnf <- function(path = file.path(tempdir(),
-                                                   "bnf_dmd.zip")) {
-  download_file(download_url = "https://www.nhsbsa.nhs.uk/sites/default/files/2021-08/BNF%20Snomed%20Mapping%20data%2020210819.zip",
-                path = path)
+#' \dontrun{
+#' get_nhsbsa_snomed_bnf()
+#' }
+get_nhsbsa_snomed_bnf <- function(path = file.path(
+                                    tempdir(),
+                                    "bnf_dmd.zip"
+                                  )) {
+  download_file(
+    download_url = "https://www.nhsbsa.nhs.uk/sites/default/files/2021-08/BNF%20Snomed%20Mapping%20data%2020210819.zip",
+    path = path
+  )
 }
 
 #' Get UK Biobank resource 592 directly from UKB
@@ -407,11 +444,11 @@ get_nhsbsa_snomed_bnf <- function(path = file.path(tempdir(),
 #' @export
 #' @examples
 #' \dontrun{
-#'  # download UKB resource 592, returning file path invisibly
-#'  file_path <- get_ukb_all_lkps_maps()
+#' # download UKB resource 592, returning file path invisibly
+#' file_path <- get_ukb_all_lkps_maps()
 #'
-#'  # view path to downloaded file
-#'  file_path
+#' # view path to downloaded file
+#' file_path
 #' }
 get_ukb_all_lkps_maps <- function(dir_path = tempdir()) {
   message("Getting UKB resource 592")
@@ -437,8 +474,9 @@ get_ukb_all_lkps_maps <- function(dir_path = tempdir()) {
   # extract excel file only from zip
   message("Extracting all_lkps_maps_v3.xlsx from zip file to tempdir")
   utils::unzip(primarycare_codings_zip_filepath,
-               files = primarycare_codings,
-               exdir = dir_path)
+    files = primarycare_codings,
+    exdir = dir_path
+  )
 
   # return file path
   return(file.path(dir_path, primarycare_codings))
@@ -455,11 +493,17 @@ get_ukb_all_lkps_maps <- function(dir_path = tempdir()) {
 #' @return File path to downloaded file.
 #' @export
 #' @examples
-#' \dontrun{ get_nhsbsa_snomed_bnf() }
-get_ukb_self_report_med_to_atc_map <- function(path = file.path(tempdir(),
-                                                                "self_report_med_to_atc_map.xlsx")) {
-  download_file(download_url = "https://static-content.springer.com/esm/art%3A10.1038%2Fs41467-019-09572-5/MediaObjects/41467_2019_9572_MOESM3_ESM.xlsx",
-                path = path)
+#' \dontrun{
+#' get_nhsbsa_snomed_bnf()
+#' }
+get_ukb_self_report_med_to_atc_map <- function(path = file.path(
+                                                 tempdir(),
+                                                 "self_report_med_to_atc_map.xlsx"
+                                               )) {
+  download_file(
+    download_url = "https://static-content.springer.com/esm/art%3A10.1038%2Fs41467-019-09572-5/MediaObjects/41467_2019_9572_MOESM3_ESM.xlsx",
+    path = path
+  )
 }
 
 #' Read UK Biobank resource 592 into a named list
@@ -495,11 +539,17 @@ read_all_lkps_maps <- function(path = get_ukb_all_lkps_maps()) {
 #' @return File path to downloaded file.
 #' @export
 #' @examples
-#' \dontrun{ get_phecode_definitions() }
-get_phecode_definitions <- function(path = file.path(tempdir(),
-                                                     "phecode_definitions1.2.csv.zip")) {
-  download_file(download_url = "https://phewascatalog.org/files/phecode_definitions1.2.csv.zip",
-                path = path)
+#' \dontrun{
+#' get_phecode_definitions()
+#' }
+get_phecode_definitions <- function(path = file.path(
+                                      tempdir(),
+                                      "phecode_definitions1.2.csv.zip"
+                                    )) {
+  download_file(
+    download_url = "https://phewascatalog.org/files/phecode_definitions1.2.csv.zip",
+    path = path
+  )
 }
 
 #' Download the Phecode 1.2 to ICD9 mapping file
@@ -511,11 +561,17 @@ get_phecode_definitions <- function(path = file.path(tempdir(),
 #' @return File path to downloaded file.
 #' @export
 #' @examples
-#' \dontrun{ get_phecode_icd9_map() }
-get_phecode_icd9_map <- function(path = file.path(tempdir(),
-                                                  "phecode_icd9_map_unrolled.csv.zip")) {
-  download_file(download_url = "https://phewascatalog.org/files/phecode_icd9_map_unrolled.csv.zip",
-                path = path)
+#' \dontrun{
+#' get_phecode_icd9_map()
+#' }
+get_phecode_icd9_map <- function(path = file.path(
+                                   tempdir(),
+                                   "phecode_icd9_map_unrolled.csv.zip"
+                                 )) {
+  download_file(
+    download_url = "https://phewascatalog.org/files/phecode_icd9_map_unrolled.csv.zip",
+    path = path
+  )
 }
 
 #' Download the Phecode 1.2 to ICD10 (beta) mapping file
@@ -527,11 +583,17 @@ get_phecode_icd9_map <- function(path = file.path(tempdir(),
 #' @return File path to downloaded file.
 #' @export
 #' @examples
-#' \dontrun{ get_phecode_icd10_map() }
-get_phecode_icd10_map <- function(path = file.path(tempdir(),
-                                                   "Phecode_map_v1_2_icd10_beta.csv.zip")) {
-  download_file(download_url = "https://phewascatalog.org/files/Phecode_map_v1_2_icd10_beta.csv.zip",
-                path = path)
+#' \dontrun{
+#' get_phecode_icd10_map()
+#' }
+get_phecode_icd10_map <- function(path = file.path(
+                                    tempdir(),
+                                    "Phecode_map_v1_2_icd10_beta.csv.zip"
+                                  )) {
+  download_file(
+    download_url = "https://phewascatalog.org/files/Phecode_map_v1_2_icd10_beta.csv.zip",
+    path = path
+  )
 }
 
 # PRIVATE -----------------------------------------------------------------
@@ -567,9 +629,11 @@ reformat_read_v2_icd10 <- function(read_v2_icd10,
                                    icd10_lkp) {
 
   # Undivided 3 character ICD10 ALT_CODE X/no X map (as named list)
-  icd10_lkp_alt_x_map <- get_icd10_code_alt_code_x_map(icd10_lkp = icd10_lkp,
-                                                       undivided_3char_only = TRUE,
-                                                       as_named_list = "names_no_x")
+  icd10_lkp_alt_x_map <- get_icd10_code_alt_code_x_map(
+    icd10_lkp = icd10_lkp,
+    undivided_3char_only = TRUE,
+    as_named_list = "names_no_x"
+  )
 
   # remove icd10_code 'C836' (see notes above)
   read_v2_icd10 <- read_v2_icd10 %>%
@@ -578,13 +642,15 @@ reformat_read_v2_icd10 <- function(read_v2_icd10,
   # replace spaces and '+' with commas
   read_v2_icd10 <- read_v2_icd10 %>%
     dplyr::mutate("icd10_code" = stringr::str_replace_all(.data[["icd10_code"]],
-                                                          pattern = "[\\s|\\+]",
-                                                          replacement = ","))
+      pattern = "[\\s|\\+]",
+      replacement = ","
+    ))
 
   # split by comma, then unnest
   read_v2_icd10 <- read_v2_icd10 %>%
     dplyr::mutate("icd10_code" = stringr::str_split(.data[["icd10_code"]],
-                                                    pattern = ",")) %>%
+      pattern = ","
+    )) %>%
     tidyr::unnest(cols = "icd10_code")
 
   # remove 'D' and 'A' final characters from ICD10 codes, and place in separate
@@ -605,12 +671,14 @@ reformat_read_v2_icd10 <- function(read_v2_icd10,
 
   # expand icd10 code ranges, which are flagged as '2' under `icd10_code_def` (e.g. 'E100-E109')
   read_v2_icd10 <- read_v2_icd10 %>%
-    expand_icd10_ranges(icd10_lkp = icd10_lkp,
-                        icd10_lkp_alt_x_map = icd10_lkp_alt_x_map)
+    expand_icd10_ranges(
+      icd10_lkp = icd10_lkp,
+      icd10_lkp_alt_x_map = icd10_lkp_alt_x_map
+    )
 
   # Make sure undivided 3 character ICD10 codes have an 'X' appended
   read_v2_icd10 <- read_v2_icd10 %>%
-    dplyr::mutate("icd10_code" = dplyr::recode(.data[["icd10_code"]],!!!icd10_lkp_alt_x_map))
+    dplyr::mutate("icd10_code" = dplyr::recode(.data[["icd10_code"]], !!!icd10_lkp_alt_x_map))
 
   # check all ICD10 codes now exist in `icd10_lkp`
   check_codes_exist(
@@ -665,18 +733,23 @@ reformat_read_ctv3_icd10 <- function(read_ctv3_icd10) {
 reformat_icd9_icd10 <- function(icd9_icd10) {
   # convert 'UNDEF' ICD9/10 codes to `NA`
   icd9_icd10 <- icd9_icd10 %>%
-    dplyr::mutate(dplyr::across(tidyselect::all_of(c(
-      "ICD9",
-      "ICD10"
-    )),
-    ~ ifelse(.x == "UNDEF",
-             yes = NA_character_,
-             no = .x)))
+    dplyr::mutate(dplyr::across(
+      tidyselect::all_of(c(
+        "ICD9",
+        "ICD10"
+      )),
+      ~ ifelse(.x == "UNDEF",
+        yes = NA_character_,
+        no = .x
+      )
+    ))
 
   # check that description and ICD code are either both `NA` or both not `NA`
   icd9_icd10_nabular <- icd9_icd10 %>%
-    dplyr::mutate(dplyr::across(tidyselect::everything(),
-                                ~ is.na(.x)))
+    dplyr::mutate(dplyr::across(
+      tidyselect::everything(),
+      ~ is.na(.x)
+    ))
 
   assertthat::assert_that(all(icd9_icd10_nabular$ICD9 == icd9_icd10_nabular$DESCRIPTION_ICD9))
   assertthat::assert_that(all(icd9_icd10_nabular$ICD10 == icd9_icd10_nabular$DESCRIPTION_ICD10))
@@ -703,12 +776,15 @@ reformat_icd10_phecode_map_1_2 <- function(icd10_phecode,
 
   # append `ALT_CODE`
   icd10_phecode <- all_lkps_maps$icd10_lkp %>%
-    dplyr::select(tidyselect::all_of(c("ICD10_CODE",
-                                       "ALT_CODE"))) %>%
+    dplyr::select(tidyselect::all_of(c(
+      "ICD10_CODE",
+      "ALT_CODE"
+    ))) %>%
     dplyr::filter(.data[["ALT_CODE"]] %in% !!icd10_codes_in_icd10_phecode) %>%
     dplyr::collect() %>%
     dplyr::right_join(icd10_phecode,
-                      by = c("ICD10_CODE" = "ICD10"))
+      by = c("ICD10_CODE" = "ICD10")
+    )
 
   # remove empty PHECODE rows
   icd10_phecode <- icd10_phecode %>%
@@ -770,13 +846,18 @@ extend_bnf_lkp <- function(all_lkps_maps) {
       names_to = "BNF_Code_Level",
       values_to = "BNF_Code"
     ) %>%
-    dplyr::select(.data[["BNF_Code_Level"]],
-                  .data[["BNF_Code"]],
-                  tidyselect::everything()) %>%
-    dplyr::mutate("BNF_Code_Level" = stringr::str_remove(.data[["BNF_Code_Level"]],
-                                                         "code_")) %>%
+    dplyr::select(
+      .data[["BNF_Code_Level"]],
+      .data[["BNF_Code"]],
+      tidyselect::everything()
+    ) %>%
+    dplyr::mutate("BNF_Code_Level" = stringr::str_remove(
+      .data[["BNF_Code_Level"]],
+      "code_"
+    )) %>%
     dplyr::distinct(.data[["BNF_Code"]],
-                    .keep_all = TRUE) %>%
+      .keep_all = TRUE
+    ) %>%
     dplyr::mutate(
       "Description" = dplyr::case_when(
         .data[["BNF_Code_Level"]] == "chapter" ~ .data[["BNF_Chapter"]],
@@ -790,39 +871,63 @@ extend_bnf_lkp <- function(all_lkps_maps) {
       )
     ) %>%
     dplyr::mutate(
-      "BNF_Presentation" = dplyr::case_when(!.data[["BNF_Code_Level"]] %in% c("full",
-                                                                              "further_info") ~ as.character(NA),
-                                            TRUE ~ .data[["BNF_Presentation"]]),
-      "BNF_Product" = dplyr::case_when(!.data[["BNF_Code_Level"]] %in% c("full",
-                                                                              "further_info",
-                                                                         "product_name") ~ as.character(NA),
-                                            TRUE ~ .data[["BNF_Product"]]),
-      "BNF_Chemical_Substance" = dplyr::case_when(!.data[["BNF_Code_Level"]] %in% c("full",
-                                                                              "further_info",
-                                                                              "product_name",
-                                                                              "chemical_substance") ~ as.character(NA),
-                                            TRUE ~ .data[["BNF_Chemical_Substance"]]),
-      "BNF_Subparagraph" = dplyr::case_when(!.data[["BNF_Code_Level"]] %in% c("full",
-                                                                              "further_info",
-                                                                              "product_name",
-                                                                              "chemical_substance",
-                                                                              "subparagraph") ~ as.character(NA),
-                                            TRUE ~ .data[["BNF_Subparagraph"]]),
-      "BNF_Paragraph" = dplyr::case_when(!.data[["BNF_Code_Level"]] %in% c("full",
-                                                                              "further_info",
-                                                                           "product_name",
-                                                                           "chemical_substance",
-                                                                           "subparagraph",
-                                                                           "paragraph") ~ as.character(NA),
-                                            TRUE ~ .data[["BNF_Paragraph"]]),
-      "BNF_Section" = dplyr::case_when(!.data[["BNF_Code_Level"]] %in% c("full",
-                                                                              "further_info",
-                                                                         "product_name",
-                                                                         "chemical_substance",
-                                                                         "subparagraph",
-                                                                         "paragraph",
-                                                                         "section") ~ as.character(NA),
-                                            TRUE ~ .data[["BNF_Section"]]),
+      "BNF_Presentation" = dplyr::case_when(
+        !.data[["BNF_Code_Level"]] %in% c(
+          "full",
+          "further_info"
+        ) ~ as.character(NA),
+        TRUE ~ .data[["BNF_Presentation"]]
+      ),
+      "BNF_Product" = dplyr::case_when(
+        !.data[["BNF_Code_Level"]] %in% c(
+          "full",
+          "further_info",
+          "product_name"
+        ) ~ as.character(NA),
+        TRUE ~ .data[["BNF_Product"]]
+      ),
+      "BNF_Chemical_Substance" = dplyr::case_when(
+        !.data[["BNF_Code_Level"]] %in% c(
+          "full",
+          "further_info",
+          "product_name",
+          "chemical_substance"
+        ) ~ as.character(NA),
+        TRUE ~ .data[["BNF_Chemical_Substance"]]
+      ),
+      "BNF_Subparagraph" = dplyr::case_when(
+        !.data[["BNF_Code_Level"]] %in% c(
+          "full",
+          "further_info",
+          "product_name",
+          "chemical_substance",
+          "subparagraph"
+        ) ~ as.character(NA),
+        TRUE ~ .data[["BNF_Subparagraph"]]
+      ),
+      "BNF_Paragraph" = dplyr::case_when(
+        !.data[["BNF_Code_Level"]] %in% c(
+          "full",
+          "further_info",
+          "product_name",
+          "chemical_substance",
+          "subparagraph",
+          "paragraph"
+        ) ~ as.character(NA),
+        TRUE ~ .data[["BNF_Paragraph"]]
+      ),
+      "BNF_Section" = dplyr::case_when(
+        !.data[["BNF_Code_Level"]] %in% c(
+          "full",
+          "further_info",
+          "product_name",
+          "chemical_substance",
+          "subparagraph",
+          "paragraph",
+          "section"
+        ) ~ as.character(NA),
+        TRUE ~ .data[["BNF_Section"]]
+      ),
     ) %>%
     dplyr::select(tidyselect::all_of(c(
       "BNF_Code",
@@ -856,7 +961,8 @@ extend_read_v2_drugs_bnf <- function(all_lkps_maps) {
   result <- read_v2_drugs_bnf %>%
     # add read code descriptions
     dplyr::left_join(read_v2_drugs_lkp,
-                     by = "read_code") %>%
+      by = "read_code"
+    ) %>%
     # extract bnf chapter, section etc from `bnf_code` col in `read_v2_drugs_bnf`
     dplyr::mutate(
       "bnf_chapter_code" = stringr::str_sub(
@@ -883,21 +989,24 @@ extend_read_v2_drugs_bnf <- function(all_lkps_maps) {
         )
       )
     ) %>%
-
     # add BNF details
     dplyr::left_join(bnf_lkp_extended[, c("BNF_Code", "BNF_Chapter")],
-                     by = c("bnf_chapter_code" = "BNF_Code")) %>%
+      by = c("bnf_chapter_code" = "BNF_Code")
+    ) %>%
     dplyr::left_join(bnf_lkp_extended[, c("BNF_Code", "BNF_Section")],
-                     by = c("bnf_section_code" = "BNF_Code")) %>%
+      by = c("bnf_section_code" = "BNF_Code")
+    ) %>%
     dplyr::left_join(bnf_lkp_extended[, c("BNF_Code", "BNF_Paragraph")],
-                     by = c("bnf_paragraph_code" = "BNF_Code")) %>%
+      by = c("bnf_paragraph_code" = "BNF_Code")
+    ) %>%
     dplyr::left_join(bnf_lkp_extended[, c("BNF_Code", "BNF_Subparagraph")],
-                     by = c("bnf_subparagraph_code" = "BNF_Code"))
+      by = c("bnf_subparagraph_code" = "BNF_Code")
+    )
 
   # check nrows remains the same
   assertthat::assert_that(expected_nrow == nrow(result),
-                          msg = "Error! Unexpected number of rows when extending `read_v2_drugs_bnf`")
+    msg = "Error! Unexpected number of rows when extending `read_v2_drugs_bnf`"
+  )
 
   return(result)
 }
-

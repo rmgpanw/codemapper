@@ -65,9 +65,11 @@ Returns a data frame including descriptions for the codes of interest
 all_lkps_maps_dummy <- build_all_lkps_maps_dummy()
 
 # look up ICD10 codes
-lookup_codes(codes = c("E10", "E11"),
+lookup_codes(
+  codes = c("E10", "E11"),
   code_type = "icd10",
-  all_lkps_maps = all_lkps_maps_dummy)
+  all_lkps_maps = all_lkps_maps_dummy
+)
 }
 \seealso{
 Other Clinical code lookups and mappings: 

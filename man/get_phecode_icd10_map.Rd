@@ -18,5 +18,7 @@ File path to downloaded file.
 Download link obtained from https://phewascatalog.org/phecodes.
 }
 \examples{
-\dontrun{ get_phecode_icd10_map() }
+\dontrun{
+get_phecode_icd10_map()
+}
 }

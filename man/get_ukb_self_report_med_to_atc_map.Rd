@@ -19,5 +19,7 @@ Mapping table obtained from \href{https://www.nature.com/articles/s41467-019-095
 Supplementary Data 1.
 }
 \examples{
-\dontrun{ get_nhsbsa_snomed_bnf() }
+\dontrun{
+get_nhsbsa_snomed_bnf()
+}
 }

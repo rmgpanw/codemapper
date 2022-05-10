@@ -20,10 +20,12 @@ overlapping_disease_categories <- caliber_ukb %>%
   dplyr::bind_rows() %>%
   ukbwranglr:::identify_overlapping_disease_categories() %>%
   .$clinical_codes %>%
-  dplyr::arrange(disease,
-                 code_type,
-                 code,
-                 category)
+  dplyr::arrange(
+    disease,
+    code_type,
+    code,
+    category
+  )
 
 # write to csv in inst/extdata - then manually indicate which rows to keep
 readr::write_csv(

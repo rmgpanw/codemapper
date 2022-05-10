@@ -43,7 +43,7 @@ get_caliber_categories_mapping <- function() {
 #' @family CALIBER
 #' @examples
 #' \dontrun{
-#'  caliber_dir_path <- download_caliber_repo()
+#' caliber_dir_path <- download_caliber_repo()
 #' }
 download_caliber_repo <- function(url) {
 
@@ -53,11 +53,13 @@ download_caliber_repo <- function(url) {
 
   # download zip file
   utils::download.file(url,
-                destfile = caliber_repo_zip)
+    destfile = caliber_repo_zip
+  )
 
   # unzip
   utils::unzip(caliber_repo_zip,
-               exdir = caliber_repo_unzipped)
+    exdir = caliber_repo_unzipped
+  )
 
   # return path to downloaded and unzipped directory
   invisible(list.files(caliber_repo_unzipped))
@@ -101,8 +103,10 @@ download_caliber_repo <- function(url) {
 read_caliber_raw <- function(caliber_dir_path,
                              overlapping_disease_categories = "error") {
   # validate args
-  match.arg(overlapping_disease_categories,
-            c("error", "warning"))
+  match.arg(
+    overlapping_disease_categories,
+    c("error", "warning")
+  )
 
   # Set filepath constants --------------------------------------------------
 
@@ -111,10 +115,12 @@ read_caliber_raw <- function(caliber_dir_path,
   CSV_REGEX <- "+\\.csv$"
 
   PRIMARY_CARE_FILES <- list.files(CALIBER_PRIMARY,
-                                   pattern = CSV_REGEX)
+    pattern = CSV_REGEX
+  )
 
   SECONDARY_CARE_FILES <- list.files(CALIBER_SECONDARY,
-                                     pattern = CSV_REGEX)
+    pattern = CSV_REGEX
+  )
 
   SECONDARY_CARE_FILES_ICD <-
     subset(SECONDARY_CARE_FILES, grepl("^ICD_", SECONDARY_CARE_FILES))
@@ -132,41 +138,48 @@ read_caliber_raw <- function(caliber_dir_path,
     "opcs4"
   ) %>%
     purrr::set_names() %>%
-    purrr::map(~ NULL)
+    purrr::map(~NULL)
 
   message("Reading CALIBER clinical codes lists into R")
   message("Primary care Read 2 (1 of 3)")
   caliber$read2 <-
     read_csv_to_named_list_and_combine(CALIBER_PRIMARY,
-                                       filenames = PRIMARY_CARE_FILES,
-                                       standardising_function = standardise_primary_care)
+      filenames = PRIMARY_CARE_FILES,
+      standardising_function = standardise_primary_care
+    )
 
   message("Secondary care ICD10 (2 of 3)")
   caliber$icd10 <-
     read_csv_to_named_list_and_combine(CALIBER_SECONDARY,
-                                       filenames = SECONDARY_CARE_FILES_ICD,
-                                       standardising_function = standardise_secondary_care_icd10)
+      filenames = SECONDARY_CARE_FILES_ICD,
+      standardising_function = standardise_secondary_care_icd10
+    )
 
   message("Secondary care OPCS4 (3 of 3)")
   caliber$opcs4 <-
     read_csv_to_named_list_and_combine(CALIBER_SECONDARY,
-                                       filenames = SECONDARY_CARE_FILES_OPCS,
-                                       standardising_function = standardise_secondary_care_opcs4)
+      filenames = SECONDARY_CARE_FILES_OPCS,
+      standardising_function = standardise_secondary_care_opcs4
+    )
 
   # Check for overlapping disease categories -------
   overlapping_disease_categories_list <- ukbwranglr:::identify_overlapping_disease_categories(dplyr::bind_rows(caliber))
 
   if (!is.null(overlapping_disease_categories_list)) {
-    overlapping_disease_categories_msg <- paste0("The following ",
-                                                 length(unique(overlapping_disease_categories_list$clinical_codes$disease)),
-                                                 " diseases include categories with non-distinct codes: ",
-                                                 stringr::str_c(unique(overlapping_disease_categories_list$clinical_codes$disease),
-                                                                sep = "",
-                                                                collapse = ", "))
+    overlapping_disease_categories_msg <- paste0(
+      "The following ",
+      length(unique(overlapping_disease_categories_list$clinical_codes$disease)),
+      " diseases include categories with non-distinct codes: ",
+      stringr::str_c(unique(overlapping_disease_categories_list$clinical_codes$disease),
+        sep = "",
+        collapse = ", "
+      )
+    )
 
     switch(overlapping_disease_categories,
-           error = stop(overlapping_disease_categories_msg),
-           warning = warning(overlapping_disease_categories_msg))
+      error = stop(overlapping_disease_categories_msg),
+      warning = warning(overlapping_disease_categories_msg)
+    )
   }
 
   return(caliber)
@@ -200,7 +213,8 @@ read_caliber_raw <- function(caliber_dir_path,
 #'
 #' # reformat CALIBER codes for UK Biobank
 #' caliber_ukb <- suppressWarnings(reformat_caliber_for_ukb(caliber_raw,
-#'  all_lkps_maps = all_lkps_maps))
+#'   all_lkps_maps = all_lkps_maps
+#' ))
 #'
 #' # view first few rows
 #' head(caliber_ukb)
@@ -240,39 +254,48 @@ reformat_caliber_for_ukb <- function(caliber,
   message("Reformatting Read 2 codes")
   caliber$read2 <-
     reformat_caliber_read2(caliber$read2,
-                           all_lkps_maps = all_lkps_maps)
+      all_lkps_maps = all_lkps_maps
+    )
 
   message("Reformatting ICD10 codes")
   caliber$icd10 <-
     reformat_caliber_icd10(caliber$icd10,
-                           all_lkps_maps = all_lkps_maps)
+      all_lkps_maps = all_lkps_maps
+    )
 
   message("Reformatting OPCS4 codes")
   caliber$opcs4 <-
     reformat_caliber_opcs4(caliber$opcs4,
-                           all_lkps_maps = all_lkps_maps)
+      all_lkps_maps = all_lkps_maps
+    )
 
 
   # Map codes (read2 - read3,  icd10 - icd9) --------------------------------
   message("Mapping read2 codes to read3")
 
-  caliber$read3 <- map_caliber(df = caliber$read2,
-                                                  from = "read2",
-                                                  to = "read3",
-                                                  all_lkps_maps = all_lkps_maps,
-                                                  col_filters = col_filters)
+  caliber$read3 <- map_caliber(
+    df = caliber$read2,
+    from = "read2",
+    to = "read3",
+    all_lkps_maps = all_lkps_maps,
+    col_filters = col_filters
+  )
 
   message("Mapping icd10 to icd9 codes")
-  caliber$icd9 <- map_caliber(df = caliber$icd10,
-                                                   from = "icd10",
-                                                   to = "icd9",
-                                                   all_lkps_maps = all_lkps_maps,
-                                                   col_filters = col_filters)
+  caliber$icd9 <- map_caliber(
+    df = caliber$icd10,
+    from = "icd10",
+    to = "icd9",
+    all_lkps_maps = all_lkps_maps,
+    col_filters = col_filters
+  )
 
   # Remove 'X' from ends of 3 character ICD10 codes
   caliber$icd10 <- caliber$icd10 %>%
-    dplyr::mutate("code" = stringr::str_remove(.data[["code"]],
-                                                "X$"))
+    dplyr::mutate("code" = stringr::str_remove(
+      .data[["code"]],
+      "X$"
+    ))
 
   # Resolve overlapping disease categories ------------
 
@@ -291,7 +314,8 @@ reformat_caliber_for_ukb <- function(caliber,
     resolved_overlapping_disease_categories <-
       resolved_overlapping_disease_categories %>%
       dplyr::semi_join(caliber,
-                       by = names(caliber))
+        by = names(caliber)
+      )
 
     if (nrow(resolved_overlapping_disease_categories) == 0) {
       message(
@@ -307,8 +331,10 @@ reformat_caliber_for_ukb <- function(caliber,
       ## setup
       resolved_overlapping_disease_categories <-
         resolved_overlapping_disease_categories %>%
-        dplyr::mutate(keep = dplyr::case_when(is.na(.data[["keep"]]) ~ "N",
-                                              TRUE ~ .data[["keep"]]))
+        dplyr::mutate(keep = dplyr::case_when(
+          is.na(.data[["keep"]]) ~ "N",
+          TRUE ~ .data[["keep"]]
+        ))
 
       resolved_overlapping_disease_categories <-
         split(
@@ -319,7 +345,8 @@ reformat_caliber_for_ukb <- function(caliber,
       ## remove rows to be removed
       caliber <- caliber %>%
         dplyr::anti_join(resolved_overlapping_disease_categories$N,
-                         by = names(caliber))
+          by = names(caliber)
+        )
     }
   }
 
@@ -327,16 +354,20 @@ reformat_caliber_for_ukb <- function(caliber,
   overlapping_disease_categories_list <- ukbwranglr:::identify_overlapping_disease_categories(caliber)
 
   if (!is.null(overlapping_disease_categories_list)) {
-    overlapping_disease_categories_msg <- paste0("The following ",
-                                                 length(unique(overlapping_disease_categories_list$clinical_codes$disease)),
-                                                 " diseases include categories with non-distinct codes: ",
-                                                 stringr::str_c(unique(overlapping_disease_categories_list$clinical_codes$disease),
-                                                                sep = "",
-                                                                collapse = ", "))
+    overlapping_disease_categories_msg <- paste0(
+      "The following ",
+      length(unique(overlapping_disease_categories_list$clinical_codes$disease)),
+      " diseases include categories with non-distinct codes: ",
+      stringr::str_c(unique(overlapping_disease_categories_list$clinical_codes$disease),
+        sep = "",
+        collapse = ", "
+      )
+    )
 
     switch(overlapping_disease_categories,
-           error = stop(overlapping_disease_categories_msg),
-           warning = warning(overlapping_disease_categories_msg))
+      error = stop(overlapping_disease_categories_msg),
+      warning = warning(overlapping_disease_categories_msg)
+    )
   }
 
   # return result
@@ -362,8 +393,9 @@ reformat_caliber_for_ukb <- function(caliber,
 #' read.csv(default_overlapping_disease_categories_csv())
 default_overlapping_disease_categories_csv <- function() {
   system.file("extdata",
-              "caliber_mapped_overlapping_disease_categories.csv",
-              package = "codemapper")
+    "caliber_mapped_overlapping_disease_categories.csv",
+    package = "codemapper"
+  )
 }
 
 # PRIVATE ---------------------------------------------------------------
@@ -407,8 +439,10 @@ standardise_primary_care <- function(df) {
 
 standardise_secondary_care_icd10 <- function(df) {
   df <- df %>%
-    dplyr::mutate(code_type = "icd10",
-                  author = "caliber") %>%
+    dplyr::mutate(
+      code_type = "icd10",
+      author = "caliber"
+    ) %>%
     dplyr::select(tidyselect::all_of(
       c(
         "Disease",
@@ -431,8 +465,10 @@ standardise_secondary_care_icd10 <- function(df) {
 
 standardise_secondary_care_opcs4 <- function(df) {
   df <- df %>%
-    dplyr::mutate(code_type = "opcs4",
-                  author = "caliber") %>%
+    dplyr::mutate(
+      code_type = "opcs4",
+      author = "caliber"
+    ) %>%
     dplyr::select(tidyselect::all_of(
       c(
         "Disease",
@@ -457,19 +493,20 @@ standardise_secondary_care_opcs4 <- function(df) {
 
 # reads a list of csv files into a named list, standardises, then combines into single df
 read_csv_to_named_list_and_combine <-
-  function(# directory where files are located
-    directory,
-    # vector of file names
-    filenames,
-    # function to process each file with
-    standardising_function) {
+  function( # directory where files are located
+           directory,
+           # vector of file names
+           filenames,
+           # function to process each file with
+           standardising_function) {
     result <- as.list(file.path(directory, filenames))
     names(result) <- filenames
 
     result %>%
       purrr::map(~ readr::read_csv(.x,
-                                   progress = FALSE,
-                                   col_types = readr::cols(.default = "c"))) %>%
+        progress = FALSE,
+        col_types = readr::cols(.default = "c")
+      )) %>%
       purrr::map(standardising_function) %>%
       dplyr::bind_rows()
   }
@@ -490,27 +527,27 @@ read_csv_to_named_list_and_combine <-
 reformat_caliber_read2 <- function(read2_df,
                                    all_lkps_maps,
                                    unrecognised_codes = "warning") {
-
-    read2_df <- read2_df %>%
+  read2_df <- read2_df %>%
     # filter for only read2 codes
     dplyr::filter(.data[["code_type"]] == "Readcode") %>%
     # label as 'read2' (ukbwranglr format)
     dplyr::mutate("code_type" = "read2") %>%
-
     # make column with last 2 characters of `code`
     dplyr::mutate("code_last_2_char" = stringr::str_sub(.data[["code"]],
-                                                        start = -2L,
-                                                        end = -1L)) %>%
-
+      start = -2L,
+      end = -1L
+    )) %>%
     # remove last 2 characters
     dplyr::mutate("code" = stringr::str_sub(.data[["code"]],
-                                          start = 1L,
-                                          end = -3L)) %>%
-
+      start = 1L,
+      end = -3L
+    )) %>%
     # take only one description per code, per disease
-    dplyr::group_by(.data[["disease"]],
-                    # .data[["category"]],
-                    .data[["code"]]) %>%
+    dplyr::group_by(
+      .data[["disease"]],
+      # .data[["category"]],
+      .data[["code"]]
+    ) %>%
     dplyr::arrange(.data[["code_last_2_char"]]) %>%
     dplyr::slice(1L) %>%
     dplyr::ungroup() %>%
@@ -520,12 +557,14 @@ reformat_caliber_read2 <- function(read2_df,
   read_v2_lkp <- all_lkps_maps$read_v2_lkp %>%
     dplyr::collect()
 
-  check_codes_exist(codes = read2_df$code,
-                                 lkp_codes = read_v2_lkp$read_code,
-                                 table_name = "read_v2_lkp",
-                                 code_type = "read2",
-                                 return_unrecognised_codes = FALSE,
-                                 unrecognised_codes = "warning")
+  check_codes_exist(
+    codes = read2_df$code,
+    lkp_codes = read_v2_lkp$read_code,
+    table_name = "read_v2_lkp",
+    code_type = "read2",
+    return_unrecognised_codes = FALSE,
+    unrecognised_codes = "warning"
+  )
 
   # return result
   return(read2_df)
@@ -575,7 +614,8 @@ reformat_caliber_icd10 <- function(icd10_df,
   icd10_df <- icd10_lkp_map %>%
     dplyr::filter(.data[["ALT_CODE"]] %in% !!icd10_codes_in_icd10_df) %>%
     dplyr::right_join(icd10_df,
-                      by = c("ICD10_CODE" = "code")) %>%
+      by = c("ICD10_CODE" = "code")
+    ) %>%
     dplyr::mutate("code" = .data[["ALT_CODE"]]) %>%
     dplyr::select(tidyselect::all_of(cols_to_keep))
 
@@ -583,13 +623,16 @@ reformat_caliber_icd10 <- function(icd10_df,
   unrecognised_icd10_df <- icd10_df %>%
     dplyr::filter(is.na(.data[["code"]]))
 
-  warning(paste0("Removing ",
-                nrow(unrecognised_icd10_df),
-                " rows with unrecognised ICD10 codes. Diseases with unrecognised codes: '",
-                stringr::str_c(unique(unrecognised_icd10_df$disease),
-                               sep = "",
-                               collapse = "', '"),
-                "'"))
+  warning(paste0(
+    "Removing ",
+    nrow(unrecognised_icd10_df),
+    " rows with unrecognised ICD10 codes. Diseases with unrecognised codes: '",
+    stringr::str_c(unique(unrecognised_icd10_df$disease),
+      sep = "",
+      collapse = "', '"
+    ),
+    "'"
+  ))
 
   icd10_df <- icd10_df %>%
     dplyr::filter(!is.na(.data[["code"]]))
@@ -601,8 +644,9 @@ reformat_caliber_icd10 <- function(icd10_df,
 
   icd10_lkp_map_3_char <- icd10_lkp_map %>%
     dplyr::mutate("icd10_3_char" = stringr::str_sub(.data[["ICD10_CODE"]],
-                                                    start = 1L,
-                                                    end = 3L)) %>%
+      start = 1L,
+      end = 3L
+    )) %>%
     dplyr::filter(.data[["icd10_3_char"]] %in% !!icd10_3_char$code) %>%
     dplyr::select(tidyselect::all_of(c(
       "icd10_3_char",
@@ -611,28 +655,35 @@ reformat_caliber_icd10 <- function(icd10_df,
 
   icd10_lkp_map_3_char <- icd10_lkp_map_3_char %>%
     dplyr::pull("ALT_CODE") %>%
-    lookup_codes(code_type = "icd10",
-                 all_lkps_maps = all_lkps_maps,
-                 preferred_description_only = TRUE,
-                 standardise_output = TRUE) %>%
+    lookup_codes(
+      code_type = "icd10",
+      all_lkps_maps = all_lkps_maps,
+      preferred_description_only = TRUE,
+      standardise_output = TRUE
+    ) %>%
     dplyr::select(-.data[["code_type"]]) %>%
     dplyr::full_join(icd10_lkp_map_3_char,
-                     by = c("code" = "ALT_CODE"))
+      by = c("code" = "ALT_CODE")
+    )
 
   icd10_3_char <- icd10_3_char %>%
     dplyr::left_join(icd10_lkp_map_3_char,
-                     by = c("code" = "icd10_3_char")) %>%
+      by = c("code" = "icd10_3_char")
+    ) %>%
     dplyr::mutate("code" = .data[["code.y"]]) %>%
     dplyr::mutate("description" = .data[["description.y"]]) %>%
     dplyr::select(tidyselect::all_of(cols_to_keep))
 
   # recombine and remove duplicate rows
-  icd10_df <- dplyr::bind_rows(icd10_df,
-                               icd10_3_char) %>%
+  icd10_df <- dplyr::bind_rows(
+    icd10_df,
+    icd10_3_char
+  ) %>%
     # some codes may have >1 description at this stage - omit 'description' from
     # call to `distinct()`
     dplyr::distinct(dplyr::across(c("disease", "category", "code_type", "code")),
-                    .keep_all = TRUE)
+      .keep_all = TRUE
+    )
 
   # return result
   return(icd10_df)
@@ -657,17 +708,20 @@ reformat_caliber_opcs4 <- function(opcs4_df,
   # remove '.'
   opcs4_df <- opcs4_df %>%
     dplyr::mutate("code" = stringr::str_remove(.data[["code"]],
-                                               pattern = "\\."))
+      pattern = "\\."
+    ))
 
   # check for unrecognised codes - warning if any found
   opcs4_lkp <- all_lkps_maps$opcs4_lkp %>%
     dplyr::collect()
 
-  check_codes_exist(codes = opcs4_df$code,
-                                 lkp_codes = opcs4_lkp$opcs4_code,
-                                 code_type = "read2",
-                                 return_unrecognised_codes = FALSE,
-                                 unrecognised_codes = "warning")
+  check_codes_exist(
+    codes = opcs4_df$code,
+    lkp_codes = opcs4_lkp$opcs4_code,
+    code_type = "read2",
+    return_unrecognised_codes = FALSE,
+    unrecognised_codes = "warning"
+  )
 
   # return result
   return(opcs4_df)
@@ -702,22 +756,29 @@ map_caliber <- function(df,
   final_col_order <- names(df)
 
   # get mapping df
-  mapping_df <- get_mapping_df(from = from,
-                               to = to,
-                               all_lkps_maps = all_lkps_maps,
-                               col_filters = col_filters,
-                               rename_from_to = c(from = "old_code",
-                                                  to = "new_code"),
-                               reverse_mapping = "warning")
+  mapping_df <- get_mapping_df(
+    from = from,
+    to = to,
+    all_lkps_maps = all_lkps_maps,
+    col_filters = col_filters,
+    rename_from_to = c(
+      from = "old_code",
+      to = "new_code"
+    ),
+    reverse_mapping = "warning"
+  )
 
   # join, update `code_type` and rename cols
   result <- df %>%
     dplyr::inner_join(mapping_df,
-                     by = c("code" = "old_code")) %>%
+      by = c("code" = "old_code")
+    ) %>%
     dplyr::mutate("code_type" = !!to) %>%
     dplyr::select(-.data[["code"]]) %>%
-    ukbwranglr:::rename_cols(old_colnames = "new_code",
-                                    new_colnames = "code")
+    ukbwranglr:::rename_cols(
+      old_colnames = "new_code",
+      new_colnames = "code"
+    )
 
   # distinct codes only (if there are duplicate codes because of alternative
   # code descriptions, just one code description should be selected)
@@ -725,18 +786,21 @@ map_caliber <- function(df,
     dplyr::distinct(dplyr::across(-.data[["description"]]))
 
   # append code descriptions
-  code_descriptions <- lookup_codes(codes = result$code,
-                                                code_type = to,
-                                                all_lkps_maps = all_lkps_maps,
-                                                preferred_description_only = TRUE,
-                                                standardise_output = TRUE,
-                                                unrecognised_codes = "error",
-                                                col_filters = col_filters) %>%
+  code_descriptions <- lookup_codes(
+    codes = result$code,
+    code_type = to,
+    all_lkps_maps = all_lkps_maps,
+    preferred_description_only = TRUE,
+    standardise_output = TRUE,
+    unrecognised_codes = "error",
+    col_filters = col_filters
+  ) %>%
     dplyr::select(-.data[["code_type"]])
 
   result <- result %>%
     dplyr::left_join(code_descriptions,
-                     by = "code")
+      by = "code"
+    )
 
   # reorder
   result %>%
@@ -757,19 +821,25 @@ map_caliber <- function(df,
 #' @return The input df, unchanged
 validate_overlapping_disease_categories_df <- function(df) {
   # expected names
-  expected_colnames <- c("disease",
-                         "description",
-                         "category",
-                         "code_type",
-                         "code",
-                         "author",
-                         "keep")
+  expected_colnames <- c(
+    "disease",
+    "description",
+    "category",
+    "code_type",
+    "code",
+    "author",
+    "keep"
+  )
 
   assertthat::assert_that(all(names(df) == expected_colnames),
-                          msg = paste0("Unexpected colnames detected. Expected colnames: ",
-                                       stringr::str_c(expected_colnames,
-                                                      sep = "",
-                                                      collapse = ", ")))
+    msg = paste0(
+      "Unexpected colnames detected. Expected colnames: ",
+      stringr::str_c(expected_colnames,
+        sep = "",
+        collapse = ", "
+      )
+    )
+  )
 
   # all type character
   coltypes <- df %>%
@@ -777,11 +847,13 @@ validate_overlapping_disease_categories_df <- function(df) {
     unique()
 
   assertthat::assert_that(length(unique(coltypes)) == 1 && coltypes == "character",
-                          msg = "All columns should be of type character")
+    msg = "All columns should be of type character"
+  )
 
   # author column only includes 'caliber'
   assertthat::assert_that(length(unique(df$author)) == 1 && unique(df$author) == "caliber",
-                          msg = "Column 'author' should only contain value 'caliber'")
+    msg = "Column 'author' should only contain value 'caliber'"
+  )
 
   # keep col only contains 'Y' or NA
   keep_col_values <- df %>%
@@ -789,21 +861,29 @@ validate_overlapping_disease_categories_df <- function(df) {
     dplyr::pull(.data[["keep"]])
 
   assertthat::assert_that(keep_col_values[1] == c("Y") & is.na(keep_col_values[2]),
-                          msg = "Column 'keep' should only contain 'Y' and `NA` values (at least one of each)")
+    msg = "Column 'keep' should only contain 'Y' and `NA` values (at least one of each)"
+  )
 
   # each code has one row labelled 'keep', and one or more rows not to keep
-  df_code_split <- split(df,
-                         paste(df$code_type, df$code, sep = "_"))
+  df_code_split <- split(
+    df,
+    paste(df$code_type, df$code, sep = "_")
+  )
 
   df_code_split_n_y <- df_code_split %>%
     purrr::map_dbl(~ sum(.x$keep == "Y",
-                         na.rm = TRUE))
+      na.rm = TRUE
+    ))
 
-  df_code_split_n_y_gt_1 <- subset(df_code_split_n_y,
-                                   df_code_split_n_y > 1)
+  df_code_split_n_y_gt_1 <- subset(
+    df_code_split_n_y,
+    df_code_split_n_y > 1
+  )
 
-  df_code_split_n_y_eq_0 <- subset(df_code_split_n_y,
-                                   df_code_split_n_y == 0)
+  df_code_split_n_y_eq_0 <- subset(
+    df_code_split_n_y,
+    df_code_split_n_y == 0
+  )
 
   assertthat::assert_that(
     length(df_code_split_n_y_gt_1) == 0 &&
@@ -817,9 +897,11 @@ validate_overlapping_disease_categories_df <- function(df) {
       stringr::str_c(utils::head(names(
         c(df_code_split_n_y_gt_1, df_code_split_n_y_eq_0)
       ),
-      n = 25),
+      n = 25
+      ),
       sep = "",
-      collapse = ", ")
+      collapse = ", "
+      )
     )
   )
 
@@ -827,8 +909,10 @@ validate_overlapping_disease_categories_df <- function(df) {
   df_minus_keep_col <- df %>%
     dplyr::select(-.data[["keep"]])
 
-  if (!assertthat::are_equal(df_minus_keep_col,
-                             stats::na.omit(df_minus_keep_col))) {
+  if (!assertthat::are_equal(
+    df_minus_keep_col,
+    stats::na.omit(df_minus_keep_col)
+  )) {
     stop("There should be no missing values (except in column 'keep')")
   }
 

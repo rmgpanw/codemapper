@@ -55,7 +55,7 @@ ALL_LKPS_MAPS_TABLE_NAMES <- c(
 # TODO - category col for tables?
 
 CODE_TYPE_TO_LKP_TABLE_MAP <- tibble::tribble(
-  ~ code, ~code_label, ~ lkp_table, ~ code_col, ~ description_col, ~ preferred_synonym_col, ~ preferred_code, ~ grouping_col,
+  ~code, ~code_label, ~lkp_table, ~code_col, ~description_col, ~preferred_synonym_col, ~preferred_code, ~grouping_col,
   "bnf", "BNF", "bnf_lkp", "BNF_Code", "Description", NA, NA, "BNF_Chemical_Substance",
   # "dmd", "dmd_lkp", "concept_id", "term", NA, NA,
   "dmd", "DMD", "bnf_dmd", "snomed_code", "dm_d_product_description", NA, NA, "dm_d_product_description",
@@ -81,7 +81,7 @@ CODE_TYPE_TO_LKP_TABLE_MAP <- tibble::tribble(
 # 'from_col' and 'to_col': the columns to use when mapping
 # Note, `preferred_synonym_col` and `preferred_code` refer to `to_col`
 CLINICAL_CODE_MAPPINGS_MAP <- tibble::tribble(
-  ~ from, ~ to, ~ mapping_table, ~ from_col, ~ to_col, ~ preferred_synonym_col, ~ preferred_code,
+  ~from, ~to, ~mapping_table, ~from_col, ~to_col, ~preferred_synonym_col, ~preferred_code,
   "icd9", "icd10", "icd9_icd10", "ICD9", "ICD10", NA, NA,
   "read2_drugs", "bnf", "read_v2_drugs_bnf", "read_code", "bnf_code", NA, NA,
   "read2", "icd9", "read_v2_icd9", "read_code", "icd9_code", NA, NA,

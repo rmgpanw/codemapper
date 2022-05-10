@@ -19,7 +19,7 @@ unzipped folder.
 }
 \examples{
 \dontrun{
- caliber_dir_path <- download_caliber_repo()
+caliber_dir_path <- download_caliber_repo()
 }
 }
 \seealso{

@@ -21,19 +21,22 @@ read_excel_to_named_list <- function(path,
 
   # choose sheets
   if (!is.null(to_include)) {
-    sheet_names <- subset(sheet_names,
-                          sheet_names %in% to_include)
+    sheet_names <- subset(
+      sheet_names,
+      sheet_names %in% to_include
+    )
   } else if (!is.null(to_exclude)) {
-    sheet_names <- subset(sheet_names,!(sheet_names %in% to_exclude))
+    sheet_names <- subset(sheet_names, !(sheet_names %in% to_exclude))
   }
 
   # read sheets into named list
   sheet_names %>%
     purrr::set_names() %>%
     purrr::map(readxl::read_excel,
-               path = path,
-               col_types = col_types,
-               ...)
+      path = path,
+      col_types = col_types,
+      ...
+    )
 }
 
 #' Remove footer rows from a table in UKB resource 592
@@ -68,11 +71,14 @@ rm_footer_rows_all_lkps_maps_df <- function(df,
 
   # error if more than 3 rows will be removed
   assertthat::assert_that(as.integer(max_rowid) >= (nrow(df) - 2),
-                          msg = paste0("Attempted to remove all rows after row number ",
-                                       max_rowid,
-                                       ". `df` has ",
-                                       nrow(df),
-                                       " rows"))
+    msg = paste0(
+      "Attempted to remove all rows after row number ",
+      max_rowid,
+      ". `df` has ",
+      nrow(df),
+      " rows"
+    )
+  )
 
   # convert rowid col to NA, unless rowid equals `max_rowid`. Then, fill
   # downwards, and remove these rows
@@ -83,7 +89,8 @@ rm_footer_rows_all_lkps_maps_df <- function(df,
       no = NA_character_
     )) %>%
     tidyr::fill(.data[["rowid"]],
-                .direction = "down") %>%
+      .direction = "down"
+    ) %>%
     dplyr::filter(is.na(.data[["rowid"]])) %>%
     dplyr::select(-.data[["rowid"]])
 }
@@ -92,7 +99,7 @@ make_lkp_from_ukb_codings <- function(ukb_codings,
                                       Coding,
                                       Value_col_new_name,
                                       Meaning_col_new_nae = "description") {
-  result <- ukb_codings[ukb_codings$Coding == Coding,-1]
+  result <- ukb_codings[ukb_codings$Coding == Coding, -1]
 
   result <- ukbwranglr:::rename_cols(
     df = result,
@@ -130,10 +137,14 @@ update_code_selection <- function(current_selection,
       by = UPDATE_CODE_SELECTION_MATCHING_VARS,
       suffix = c("", "_TOREMOVE")
     ) %>%
-    dplyr::mutate("category" = .data[["category_TOREMOVE"]],
-                  "selected" = dplyr::case_when((!is.na(.data[["category"]])) |
-                                                  (.data[["category"]] != "") ~ "Yes",
-                                                TRUE ~ "")) %>%
+    dplyr::mutate(
+      "category" = .data[["category_TOREMOVE"]],
+      "selected" = dplyr::case_when(
+        (!is.na(.data[["category"]])) |
+          (.data[["category"]] != "") ~ "Yes",
+        TRUE ~ ""
+      )
+    ) %>%
     dplyr::select(-tidyselect::ends_with("_TOREMOVE"))
 }
 
@@ -149,13 +160,14 @@ update_code_selection <- function(current_selection,
 #' @noRd
 download_file <- function(download_url,
                           path = tempfile()) {
-
   if (file.exists(path)) {
     invisible(path)
   } else {
-    utils::download.file(url = download_url,
-                  destfile = path,
-                  mode = "wb")
+    utils::download.file(
+      url = download_url,
+      destfile = path,
+      mode = "wb"
+    )
     invisible(path)
   }
 }

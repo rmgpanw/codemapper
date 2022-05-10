@@ -12,8 +12,10 @@ test_that("Functions that return a path to dummy data work", {
     purrr::map_chr(class) %>%
     unique()
 
-  expect_equal(dummy_file_paths_class,
-               "character")
+  expect_equal(
+    dummy_file_paths_class,
+    "character"
+  )
 })
 
 

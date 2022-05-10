@@ -23,10 +23,10 @@ directly from the UKB website.
 }
 \examples{
 \dontrun{
- # download UKB resource 592, returning file path invisibly
- file_path <- get_ukb_all_lkps_maps()
+# download UKB resource 592, returning file path invisibly
+file_path <- get_ukb_all_lkps_maps()
 
- # view path to downloaded file
- file_path
+# view path to downloaded file
+file_path
 }
 }
