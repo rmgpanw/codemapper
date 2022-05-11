@@ -3,6 +3,9 @@
 
 all_lkps_maps_dummy <- build_all_lkps_maps_dummy()
 
+ALL_LKPS_MAPS_DUMMY <- all_lkps_maps_to_db(all_lkps_maps_dummy,
+                                           db_path = tempfile(fileext = ".db"))
+
 clinical_events_dummy <- dummy_clinical_events_tidy()
 
 clinical_events_phecodes_dummy <- map_clinical_events_to_phecodes(
@@ -20,6 +23,17 @@ phecode_reverse_map_dummy <-
 # TESTS -------------------------------------------------------------------
 
 # `map_clinical_events_to_phecodes()` -------------------------------------
+
+test_that("`map_clinical_events_to_phecodes()` works with `all_lkps_maps` as a database",
+          {
+            expect_true(is.data.frame(
+              map_clinical_events_to_phecodes(
+                clinical_events = clinical_events_dummy,
+                all_lkps_maps = ALL_LKPS_MAPS_DUMMY,
+                min_date_only = FALSE
+              )
+            ))
+          })
 
 # check:
 

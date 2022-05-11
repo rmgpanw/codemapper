@@ -64,6 +64,30 @@ map_clinical_events_to_phecodes <- function(clinical_events,
                                             col_filters = default_col_filters()) {
   start_time <- proc.time()
 
+  # connect to database file path if `all_lkps_maps` is a string, or `NULL`
+  if (is.character(all_lkps_maps)) {
+    con <- check_all_lkps_maps_path(all_lkps_maps)
+    all_lkps_maps <- ukbwranglr::db_tables_to_list(con)
+    on.exit(DBI::dbDisconnect(con))
+  } else if (is.null(all_lkps_maps)) {
+    if (Sys.getenv("ALL_LKPS_MAPS_DB") != "") {
+      message(paste0("Attempting to connect to ", Sys.getenv("ALL_LKPS_MAPS_DB")))
+      con <-
+        check_all_lkps_maps_path(Sys.getenv("ALL_LKPS_MAPS_DB"))
+      all_lkps_maps <- ukbwranglr::db_tables_to_list(con)
+      on.exit(DBI::dbDisconnect(con))
+    } else if (file.exists("all_lkps_maps.db")) {
+      message("Attempting to connect to all_lkps_maps.db in current working directory")
+      con <- check_all_lkps_maps_path("all_lkps_maps.db")
+      all_lkps_maps <- ukbwranglr::db_tables_to_list(con)
+      on.exit(DBI::dbDisconnect(con))
+    } else {
+      stop(
+        "No/invalid path supplied to `all_lkps_maps` and no file called 'all_lkps_maps.db' found in current working directory. See `?all_lkps_maps_to_db()`"
+      )
+    }
+  }
+
   # ascertain available code types in `clinical_events`
   available_clinical_events_sources <- clinical_events %>%
     dplyr::select(.data[["source"]]) %>%
