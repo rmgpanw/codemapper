@@ -5,6 +5,7 @@ vignette: >
   %\VignetteIndexEntry{Phecodes}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
+bibliography: references.bib
 ---
 
 ```{r, include = FALSE}
