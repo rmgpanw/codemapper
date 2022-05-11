@@ -184,6 +184,17 @@ test_that("`map_clinical_events_to_phecodes()` returns expected output with no `
 
 # `make_phecode_reverse_map()` --------------------------------------------
 
+
+test_that("`make_phecode_reverse_map()` works with `all_lkps_maps` as a database",
+          {
+            expect_true(is.data.frame(
+              make_phecode_reverse_map(
+                clinical_events_phecodes = clinical_events_phecodes_dummy,
+                all_lkps_maps = ALL_LKPS_MAPS_DUMMY
+              )
+            ))
+          })
+
 test_that("`make_phecode_reverse_map()` returns expected results", {
   expect_equal(
     phecode_reverse_map_dummy,
