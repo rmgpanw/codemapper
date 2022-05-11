@@ -438,7 +438,7 @@ map_clinical_events_source_to_phecode <- function(source,
     icd10_code_alt_code_x_map <-
       get_icd10_code_alt_code_x_map(
         icd10_lkp = all_lkps_maps$icd10_lkp,
-        undivided_3char_only = FALSE,
+        undivided_3char_only = TRUE,
         as_named_list = "names_no_x"
       )
 
