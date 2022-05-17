@@ -714,9 +714,11 @@ RunCodelistBuilder_server <- function(id, all_lkps_maps) {
         result$selected <- NA
 
         # include search strategy and included codes in first row only
-        result$description_search_strategy[2:nrow(result)] <- NA
-        result$code_starts_search_strategy[2:nrow(result)] <- NA
-        result$included_code_types[2:nrow(result)] <- NA
+        if (nrow(result) > 1) {
+          result$description_search_strategy[2:nrow(result)] <- NA
+          result$code_starts_search_strategy[2:nrow(result)] <- NA
+          result$included_code_types[2:nrow(result)] <- NA
+        }
 
         readr::write_csv(result, file, na = "")
       }
@@ -743,9 +745,11 @@ RunCodelistBuilder_server <- function(id, all_lkps_maps) {
 
 
           # include search strategy and included codes in first row only
-          result$description_search_strategy[2:nrow(result)] <- NA
-          result$code_starts_search_strategy[2:nrow(result)] <- NA
-          result$included_code_types[2:nrow(result)] <- NA
+          if (nrow(result) > 1) {
+            result$description_search_strategy[2:nrow(result)] <- NA
+            result$code_starts_search_strategy[2:nrow(result)] <- NA
+            result$included_code_types[2:nrow(result)] <- NA
+          }
 
           readr::write_csv(result, file, na = "")
         }
