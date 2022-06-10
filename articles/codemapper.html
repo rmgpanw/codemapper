@@ -154,8 +154,8 @@
 
 <span class="co"># view first few rows of ICD10 lookup table</span>
 <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">all_lkps_maps_dummy_db</span><span class="op">$</span><span class="va">icd10_lkp</span><span class="op">)</span>
-<span class="co">#&gt; <span style="color: #949494;"># Source:   lazy query [?? x 13]</span></span>
-<span class="co">#&gt; <span style="color: #949494;"># Database: sqlite 3.38.5 [/tmp/RtmpWPXsAO/fileef02eae14d7]</span></span>
+<span class="co">#&gt; <span style="color: #949494;"># Source:   SQL [6 x 13]</span></span>
+<span class="co">#&gt; <span style="color: #949494;"># Database: sqlite 3.38.5 [/tmp/RtmpX0Vj6l/filee933779f1d2b]</span></span>
 <span class="co">#&gt;   .rowid ICD10_CODE ALT_CODE USAGE   USAGE_UK DESCRIPTION  MODIFIER_4 MODIFIER_5</span>
 <span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>     </span>
 <span class="co">#&gt; <span style="color: #BCBCBC;">1</span>      1 A00        A00      DEFAULT 3        Cholera      <span style="color: #BB0000;">NA</span>         <span style="color: #BB0000;">NA</span>        </span>
@@ -223,10 +223,11 @@ code_descriptions_like(
   code_type = "icd10",
   all_lkps_maps = all_lkps_maps_dummy_db
 )
-#&gt;  [38;5;246m# A tibble: 1 × 3 [39m
-#&gt;   code  description       code_type
-#&gt;    [3m [38;5;246m&lt;chr&gt; [39m [23m  [3m [38;5;246m&lt;chr&gt; [39m [23m              [3m [38;5;246m&lt;chr&gt; [39m [23m    
-#&gt;  [38;5;250m1 [39m L721  Trichilemmal cyst icd10
+#&gt;  [38;5;246m# A tibble: 2 × 3 [39m
+#&gt;   code  description          code_type
+#&gt;    [3m [38;5;246m&lt;chr&gt; [39m [23m  [3m [38;5;246m&lt;chr&gt; [39m [23m                 [3m [38;5;246m&lt;chr&gt; [39m [23m    
+#&gt;  [38;5;250m1 [39m L721  Trichilemmal cyst    icd10    
+#&gt;  [38;5;250m2 [39m N330  Tuberculous cystitis icd10
 ```</code></pre>
 </div>
 <div class="section level3">

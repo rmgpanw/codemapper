@@ -200,7 +200,7 @@ file (see <code><a href="get_phecode_icd9_map.html">get_phecode_icd9_map()</a></
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># … with 14 more rows</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $icd10_lkp</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 183 × 13</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 197 × 13</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    .rowid ICD10_CODE ALT_CODE USAGE   USAGE_UK DESCRIPTION MODIFIER_4 MODIFIER_5</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>     </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 1</span>      1 A00        A00      DEFAULT 3        Cholera     <span style="color: #BB0000;">NA</span>         <span style="color: #BB0000;">NA</span>        </span>
@@ -213,7 +213,7 @@ file (see <code><a href="get_phecode_icd9_map.html">get_phecode_icd9_map()</a></
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 8</span>      8 A02.1      A021     DEFAULT 3        Salmonella… <span style="color: #BB0000;">NA</span>         <span style="color: #BB0000;">NA</span>        </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 9</span>      9 A02.2      A022     DEFAULT 3        Localized … <span style="color: #BB0000;">NA</span>         <span style="color: #BB0000;">NA</span>        </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">10</span>     10 A02.8      A028     DEFAULT 3        Other spec… <span style="color: #BB0000;">NA</span>         <span style="color: #BB0000;">NA</span>        </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># … with 173 more rows, and 5 more variables: QUALIFIERS &lt;chr&gt;,</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># … with 187 more rows, and 5 more variables: QUALIFIERS &lt;chr&gt;,</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   GENDER_MASK &lt;chr&gt;, MIN_AGE &lt;chr&gt;, MAX_AGE &lt;chr&gt;, TREE_DESCRIPTION &lt;chr&gt;</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $icd9_icd10</span>
@@ -354,7 +354,7 @@ file (see <code><a href="get_phecode_icd9_map.html">get_phecode_icd9_map()</a></
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># … with 2 more variables: element_num &lt;chr&gt;, block_num &lt;chr&gt;</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $read_ctv3_icd10</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 25 × 9</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 36 × 9</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    .rowid read_code icd10_code mapping_status refine_flag add_code_flag</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>        </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 1</span>      1 X40J4     E109       D              C           P            </span>
@@ -367,7 +367,7 @@ file (see <code><a href="get_phecode_icd9_map.html">get_phecode_icd9_map()</a></
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 8</span>      8 C10..     E129       R              C           C            </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 9</span>      9 C10..     E139       R              C           C            </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">10</span>     10 C10..     O249       R              C           C            </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># … with 15 more rows, and 3 more variables: element_num &lt;chr&gt;,</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># … with 26 more rows, and 3 more variables: element_num &lt;chr&gt;,</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   block_num &lt;chr&gt;, icd10_dagger_asterisk &lt;chr&gt;</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $read_ctv3_opcs4</span>

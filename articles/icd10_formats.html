@@ -117,7 +117,7 @@
 <p>Both formats are provided in the ICD10 lookup table:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">all_lkps_maps_dummy</span><span class="op">$</span><span class="va">icd10_lkp</span>
-<span class="co">#&gt; <span style="color: #949494;"># A tibble: 183 × 13</span></span>
+<span class="co">#&gt; <span style="color: #949494;"># A tibble: 197 × 13</span></span>
 <span class="co">#&gt;    .rowid ICD10_CODE ALT_CODE USAGE   USAGE_UK DESCRIPTION MODIFIER_4 MODIFIER_5</span>
 <span class="co">#&gt;     <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>     </span>
 <span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span>      1 A00        A00      DEFAULT 3        Cholera     <span style="color: #BB0000;">NA</span>         <span style="color: #BB0000;">NA</span>        </span>
@@ -130,7 +130,7 @@
 <span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span>      8 A02.1      A021     DEFAULT 3        Salmonella… <span style="color: #BB0000;">NA</span>         <span style="color: #BB0000;">NA</span>        </span>
 <span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span>      9 A02.2      A022     DEFAULT 3        Localized … <span style="color: #BB0000;">NA</span>         <span style="color: #BB0000;">NA</span>        </span>
 <span class="co">#&gt; <span style="color: #BCBCBC;">10</span>     10 A02.8      A028     DEFAULT 3        Other spec… <span style="color: #BB0000;">NA</span>         <span style="color: #BB0000;">NA</span>        </span>
-<span class="co">#&gt; <span style="color: #949494;"># … with 173 more rows, and 5 more variables: QUALIFIERS &lt;chr&gt;,</span></span>
+<span class="co">#&gt; <span style="color: #949494;"># … with 187 more rows, and 5 more variables: QUALIFIERS &lt;chr&gt;,</span></span>
 <span class="co">#&gt; <span style="color: #949494;">#   GENDER_MASK &lt;chr&gt;, MIN_AGE &lt;chr&gt;, MAX_AGE &lt;chr&gt;, TREE_DESCRIPTION &lt;chr&gt;</span></span></code></pre></div>
 <p>However only the ‘ALT_CODE’ format is used in all other mapping tables that include ICD10 codes:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
