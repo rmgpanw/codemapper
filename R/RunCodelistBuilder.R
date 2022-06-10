@@ -108,7 +108,7 @@ RunCodelistBuilder_ui <- function(id) {
         width = 2,
         textInput(NS(id, "disease"),
           "Disease",
-          value = "DISEASE"
+          value = "Primary hypertension"
         ),
         textInput(NS(id, "category"),
           "Category",
@@ -176,7 +176,7 @@ RunCodelistBuilder_ui <- function(id) {
               h4("Code descriptions like..."),
               textInput(NS(id, "description_search"),
                 "",
-                value = ""
+                value = "hypertension"
               ),
               checkboxInput(
                 NS(id, "description_search_ignore_case"),
@@ -185,7 +185,7 @@ RunCodelistBuilder_ui <- function(id) {
               ),
               textInput(NS(id, "description_search_and"),
                 "and... ",
-                value = ""
+                value = "essential|primary"
               ),
               checkboxInput(
                 NS(id, "description_search_and_ignore_case"),
@@ -194,7 +194,7 @@ RunCodelistBuilder_ui <- function(id) {
               ),
               textInput(NS(id, "description_search_not"),
                 "but not...",
-                value = ""
+                value = "pulmonary|intracranial"
               ),
               checkboxInput(
                 NS(id, "description_search_not_ignore_case"),
