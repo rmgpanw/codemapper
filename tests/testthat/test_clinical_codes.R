@@ -265,6 +265,63 @@ test_that(
   }
 )
 
+# Tests default settings for `element_num` and `block_num` (should equal '0'
+# only) in read3-to-icd10 mapping table. Mapping the Read 3 code 'XE0e0'
+# ('Infection of urinary tract') should by default only map to ICD10 'N390'
+# ('Urinary tract infection, site not specified'). Including non-0 values for
+# `element_num`/`block_num` means it will also map to ICD10 codes for
+# Tuberculosis.
+test_that(
+  "`map_codes` returns the expected output for Read 3 ('XE0e0') to ICD10 example with default `col_filters`",
+  {
+    expect_equal(
+      map_codes(
+        codes = "XE0e0",
+        from = "read3",
+        to = "icd10",
+        col_filters = default_col_filters(),
+        all_lkps_maps = all_lkps_maps,
+        unrecognised_codes = "error",
+        codes_only = FALSE,
+        preferred_description_only = TRUE,
+        standardise_output = TRUE
+      )$code,
+      "N390"
+    )
+  }
+)
+
+test_that(
+  "`map_codes` returns the expected output for Read 3 ('XE0e0') to ICD10 example with default `col_filters`",
+  {
+    expect_equal(
+      map_codes(
+        codes = "XE0e0",
+        from = "read3",
+        to = "icd10",
+        col_filters = NULL,
+        all_lkps_maps = all_lkps_maps,
+        unrecognised_codes = "error",
+        codes_only = FALSE,
+        preferred_description_only = TRUE,
+        standardise_output = TRUE
+      ),
+  tibble::tribble(
+      ~code,                                                                                     ~description, ~code_type,
+     "A181",                                                           "Tuberculosis of genitourinary system",    "icd10",
+     "N291", "Other disorders of kidney and ureter in infectious and parasitic diseases classified elsewhere",    "icd10",
+     "N330",                                                                           "Tuberculous cystitis",    "icd10",
+     "N390",                                                    "Urinary tract infection, site not specified",    "icd10",
+     "O234",                                            "Unspecified infection of urinary tract in pregnancy",    "icd10",
+     "O862",                                                     "Urinary tract infection following delivery",    "icd10",
+     "P001",                        "Fetus and newborn affected by maternal renal and urinary tract diseases",    "icd10",
+     "P393",                                                               "Neonatal urinary tract infection",    "icd10"
+     )
+    )
+  }
+)
+
+# icd10 to icd9 mapping
 test_that("`map_codes()` works as expected for mapping icd10 to icd9 codes", {
   expect_equal(
     suppressWarnings(map_codes(

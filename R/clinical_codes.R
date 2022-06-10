@@ -1028,7 +1028,9 @@ default_col_filters <- function() {
   list(
     read_ctv3_icd10 = list(
       mapping_status = c("E", "G", "D"),
-      refine_flag = c("C", "P")
+      refine_flag = c("C", "P"),
+      element_num = c("0"),
+      block_num = c("0")
     ),
     read_v2_icd10 = list(icd10_code_def = c("1", "15", "3", "5", "7", "8")),
     read_ctv3_read_v2 = list(IS_ASSURED = "1"),
