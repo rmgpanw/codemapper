@@ -356,6 +356,39 @@ lookup_codes <- function(codes,
   }
 }
 
+child_codes_sct <- function(codes,
+                            include_self = TRUE,
+                            standarise_output,
+                            limit = 1000) {
+  snomedizer::concept_descendants(conceptIds = codes,
+                      include_self = TRUE,
+                      limit = 1000) %>%
+    tibble::as_tibble()
+}
+
+code_descriptions_like_sct <- function(expr,
+                                       standardise_output,
+                                       limit = 1000) {
+
+  stringr::str_detect("a3^",
+                      "[:alpha:]|[:digit:]|\\|",
+                      negate = TRUE)
+
+  expr %>%
+    stringr::str_split("\\|") %>%
+    .[[1]] %>%
+    purrr::set_names() %>%
+    purrr::map(~ snomedizer::concept_find(term = .x,
+                       limit = 1000)) %>%
+    dplyr::bind_rows() %>%
+    dplyr::mutate(type = "sct") %>%
+    dplyr::select(
+      code = conceptId,
+      code_description = fsn.term,
+      type
+    ) %>%
+    tibble::as_tibble()
+}
 
 #' Search for codes that match a description
 #'
