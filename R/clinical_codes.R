@@ -356,38 +356,95 @@ lookup_codes <- function(codes,
   }
 }
 
-child_codes_sct <- function(codes,
+#' Get child codes for one or more SNOMED codes
+#'
+#' A wrapper around [snomedizer::concept_descendants()].
+#'
+#' @inheritParams codes_starting_with
+#' @inheritParams snomedizer::concept_descendants
+#'
+#' @return A data frame.
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' # get children codes for 'Asthma'
+#'  child_codes_sct(
+#'    conceptIds = "195967001",
+#'    include_self = TRUE,
+#'    limit = 1000,
+#'    standardise_output = TRUE
+#'  )
+#' }
+child_codes_sct <- function(conceptIds,
                             include_self = TRUE,
-                            standarise_output,
+                            standarise_output = TRUE,
                             limit = 1000) {
-  snomedizer::concept_descendants(conceptIds = codes,
+  result <- snomedizer::concept_descendants(conceptIds = conceptIds,
                       include_self = TRUE,
-                      limit = 1000) %>%
+                      limit = limit) %>%
+    dplyr::bind_rows(.id = "parent_conceptId") %>%
     tibble::as_tibble()
+
+  if (standarise_output) {
+    result <- result %>%
+      dplyr::mutate(code_type = "sct") %>%
+      dplyr::select(
+        code = conceptId,
+        description = fsn.term,
+        code_type
+      )
+  }
+
+  return(result)
 }
 
+#' Search for SNOMED codes with descriptions matching one or more terms
+#'
+#' A wrapper around [snomedizer::concept_find()]. Note that this also searches
+#' synonym descriptions. For example, searching for 'asth' picks up
+#' 'asthenopia', but this is not immediately apparent without looking up synonyms as the returned primary description is .
+#'
+#' @param expr A pipe ("|") delimited string of code descriptions to search for.
+#' @inheritParams snomedizer::concept_find
+#' @inheritParams codes_starting_with
+#'
+#' @return A data frame.
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#'  code_descriptions_like_sct(
+#'    expr = "asth|copd",
+#'    limit = 1000,
+#'    standardise_output = TRUE
+#'  )
+#' }
 code_descriptions_like_sct <- function(expr,
-                                       standardise_output,
+                                       standardise_output = TRUE,
                                        limit = 1000) {
 
-  stringr::str_detect("a3^",
-                      "[:alpha:]|[:digit:]|\\|",
-                      negate = TRUE)
+  #TODO add validation check for `expr` (should be | delimited, no special/regex
+  #characters)
 
-  expr %>%
+  result <- expr %>%
     stringr::str_split("\\|") %>%
     .[[1]] %>%
     purrr::set_names() %>%
     purrr::map(~ snomedizer::concept_find(term = .x,
                        limit = 1000)) %>%
     dplyr::bind_rows() %>%
-    dplyr::mutate(type = "sct") %>%
-    dplyr::select(
-      code = conceptId,
-      code_description = fsn.term,
-      type
-    ) %>%
     tibble::as_tibble()
+
+  if (standardise_output) {
+    result <- result %>%
+      dplyr::mutate(type = "sct") %>%
+      dplyr::select(code = conceptId,
+                    code_description = fsn.term,
+                    type)
+  }
+
+  return(result)
 }
 
 #' Search for codes that match a description
