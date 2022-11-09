@@ -765,7 +765,7 @@ reformat_icd10_phecode_map_1_2 <- function(icd10_phecode,
   # message listing ICD10 codes with modifiers that will map to >1 ICD10 code in
   # ALT_CODE format. Also raises warning if any unrecognised ICD10 codes are
   # present.
-  icd10_codes_in_icd10_phecode <- codemapper::reformat_icd10_codes(
+  icd10_codes_in_icd10_phecode <- reformat_icd10_codes(
     icd10_codes = icd10_phecode$ICD10,
     all_lkps_maps = all_lkps_maps,
     input_icd10_format = "ICD10_CODE",
