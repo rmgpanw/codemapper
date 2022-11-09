@@ -8,3 +8,4 @@ docs/*
 .Renviron
 inst/doc
 *.pptx
+all_lkps_maps.db
