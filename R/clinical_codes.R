@@ -390,9 +390,9 @@ child_codes_sct <- function(conceptIds,
     result <- result %>%
       dplyr::mutate(code_type = "sct") %>%
       dplyr::select(
-        code = conceptId,
-        description = fsn.term,
-        code_type
+        code = tidyselect::all_of("conceptId"),
+        description = tidyselect::all_of("fsn.term"),
+        tidyselect::all_of("code_type")
       )
   }
 
@@ -439,9 +439,11 @@ code_descriptions_like_sct <- function(expr,
   if (standardise_output) {
     result <- result %>%
       dplyr::mutate(type = "sct") %>%
-      dplyr::select(code = conceptId,
-                    code_description = fsn.term,
-                    type)
+      dplyr::select(
+        code = tidyselect::all_of("conceptId"),
+        code_description = tidyselect::all_of("fsn.term"),
+        tidyselect::all_of("type")
+      )
   }
 
   return(result)
@@ -1324,12 +1326,12 @@ reformat_standardised_codelist <- function(standardised_codelist,
       "author" = author,
     ) %>%
     dplyr::select(
-      .data[["disease"]],
-      .data[["description"]],
-      .data[["category"]],
-      .data[["code_type"]],
-      .data[["code"]],
-      .data[["author"]]
+      tidyselect::all_of("disease"),
+      tidyselect::all_of("description"),
+      tidyselect::all_of("category"),
+      tidyselect::all_of("code_type"),
+      tidyselect::all_of("code"),
+      tidyselect::all_of("author")
     )
 
   return(standardised_codelist)
@@ -1542,7 +1544,7 @@ get_icd10_code_alt_code_x_map <- function(icd10_lkp,
 
   # make mapping df
   icd10_lkp_alt_x_map <- icd10_lkp %>%
-    dplyr::select(.data[["ALT_CODE"]]) %>%
+    dplyr::select(tidyselect::all_of("ALT_CODE")) %>%
     dplyr::filter(!is.na(.data[["ALT_CODE"]])) %>%
     dplyr::collect() %>%
     dplyr::mutate("ALT_CODE_minus_x" = stringr::str_remove(.data[["ALT_CODE"]],

@@ -847,8 +847,8 @@ extend_bnf_lkp <- function(all_lkps_maps) {
       values_to = "BNF_Code"
     ) %>%
     dplyr::select(
-      .data[["BNF_Code_Level"]],
-      .data[["BNF_Code"]],
+      tidyselect::all_of("BNF_Code_Level"),
+      tidyselect::all_of("BNF_Code"),
       tidyselect::everything()
     ) %>%
     dplyr::mutate("BNF_Code_Level" = stringr::str_remove(

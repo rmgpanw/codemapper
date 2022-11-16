@@ -551,7 +551,7 @@ reformat_caliber_read2 <- function(read2_df,
     dplyr::arrange(.data[["code_last_2_char"]]) %>%
     dplyr::slice(1L) %>%
     dplyr::ungroup() %>%
-    dplyr::select(-.data[["code_last_2_char"]])
+    dplyr::select(-tidyselect::all_of("code_last_2_char"))
 
   # check for unrecognised codes - warning if any found
   read_v2_lkp <- all_lkps_maps$read_v2_lkp %>%
@@ -661,7 +661,7 @@ reformat_caliber_icd10 <- function(icd10_df,
       preferred_description_only = TRUE,
       standardise_output = TRUE
     ) %>%
-    dplyr::select(-.data[["code_type"]]) %>%
+    dplyr::select(-tidyselect::all_of("code_type")) %>%
     dplyr::full_join(icd10_lkp_map_3_char,
       by = c("code" = "ALT_CODE")
     )
@@ -774,7 +774,7 @@ map_caliber <- function(df,
       by = c("code" = "old_code")
     ) %>%
     dplyr::mutate("code_type" = !!to) %>%
-    dplyr::select(-.data[["code"]]) %>%
+    dplyr::select(-tidyselect::all_of("code")) %>%
     ukbwranglr:::rename_cols(
       old_colnames = "new_code",
       new_colnames = "code"
@@ -795,7 +795,7 @@ map_caliber <- function(df,
     unrecognised_codes = "error",
     col_filters = col_filters
   ) %>%
-    dplyr::select(-.data[["code_type"]])
+    dplyr::select(-tidyselect::all_of("code_type"))
 
   result <- result %>%
     dplyr::left_join(code_descriptions,
@@ -907,7 +907,7 @@ validate_overlapping_disease_categories_df <- function(df) {
 
   # no missing values (excluding 'keep' column)
   df_minus_keep_col <- df %>%
-    dplyr::select(-.data[["keep"]])
+    dplyr::select(-tidyselect::all_of("keep"))
 
   if (!assertthat::are_equal(
     df_minus_keep_col,

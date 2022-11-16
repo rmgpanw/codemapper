@@ -90,7 +90,7 @@ map_clinical_events_to_phecodes <- function(clinical_events,
 
   # ascertain available code types in `clinical_events`
   available_clinical_events_sources <- clinical_events %>%
-    dplyr::select(.data[["source"]]) %>%
+    dplyr::select(tidyselect::all_of("source")) %>%
     dplyr::distinct() %>%
     dplyr::collect()
 
@@ -360,8 +360,8 @@ make_phecode_reverse_map <- function(clinical_events_phecodes,
     col_filters = default_col_filters()
   ) %>%
     dplyr::select(
-      "phecode" = .data[["code"]],
-      "phecode_description" = .data[["description"]]
+      "phecode" = tidyselect::all_of("code"),
+      "phecode_description" = tidyselect::all_of("description")
     )
 
   clinical_events_phecodes <- clinical_events_phecodes %>%
@@ -380,8 +380,8 @@ make_phecode_reverse_map <- function(clinical_events_phecodes,
     col_filters = default_col_filters()
   ) %>%
     dplyr::select(
-      "icd10" = .data[["code"]],
-      "icd10_description" = .data[["description"]]
+      "icd10" = tidyselect::all_of("code"),
+      "icd10_description" = tidyselect::all_of("description")
     )
 
   clinical_events_phecodes <- clinical_events_phecodes %>%
@@ -407,8 +407,8 @@ make_phecode_reverse_map <- function(clinical_events_phecodes,
         "description"
       )
     ),
-    "icd10_equivalent" = .data[["icd10"]],
-    .data[["icd10_description"]]
+    "icd10_equivalent" = tidyselect::all_of("icd10"),
+    tidyselect::all_of("icd10_description")
     )
 
   # TODO - codes_like() function, use this to make get_undivided_3char_icd10()
