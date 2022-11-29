@@ -362,6 +362,8 @@ lookup_codes <- function(codes,
 #'
 #' @inheritParams codes_starting_with
 #' @inheritParams snomedizer::concept_descendants
+#' @inheritParams lookup_codes
+#' @param limit Number of SNOMED codes to return.
 #'
 #' @return A data frame.
 #' @export
@@ -378,7 +380,7 @@ lookup_codes <- function(codes,
 #' }
 child_codes_sct <- function(conceptIds,
                             include_self = TRUE,
-                            standarise_output = TRUE,
+                            standardise_output = TRUE,
                             limit = 1000) {
   result <- snomedizer::concept_descendants(conceptIds = conceptIds,
                       include_self = TRUE,
@@ -386,7 +388,7 @@ child_codes_sct <- function(conceptIds,
     dplyr::bind_rows(.id = "parent_conceptId") %>%
     tibble::as_tibble()
 
-  if (standarise_output) {
+  if (standardise_output) {
     result <- result %>%
       dplyr::mutate(code_type = "sct") %>%
       dplyr::select(
@@ -408,6 +410,7 @@ child_codes_sct <- function(conceptIds,
 #' @param expr A pipe ("|") delimited string of code descriptions to search for.
 #' @inheritParams snomedizer::concept_find
 #' @inheritParams codes_starting_with
+#' @param limit Number of SNOMED codes to return.
 #'
 #' @return A data frame.
 #' @export
