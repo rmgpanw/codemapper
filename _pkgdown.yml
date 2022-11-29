@@ -14,7 +14,9 @@ reference:
 - contents:
   - lookup_codes
   - codes_starting_with
+  - child_codes_sct
   - code_descriptions_like
+  - code_descriptions_like_sct
   - map_codes
   - get_mapping_df
   - reformat_icd10_codes
