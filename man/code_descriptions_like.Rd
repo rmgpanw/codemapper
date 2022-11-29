@@ -19,7 +19,7 @@ code_descriptions_like(
 \item{reg_expr}{a regular expression to search for}
 
 \item{code_type}{character. The type of clinical code system to be searched.
-Must be one obnf, dmd, icd9, icd10, read2, read2_drugs, read3, opcs4, data_coding_3, data_coding_4, data_coding_5, data_coding_6, sct, or phecode)`.}
+Must be one of bnf, dmd, icd9, icd10, read2, read2_drugs, read3, opcs4, data_coding_3, data_coding_4, data_coding_5, data_coding_6, sct, or phecode.}
 
 \item{all_lkps_maps}{Either a named list of lookup and mapping tables (either
 data frames or \code{tbl_dbi} objects), or the path to a SQLite database
