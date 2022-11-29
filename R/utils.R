@@ -50,7 +50,7 @@ read_excel_to_named_list <- function(path,
 #' @param footer_metadata_col_idx Integer. Index for column containing footer
 #'   metadata.
 #'
-#' @return
+#' @return Data frame.
 #' @noRd
 rm_footer_rows_all_lkps_maps_df <- function(df,
                                             footer_metadata_col_idx = 1) {

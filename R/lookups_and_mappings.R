@@ -700,7 +700,7 @@ reformat_read_v2_icd10 <- function(read_v2_icd10,
 #'
 #' @param read_ctv3_icd10 A data frame.
 #'
-#' @return
+#' @return Data frame.
 #' @noRd
 reformat_read_ctv3_icd10 <- function(read_ctv3_icd10) {
   read_ctv3_icd10 %>%
@@ -840,7 +840,7 @@ extend_bnf_lkp <- function(all_lkps_maps) {
         end = 13
       )
     ) %>%
-    dplyr::rename("code_full" = .data[["BNF_Presentation_Code"]]) %>%
+    dplyr::rename("code_full" = tidyselect::all_of("BNF_Presentation_Code")) %>%
     tidyr::pivot_longer(
       cols = tidyselect::starts_with("code"),
       names_to = "BNF_Code_Level",

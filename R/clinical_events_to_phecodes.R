@@ -101,7 +101,7 @@ map_clinical_events_to_phecodes <- function(clinical_events,
     dplyr::filter(
       .data[["source"]] %in% !!CLINICAL_EVENTS_SOURCES_MAPPED_TO_PHECODES
     ) %>%
-    dplyr::arrange(.data[["category"]])
+    dplyr::arrange(dplyr::across(tidyselect::all_of("category")))
 
   # list of clinical events sources to actually be mapped (intersect of above)
   clinical_events_sources_to_map <- clinical_events_sources_to_map %>%
@@ -163,7 +163,7 @@ map_clinical_events_to_phecodes <- function(clinical_events,
         .data[["eid"]],
         .data[["phecode"]]
       ) %>%
-      dplyr::arrange(.data[["date"]]) %>%
+      dplyr::arrange(dplyr::across(tidyselect::all_of("date"))) %>%
       dplyr::slice_head(n = 1) %>%
       dplyr::ungroup()
   }
@@ -456,7 +456,7 @@ map_clinical_events_source_to_phecode <- function(source,
       )
 
     clinical_events_source <- clinical_events_source %>%
-      dplyr::rename("icd10" = .data[["code"]])
+      dplyr::rename("icd10" = tidyselect::all_of("code"))
 
     # need to re-append 'X' to undivided 3 character ICD10 codes (e.g. 'I10X'
     # hypertension)
@@ -649,7 +649,7 @@ get_clinical_events_source <- function(clinical_events,
   # check selected sources are present
   check_sources <- clinical_events %>%
     dplyr::filter(.data[["source"]] %in% !!sources) %>%
-    dplyr::distinct(.data[["source"]],
+    dplyr::distinct(dplyr::across(tidyselect::all_of("source")),
       .keep_all = FALSE
     ) %>%
     dplyr::collect()
