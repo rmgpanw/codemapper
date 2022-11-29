@@ -12,3 +12,4 @@
 ^cran-comments\.md$
 ^data-raw$
 ^codemeta\.json$
+all_lkps_maps.db
