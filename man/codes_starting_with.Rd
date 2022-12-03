@@ -11,7 +11,8 @@ codes_starting_with(
   codes_only = FALSE,
   preferred_description_only = TRUE,
   standardise_output = TRUE,
-  col_filters = default_col_filters()
+  col_filters = default_col_filters(),
+  limit = 1000
 )
 }
 \arguments{
@@ -51,6 +52,9 @@ the names refer to column names in the corresponding table, and the items
 are vectors of values to filter for. For example, \verb{list(my_lookup_table = list(colA = c("A", "B"))} will result in \code{my_lookup_table} being filtered
 for rows where \code{colA} is either 'A' or 'B'. Uses \code{default_col_filters()} by
 default. Set to \code{NULL} to remove all filters.}
+
+\item{limit}{Integer. Only applies to SNOMED codes (passed on to relevant
+\link[snomedizer:snomedizer-package]{snomedizer::snomedizer} function).}
 }
 \description{
 This is case \emph{sensitive} (important for read codes especially).

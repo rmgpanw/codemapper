@@ -43,6 +43,8 @@
 #'   list(colA = c("A", "B"))` will result in `my_lookup_table` being filtered
 #'   for rows where `colA` is either 'A' or 'B'. Uses `default_col_filters()` by
 #'   default. Set to `NULL` to remove all filters.
+#' @param limit Integer. Only applies to SNOMED codes (passed on to relevant
+#'   [snomedizer::snomedizer] function).
 #'
 #' @inheritParams lookup_codes
 #' @export
@@ -63,12 +65,47 @@ codes_starting_with <- function(codes,
                                 codes_only = FALSE,
                                 preferred_description_only = TRUE,
                                 standardise_output = TRUE,
-                                col_filters = default_col_filters()) {
+                                col_filters = default_col_filters(),
+                                limit = 1000) {
   # validate args
   match.arg(
     arg = code_type,
     choices = CODE_TYPE_TO_LKP_TABLE_MAP$code
   )
+
+  check_codes(codes)
+
+  assertthat::assert_that(is.logical(codes_only),
+    msg = "`code_only` must be either 'TRUE' or 'FALSE'"
+  )
+
+  assertthat::assert_that(!(codes_only & standardise_output),
+    msg = "Error! `codes_only` and `standardise_output` cannot both be `TRUE`"
+  )
+
+  # use snomedizer package for SNOMED codes
+  if (code_type == "sct") {
+
+    # split by "|" and combine to single vector
+    codes <- stringr::str_split(string = codes,
+                                pattern = "\\|") %>%
+      purrr::reduce(c)
+
+    # loop through individual search terms
+    result <- codes %>%
+      purrr::map(
+        ~ child_codes_sct(
+          conceptIds = .x,
+          include_self = TRUE,
+          standardise_output = standardise_output,
+          limit = limit
+        )
+      ) %>%
+      dplyr::bind_rows()
+
+    # exit early
+    return(result)
+  }
 
   # connect to database file path if `all_lkps_maps` is a string, or `NULL`
   if (is.character(all_lkps_maps)) {
@@ -93,16 +130,6 @@ codes_starting_with <- function(codes,
       )
     }
   }
-
-  check_codes(codes)
-
-  assertthat::assert_that(is.logical(codes_only),
-    msg = "`code_only` must be either 'TRUE' or 'FALSE'"
-  )
-
-  assertthat::assert_that(!(codes_only & standardise_output),
-    msg = "Error! `codes_only` and `standardise_output` cannot both be `TRUE`"
-  )
 
   # TODO check all sheets are present
   validate_all_lkps_maps()
@@ -228,6 +255,7 @@ lookup_codes <- function(codes,
                          standardise_output = TRUE,
                          unrecognised_codes = "error",
                          col_filters = default_col_filters(),
+                         limit = 1000,
                          .return_unrecognised_codes = FALSE) {
   # validate args
   check_codes(codes)
@@ -481,7 +509,8 @@ code_descriptions_like <- function(reg_expr,
                                    codes_only = FALSE,
                                    preferred_description_only = TRUE,
                                    standardise_output = TRUE,
-                                   col_filters = default_col_filters()) {
+                                   col_filters = default_col_filters(),
+                                   limit = 1000) {
   # validate args
   check_codes(reg_expr)
 
@@ -489,6 +518,28 @@ code_descriptions_like <- function(reg_expr,
     arg = code_type,
     choices = CODE_TYPE_TO_LKP_TABLE_MAP$code
   )
+
+  # use snomedizer package for SNOMED codes
+  if (code_type == "sct") {
+
+    # split by "|"
+    reg_expr_split <- stringr::str_split(string = reg_expr,
+                                         pattern = "\\|")
+
+    # loop through individual search terms
+    result <- reg_expr_split %>%
+      purrr::map(
+        ~ code_descriptions_like_sct(
+          expr = .x,
+          standardise_output = standardise_output,
+          limit = limit
+        )
+      ) %>%
+      dplyr::bind_rows()
+
+    # exit early
+    return(result)
+  }
 
   # connect to database file path if `all_lkps_maps` is a string, or `NULL`
   if (is.character(all_lkps_maps)) {

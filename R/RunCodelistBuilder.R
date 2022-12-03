@@ -237,6 +237,11 @@ RunCodelistBuilder_ui <- function(id) {
                 "OPCS4",
                 value = ""
               ),
+              h4("Children codes for..."),
+              textInput(NS(id, "sct_children"),
+                        "SNOMED",
+                        value = ""
+              ),
               width = 6
             ),
             fluidRow(verbatimTextOutput(NS(
@@ -295,7 +300,9 @@ RunCodelistBuilder_server <- function(id, all_lkps_maps) {
         "read3",
         input$read3_starts,
         "opcs4",
-        input$opcs4_starts
+        input$opcs4_starts,
+        "sct",
+        input$sct_children
       )
 
       code_starts_params <- code_starts_params %>%

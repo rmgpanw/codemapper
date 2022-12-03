@@ -12,6 +12,7 @@ lookup_codes(
   standardise_output = TRUE,
   unrecognised_codes = "error",
   col_filters = default_col_filters(),
+  limit = 1000,
   .return_unrecognised_codes = FALSE
 )
 }
@@ -50,6 +51,9 @@ the names refer to column names in the corresponding table, and the items
 are vectors of values to filter for. For example, \verb{list(my_lookup_table = list(colA = c("A", "B"))} will result in \code{my_lookup_table} being filtered
 for rows where \code{colA} is either 'A' or 'B'. Uses \code{default_col_filters()} by
 default. Set to \code{NULL} to remove all filters.}
+
+\item{limit}{Integer. Only applies to SNOMED codes (passed on to relevant
+\link[snomedizer:snomedizer-package]{snomedizer::snomedizer} function).}
 
 \item{.return_unrecognised_codes}{If \code{TRUE}, return a vector of unrecognised
 codes only.}
