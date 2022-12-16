@@ -137,7 +137,8 @@ RunCodelistBuilder_ui <- function(id) {
             "data_coding_3",
             "data_coding_4",
             "data_coding_5",
-            "data_coding_6"
+            "data_coding_6",
+            "sct"
           )
         ),
         h4("Upload codelist"),
@@ -240,7 +241,7 @@ RunCodelistBuilder_ui <- function(id) {
               h4("Children codes for..."),
               textInput(NS(id, "sct_children"),
                         "SNOMED",
-                        value = ""
+                        value = "373254001|373304005"
               ),
               width = 6
             ),
