@@ -472,7 +472,7 @@ code_descriptions_like_sct <- function(expr,
       dplyr::mutate(type = "sct") %>%
       dplyr::select(
         code = tidyselect::all_of("conceptId"),
-        code_description = tidyselect::all_of("fsn.term"),
+        description = tidyselect::all_of("fsn.term"),
         tidyselect::all_of("type")
       )
   }
