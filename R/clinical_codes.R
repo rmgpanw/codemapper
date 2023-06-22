@@ -915,10 +915,10 @@ get_mapping_df <- function(from,
                            na.rm = TRUE,
                            reverse_mapping = "error",
                            col_filters = default_col_filters()) {
-  # validate args -----------
-  # get mapping sheet, from and to cols
-  # check mapping args and get required details - mapping_table, from_col and
-  # to_col
+  # validate args
+
+  # get mapping sheet, from and to cols check mapping args and get required
+  # details - mapping_table, from_col and to_col
   mapping_params <- check_mapping_args(
     from = from,
     to = to,
@@ -1515,7 +1515,7 @@ filter_cols <- function(df,
     purrr::map_lgl(is.vector)
 
   assertthat::assert_that(sum(!col_filters_item_types) == 0,
-    msg = "Each item in `col_filters` must be a vector"
+                          msg = "Each item in `col_filters` must be a vector"
   )
 
   # check that column names exist in df. Raise error is any are unrecognised.
@@ -1880,19 +1880,17 @@ expand_icd10_ranges <- function(read_v2_icd10,
 
 check_codes <- function(codes) {
   assertthat::assert_that(is.character(codes),
-    msg = "Error! `codes` must be a character vector"
-  )
+                          msg = "Error! `codes` must be a character vector")
 
   assertthat::assert_that(sum(is.na(codes)) == 0,
-    msg = "Error! `codes` cannot contain `NA` values"
-  )
+                          msg = "Error! `codes` cannot contain `NA` values")
 }
 
 check_mapping_args <- function(from,
                                to,
                                reverse_mapping = "error") {
   match.arg(reverse_mapping,
-    choices = c("error", "warning")
+            choices = c("error", "warning")
   )
 
   match.arg(
@@ -1908,7 +1906,7 @@ check_mapping_args <- function(from,
   # choices = CLINICAL_CODE_MAPPINGS_MAP$to)
 
   assertthat::assert_that(!from == to,
-    msg = "Error! `from` and `to` args cannot be the same"
+                          msg = "Error! `from` and `to` args cannot be the same"
   )
 
   # get appropriate mapping sheet
@@ -1926,11 +1924,11 @@ check_mapping_args <- function(from,
     stop("Error! Invalid (or unavailable) code mapping request")
   } else if (swap_mapping_cols) {
     switch(reverse_mapping,
-      error = stop("No mapping sheet available for this request"),
-      warning = warning(
-        "No mapping sheet available for this request. Attempting to map anyway using: ",
-        mapping_table
-      )
+           error = stop("No mapping sheet available for this request"),
+           warning = warning(
+             "No mapping sheet available for this request. Attempting to map anyway using: ",
+             mapping_table
+           )
     )
   }
 
@@ -1971,10 +1969,10 @@ check_mapping_args <- function(from,
 check_all_lkps_maps_path <- function(file_path) {
   # check file exists
   assertthat::assert_that(file.exists(file_path),
-    msg = paste0(
-      "Error! No file found at ",
-      file_path
-    )
+                          msg = paste0(
+                            "Error! No file found at ",
+                            file_path
+                          )
   )
 
   # check file ends with '.db'
@@ -2027,8 +2025,7 @@ handle_unrecognised_codes <-
            table_name,
            code_type) {
     match.arg(unrecognised_codes,
-      choices = c("error", "warning")
-    )
+              choices = c("error", "warning"))
 
     # make sure missing_codes are unique, if not already
     missing_codes <- unique(missing_codes)
@@ -2036,22 +2033,18 @@ handle_unrecognised_codes <-
     # only display first 25 codes
     if (length(missing_codes) > 25) {
       missing_codes_to_print <- utils::head(missing_codes,
-        n = 25
-      )
+                                            n = 25)
     } else {
       missing_codes_to_print <- missing_codes
     }
 
     missing_codes_to_print <- stringr::str_c(missing_codes_to_print,
-      sep = "",
-      collapse = "', '"
-    )
+                                             sep = "",
+                                             collapse = "', '")
 
     if (length(missing_codes) > 25) {
-      missing_codes_to_print <- paste0(
-        missing_codes_to_print,
-        " (first 25 only shown)"
-      )
+      missing_codes_to_print <- paste0(missing_codes_to_print,
+                                       " (first 25 only shown)")
     }
 
     if (length(missing_codes) > 0) {
@@ -2063,14 +2056,17 @@ handle_unrecognised_codes <-
         "' in table '",
         table_name,
         "': '",
-        stringr::str_c(missing_codes_to_print, sep = "", collapse = "', '"),
+        stringr::str_c(
+          missing_codes_to_print,
+          sep = "",
+          collapse = "', '"
+        ),
         "'"
       )
 
       switch(unrecognised_codes,
-        error = stop(missing_codes_message),
-        warning = warning(missing_codes_message)
-      )
+             error = stop(missing_codes_message),
+             warning = warning(missing_codes_message))
     }
   }
 
