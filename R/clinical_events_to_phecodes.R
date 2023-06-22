@@ -515,7 +515,7 @@ map_clinical_events_source_to_phecode <- function(source,
 #'
 #' @param clinical_events Clinical events data frame
 #' @param all_lkps_maps Named list of lookup and mapping tables (can be
-#'   `tbl_dbi` objects) or the path to an SQLite database containing these
+#'   `tbl_dbi` objects) or the path to an Duckdb database containing these
 #' @param col_filters See [default_col_filters()]
 #'
 #' @return A clinical events data frame.
@@ -554,7 +554,7 @@ map_icd10_to_phecode <- function(clinical_events,
 #'   `NULL` (default), this is assumed to be named 'code'.
 #' @param to_colname Name of new column containing mapped codes. If `NULL`
 #'   (default), this will equal the value for argument `to`.
-#' @param all_lkps_maps Named list of SQLite database with lookup/mapping tables
+#' @param all_lkps_maps Named list of Duckdb database with lookup/mapping tables
 #' @param col_filters See [default_col_filters()]
 #' @noRd
 #'

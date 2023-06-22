@@ -1,12 +1,12 @@
 # EXPORTED ----------------------------------------------------------------
 
-#' Build a SQLite database of clinical code look up and mapping tables
+#' Build a Duckdb database of clinical code look up and mapping tables
 #'
-#' Write the output from \code{\link{build_all_lkps_maps}} to a SQLite database.
+#' Write the output from \code{\link{build_all_lkps_maps}} to a Duckdb database.
 #'
 #' @param all_lkps_maps A named list of look up and mapping tables, created
 #'   by \code{\link{build_all_lkps_maps}}.
-#' @param db_path Where the database will be created. If an SQLite database file
+#' @param db_path Where the database will be created. If an Duckdb database file
 #'   already exists here, then the lookup and mapping tables will be added to
 #'   this. If \code{NULL} (default), then no database will be created/modified.
 #' @param overwrite If \code{TRUE}, overwrite tables in the database if they
@@ -19,7 +19,7 @@
 #' # build dummy all_lkps_maps resource (supressing warning messages)
 #' all_lkps_maps_dummy <- build_all_lkps_maps_dummy()
 #'
-#' # write to SQLite database file
+#' # write to Duckdb database file
 #' db_path <- suppressMessages(
 #'   all_lkps_maps_to_db(
 #'     all_lkps_maps = all_lkps_maps_dummy,
@@ -27,8 +27,8 @@
 #'   )
 #' )
 #'
-#' # connect to SQLite database
-#' con <- DBI::dbConnect(RSQLite::SQLite(), db_path)
+#' # connect to Duckdb database
+#' con <- DBI::dbConnect(duckdb::duckdb(), db_path)
 #'
 #' # create named list of tbl_dbi objects
 #' all_lkps_maps_dummy_db <- ukbwranglr::db_tables_to_list(con)
@@ -54,7 +54,7 @@ all_lkps_maps_to_db <- function(all_lkps_maps = build_all_lkps_maps(),
   }
 
   # connect to db
-  con <- DBI::dbConnect(RSQLite::SQLite(), db_path)
+  con <- DBI::dbConnect(duckdb::duckdb(), db_path)
   on.exit(DBI::dbDisconnect(con))
 
   if (check_tables_do_not_already_exist) {
@@ -101,7 +101,7 @@ all_lkps_maps_to_db <- function(all_lkps_maps = build_all_lkps_maps(),
 
   # write to db
   message(paste0(
-    "Writing lookup and mapping tables to SQLite database at ",
+    "Writing lookup and mapping tables to Duckdb database at ",
     db_path
   ))
   for (table_name in names(all_lkps_maps)) {
@@ -117,7 +117,7 @@ all_lkps_maps_to_db <- function(all_lkps_maps = build_all_lkps_maps(),
   }
 
   message(paste0(
-    "Success! Connect to database with `con <- DBI::dbConnect(RSQLite::SQLite(), '",
+    "Success! Connect to database with `con <- DBI::dbConnect(duckdb::duckdb(), '",
     db_path,
     "')`, then access all tables with `all_lkps_maps <- ukbwranglr::db_tables_to_list(con)`"
   ))
@@ -397,7 +397,7 @@ build_all_lkps_maps <-
       )
     }
 
-    # convert all to tibbles (avoids potential problems when writing to SQLite
+    # convert all to tibbles (avoids potential problems when writing to Duckdb
     # database)
     all_lkps_maps <- all_lkps_maps %>%
       purrr::map(tibble::as_tibble)

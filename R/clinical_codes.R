@@ -22,11 +22,11 @@
 #' @param code_type character. The type of clinical code system to be searched.
 #'   Must be one of `r knitr::combine_words(CODE_TYPE_TO_LKP_TABLE_MAP$code, and = "or ")`.
 #' @param all_lkps_maps Either a named list of lookup and mapping tables (either
-#'   data frames or `tbl_dbi` objects), or the path to a SQLite database
+#'   data frames or `tbl_dbi` objects), or the path to a Duckdb database
 #'   containing these tables (see also [build_all_lkps_maps()] and
-#'   [all_lkps_maps_to_db()]). If `NULL`, will attempt to connect to an SQLite
+#'   [all_lkps_maps_to_db()]). If `NULL`, will attempt to connect to an Duckdb
 #'   database named 'all_lkps_maps.db' in the current working directory, or to a
-#'   a SQLite database specified by an environmental variable named
+#'   a Duckdb database specified by an environmental variable named
 #'   'ALL_LKPS_MAPS_DB' (see
 #'   [here](https://resources.numbat.space/using-rprofile-and-renviron.html#renviron)
 #'    for how to set environment variables using a `.Renviron` file). The latter
@@ -1794,7 +1794,7 @@ check_all_lkps_maps_path <- function(file_path) {
   ))
 
   # return con object if tests pass
-  DBI::dbConnect(RSQLite::SQLite(), file_path)
+  DBI::dbConnect(duckdb::duckdb(), file_path)
 }
 
 check_rowid_col_present <- function(df,

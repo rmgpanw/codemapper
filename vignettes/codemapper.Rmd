@@ -56,10 +56,10 @@ head(all_lkps_maps_dummy$icd10_lkp)
 
 Many of the functions in this package will require this object (supplied to argument `all_lkps_maps`).
 
-Instead of re-running `build_all_lkps_maps()` in each new R session, the output can be saved to a SQLite database file:
+Instead of re-running `build_all_lkps_maps()` in each new R session, the output can be saved to a Duckdb database file:
 
 ```{r}
-# write to SQLite database file
+# write to Duckdb database file
 db_path <- suppressMessages(all_lkps_maps_to_db(all_lkps_maps = all_lkps_maps_dummy, 
                                db_path = tempfile()))
 ```
@@ -69,8 +69,8 @@ Connect to this and create a named list of `dbplyr::tbl_dbi`[^2] objects:
 [^2]: If you have not used SQL with R before, I recommend reading the [Get started](https://dbplyr.tidyverse.org/articles/dbplyr.html "Using SQL with R") vignette from the dbplyr package.
 
 ```{r}
-# connect to SQLite database
-con <- DBI::dbConnect(RSQLite::SQLite(), db_path)
+# connect to Duckdb database
+con <- DBI::dbConnect(duckdb::duckdb(), db_path)
 
 # create named list of tbl_db objects
 all_lkps_maps_dummy_db <- ukbwranglr::db_tables_to_list(con)
@@ -79,7 +79,7 @@ all_lkps_maps_dummy_db <- ukbwranglr::db_tables_to_list(con)
 head(all_lkps_maps_dummy_db$icd10_lkp)
 ```
 
-Either will work with the functions described in the remainder of this vignette, but the SQLite database option is recommended. For convenience, record the path to your SQLite database in a `.Renviron` file:
+Either will work with the functions described in the remainder of this vignette, but the Duckdb database option is recommended. For convenience, record the path to your Duckdb database in a `.Renviron` file:
 
     ALL_LKPS_MAPS_DB=/PATH/TO/all_lkps_maps.db
 
