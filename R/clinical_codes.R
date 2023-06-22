@@ -489,6 +489,212 @@ code_descriptions_like <- function(reg_expr,
   )
 }
 
+#' Get children for SNOMED codes
+#'
+#' @param codes Character vector of SNOMED codes.
+#' @param standarise_output If `TRUE` (default) return a data frame with columns
+#'   'code', 'description' and 'code_type'.
+#' @param active_only If `FALSE` (default) return all codes including currently
+#'   those which are currently inactive.
+#' @param include_self If `TRUE` (default) include input codes in the result.
+#' @param include_descendants If `TRUE` (default) return all descendant codes,
+#'   as well as immediate children.
+#'
+#' @return A dataframe
+#' @export
+get_children_sct <- function(codes = "269823000",
+                             standarise_output = TRUE,
+                             active_only = FALSE,
+                             include_self = TRUE,
+                             include_descendants = TRUE,
+                             all_lkps_maps = NULL) {
+
+  # get child codes
+  out_codes <- get_relatives_sct(
+    codes = codes,
+    relationship = "116680003",
+    relationship_direction = "child",
+    active_only = active_only,
+    recursive = include_descendants,
+    all_lkps_maps = all_lkps_maps
+  )
+
+  # connect to database file path if `all_lkps_maps` is a string, or `NULL`
+  if (is.character(all_lkps_maps)) {
+    con <- check_all_lkps_maps_path(all_lkps_maps)
+    all_lkps_maps <- db_tables_to_list(con)
+    on.exit(DBI::dbDisconnect(con, shutdown = TRUE))
+  } else if (is.null(all_lkps_maps)) {
+    if (Sys.getenv("ALL_LKPS_MAPS_DB") != "") {
+      # message(paste0("Attempting to connect to ", Sys.getenv("ALL_LKPS_MAPS_DB")))
+      con <-
+        check_all_lkps_maps_path(Sys.getenv("ALL_LKPS_MAPS_DB"))
+      all_lkps_maps <- db_tables_to_list(con)
+      on.exit(DBI::dbDisconnect(con, shutdown = TRUE))
+    } else if (file.exists("all_lkps_maps.db")) {
+      # message("Attempting to connect to all_lkps_maps.db in current working directory")
+      con <- check_all_lkps_maps_path("all_lkps_maps.db")
+      all_lkps_maps <- db_tables_to_list(con)
+      on.exit(DBI::dbDisconnect(con, shutdown = TRUE))
+    } else {
+      stop(
+        "No/invalid path supplied to `all_lkps_maps` and no file called 'all_lkps_maps.db' found in current working directory. See `?all_lkps_maps_to_db()`"
+      )
+    }
+  }
+
+  if (!include_self) {
+    out_codes <- subset(out_codes,
+                        !out_codes %in% codes)
+  }
+
+  # get descriptions
+  result <- all_lkps_maps$sct_description %>%
+    dplyr::filter(.data[["conceptId"]] %in% !!out_codes)
+
+  # adapt output according to user input
+  if (active_only) {
+    inactive_codes <- result %>%
+      dplyr::filter(.data[["active"]] == "0") %>%
+      dplyr::pull(.data[["conceptId"]])
+
+    if (!rlang::is_empty(inactive_codes)) {
+      warning(paste0(length(inactive_codes),
+                     " inactive codes returned from `sct_description` table, despite being marked as active in `sct_relationship` table, including: ",
+                     paste(head(inactive_codes),
+                           sep = "",
+                           collapse = ", ")))
+    }
+  }
+
+  if (standarise_output) {
+    result <- result %>%
+      dplyr::select(
+        "code" = tidyselect::all_of("conceptId"),
+        "description" = tidyselect::all_of("term")
+      ) %>%
+      dplyr::mutate("code_type" = "sct")
+  }
+
+  # collect and return result
+  result <- dplyr::collect(result)
+
+  if (nrow(result) == 0) {
+    warning("No codes identified, returning `NULL`")
+    result <- NULL
+  }
+
+  return(result)
+}
+
+#' Get related SNOMED codes
+#'
+#' Low level function for querying related SNOMED codes.
+#'
+#' @param codes Character vector of SNOMED codes
+#' @param relationship SNOMED code defining the type of relationship. By default
+#'   this is 'Is a (attribute)'.
+#' @param relationship_direction Either 'child' (default) or 'parent'.
+#' @param recursive If `TRUE` (default), will recursively search for related
+#'   codes e.g. find all descendants code instead of just the immediate child
+#'   codes.
+#' @param active_only If `FALSE` (default), return all relationships, even if
+#'   currently inactive.
+#'
+#' @return A data frame
+get_relatives_sct <- function(codes = "269823000",
+                              relationship = "116680003",
+                              relationship_direction = "child",
+                              recursive = TRUE,
+                              active_only = FALSE,
+                              all_lkps_maps = NULL) {
+  # Note: does not check whether `codes` or `relationship` exist or not
+
+  # Note: returns self and relatives
+
+  # validate args
+  check_codes(codes)
+
+  rlang::is_string(relationship)
+
+  match.arg(relationship_direction,
+            choices = c("child", "parent"))
+
+  ## determine relationship direction
+  filter_col <- switch(relationship_direction,
+                       child = "destinationId",
+                       parent = "sourceId")
+
+  return_col <- switch(relationship_direction,
+                       child = "sourceId",
+                       parent = "destinationId")
+
+  # connect to database file path if `all_lkps_maps` is a string, or `NULL`
+  if (is.character(all_lkps_maps)) {
+    con <- check_all_lkps_maps_path(all_lkps_maps)
+    all_lkps_maps <- db_tables_to_list(con)
+    on.exit(DBI::dbDisconnect(con, shutdown = TRUE))
+  } else if (is.null(all_lkps_maps)) {
+    if (Sys.getenv("ALL_LKPS_MAPS_DB") != "") {
+      # message(paste0("Attempting to connect to ", Sys.getenv("ALL_LKPS_MAPS_DB")))
+      con <-
+        check_all_lkps_maps_path(Sys.getenv("ALL_LKPS_MAPS_DB"))
+      all_lkps_maps <- db_tables_to_list(con)
+      on.exit(DBI::dbDisconnect(con, shutdown = TRUE))
+    } else if (file.exists("all_lkps_maps.db")) {
+      # message("Attempting to connect to all_lkps_maps.db in current working directory")
+      con <- check_all_lkps_maps_path("all_lkps_maps.db")
+      all_lkps_maps <- db_tables_to_list(con)
+      on.exit(DBI::dbDisconnect(con, shutdown = TRUE))
+    } else {
+      stop(
+        "No/invalid path supplied to `all_lkps_maps` and no file called 'all_lkps_maps.db' found in current working directory. See `?all_lkps_maps_to_db()`"
+      )
+    }
+  }
+
+  # TO DELETE - too slow (maybe)
+
+  # # validate relationship
+  # assertthat::assert_that(relationship %in% dplyr::pull(all_lkps_maps$sct_relationship, .data[["typeId"]]),
+  #                         msg = paste0("Unrecognised relationship: '",
+  #                                      relationship,
+  #                                      "'"))
+
+  # get related codes
+  related_codes <-
+    all_lkps_maps$sct_relationship %>%
+    dplyr::filter(.data[[filter_col]] %in% !!codes,
+                  .data[["typeId"]] == !!relationship)
+
+  if (active_only) {
+    related_codes <- related_codes %>%
+      dplyr::filter(.data[["active"]] == "1")
+  }
+
+  related_codes <- related_codes %>%
+    dplyr::pull(.data[[return_col]])
+
+  result <- unique(c(codes,
+                     related_codes))
+
+  if (recursive) {
+    if (length(result) > length(codes)) {
+      return(
+        get_relatives_sct(
+          codes = result,
+          relationship = relationship,
+          relationship_direction = relationship_direction,
+          recursive = recursive
+        )
+      )
+    } else {
+      return(result)
+    }
+  } else {
+    return(result)
+  }
+}
 
 #' Map clinical codes from one coding system to another
 #'
