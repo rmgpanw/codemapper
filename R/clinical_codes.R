@@ -199,14 +199,25 @@ codes_starting_with <- function(codes,
 #' @param codes character. Vector of codes to lookup
 #' @param standardise_output bool. If \code{TRUE} (default), outputs a data
 #'   frame with columns named 'code', 'description' and 'code_type'. Otherwise
-#'   returns a data frame with all columns for the relevant lookup sheet from
-#'   (\href{https://biobank.ndph.ox.ac.uk/ukb/refer.cgi?id=592}{UK Biobank
-#'   resource 592}).
+#'   returns a data frame with all columns from the relevant look up table.
 #' @param unrecognised_codes Either 'error' (default) or 'warning'. If any input
 #'   `codes` are unrecognised, then either an error or warning will be raised.
 #' @param .return_unrecognised_codes If `TRUE`, return a vector of unrecognised
 #'   codes only.
-#' @inheritParams codes_starting_with
+#' @param preferred_description_only bool. Return only preferred descriptions
+#'   for clinical codes with synonyms. Default value is \code{TRUE}.
+#' @param codes_only bool. If \code{TRUE}, return a character vector of
+#'   \emph{unique} codes. If \code{FALSE} (default), return a data frame of all
+#'   results including code descriptions (useful for manual validation).
+#' @param all_lkps_maps Either a named list of lookup and mapping tables
+#'   (either data frames or `tbl_dbi` objects), or the path to a Duckdb database
+#'   containing these tables. If `NULL`, will attempt to connect to a Duckdb
+#'   database named 'all_lkps_maps.db' in the current working directory, or to
+#'   a a Duckdb database specified by an environmental variable named
+#'   'ALL_LKPS_MAPS_DB' (see
+#'   [here](https://resources.numbat.space/using-rprofile-and-renviron.html#renviron)
+#'   for how to set environment variables using a `.Renviron` file). The latter
+#'   method will be used in preference.
 #'
 #' @return data frame
 #' @export
@@ -241,19 +252,19 @@ lookup_codes <- function(codes,
   if (is.character(all_lkps_maps)) {
     con <- check_all_lkps_maps_path(all_lkps_maps)
     all_lkps_maps <- ukbwranglr::db_tables_to_list(con)
-    on.exit(DBI::dbDisconnect(con))
+    on.exit(DBI::dbDisconnect(con, shutdown = TRUE))
   } else if (is.null(all_lkps_maps)) {
     if (Sys.getenv("ALL_LKPS_MAPS_DB") != "") {
-      message(paste0("Attempting to connect to ", Sys.getenv("ALL_LKPS_MAPS_DB")))
+      # message(paste0("Attempting to connect to ", Sys.getenv("ALL_LKPS_MAPS_DB")))
       con <-
         check_all_lkps_maps_path(Sys.getenv("ALL_LKPS_MAPS_DB"))
       all_lkps_maps <- ukbwranglr::db_tables_to_list(con)
-      on.exit(DBI::dbDisconnect(con))
+      on.exit(DBI::dbDisconnect(con, shutdown = TRUE))
     } else if (file.exists("all_lkps_maps.db")) {
-      message("Attempting to connect to all_lkps_maps.db in current working directory")
+      # message("Attempting to connect to all_lkps_maps.db in current working directory")
       con <- check_all_lkps_maps_path("all_lkps_maps.db")
       all_lkps_maps <- ukbwranglr::db_tables_to_list(con)
-      on.exit(DBI::dbDisconnect(con))
+      on.exit(DBI::dbDisconnect(con, shutdown = TRUE))
     } else {
       stop(
         "No/invalid path supplied to `all_lkps_maps` and no file called 'all_lkps_maps.db' found in current working directory. See `?all_lkps_maps_to_db()`"
@@ -329,7 +340,7 @@ lookup_codes <- function(codes,
   # filter for preferred code descriptions only if requested
   if (!is.null(preferred_description_only)) {
     if (preferred_description_only &
-      !is.na(preferred_description_col)) {
+        !is.na(preferred_description_col)) {
       result <- result %>%
         dplyr::filter(.data[[preferred_description_col]] == preferred_description_code)
     }
