@@ -399,19 +399,19 @@ code_descriptions_like <- function(reg_expr,
   if (is.character(all_lkps_maps)) {
     con <- check_all_lkps_maps_path(all_lkps_maps)
     all_lkps_maps <- ukbwranglr::db_tables_to_list(con)
-    on.exit(DBI::dbDisconnect(con))
+    on.exit(DBI::dbDisconnect(con, shutdown = TRUE))
   } else if (is.null(all_lkps_maps)) {
     if (Sys.getenv("ALL_LKPS_MAPS_DB") != "") {
-      message(paste0("Attempting to connect to ", Sys.getenv("ALL_LKPS_MAPS_DB")))
+      # message(paste0("Attempting to connect to ", Sys.getenv("ALL_LKPS_MAPS_DB")))
       con <-
         check_all_lkps_maps_path(Sys.getenv("ALL_LKPS_MAPS_DB"))
       all_lkps_maps <- ukbwranglr::db_tables_to_list(con)
-      on.exit(DBI::dbDisconnect(con))
+      on.exit(DBI::dbDisconnect(con, shutdown = TRUE))
     } else if (file.exists("all_lkps_maps.db")) {
-      message("Attempting to connect to all_lkps_maps.db in current working directory")
+      # message("Attempting to connect to all_lkps_maps.db in current working directory")
       con <- check_all_lkps_maps_path("all_lkps_maps.db")
       all_lkps_maps <- ukbwranglr::db_tables_to_list(con)
-      on.exit(DBI::dbDisconnect(con))
+      on.exit(DBI::dbDisconnect(con, shutdown = TRUE))
     } else {
       stop(
         "No/invalid path supplied to `all_lkps_maps` and no file called 'all_lkps_maps.db' found in current working directory. See `?all_lkps_maps_to_db()`"
@@ -451,6 +451,10 @@ code_descriptions_like <- function(reg_expr,
   }
 
   # search for codes
+
+  ## first get all codes matching description. This may not capture the primary
+  ## description though e.g. searching for 'QOF' won't capture the primary
+  ## description 'Quality and Outcome...'
   result <- all_lkps_maps[[lkp_table]] %>%
     dplyr::collect() %>%
     dplyr::filter(stringr::str_detect(
@@ -461,48 +465,17 @@ code_descriptions_like <- function(reg_expr,
       )
     ))
 
-  # filter on `col_filters` parameters
-  if (!is.null(col_filters)) {
-    result <- filter_cols(
-      df = result,
-      df_name = lkp_table,
-      col_filters = col_filters
-    )
-  }
-
-  # filter for preferred code descriptions only if requested
-  if (!is.null(preferred_description_only)) {
-    if (preferred_description_only &
-      !is.na(preferred_description_col)) {
-      result <- result %>%
-        dplyr::filter(.data[[preferred_description_col]] == preferred_description_code)
-    }
-  }
-
-  # standardise output, if requested
-  if (standardise_output) {
-    result <- standardise_output_fn(
-      result,
-      lkp_table = lkp_table,
-      code_col = code_col,
-      description_col = description_col,
-      code_type = code_type
-    )
-
-    code_col <- "code"
-  }
-
-  # return result
-  if (nrow(result) == 0) {
-    message("No matching codes found. Returning `NULL`")
-    return(NULL)
-  } else {
-    if (codes_only) {
-      return(unique(result[[code_col]]))
-    } else {
-      return(result)
-    }
-  }
+  ## then expand to include both primary and secondary descriptions
+  lookup_codes(
+    codes = unique(result[[code_col]]),
+    code_type = code_type,
+    all_lkps_maps = all_lkps_maps,
+    preferred_description_only = preferred_description_only,
+    standardise_output = standardise_output,
+    col_filters = col_filters,
+    unrecognised_codes = "error",
+    .return_unrecognised_codes = FALSE
+  )
 }
 
 
