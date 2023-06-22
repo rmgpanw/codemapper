@@ -522,19 +522,19 @@ get_children_sct <- function(codes = "269823000",
   # connect to database file path if `all_lkps_maps` is a string, or `NULL`
   if (is.character(all_lkps_maps)) {
     con <- check_all_lkps_maps_path(all_lkps_maps)
-    all_lkps_maps <- db_tables_to_list(con)
+    all_lkps_maps <- ukbwranglr::db_tables_to_list(con)
     on.exit(DBI::dbDisconnect(con, shutdown = TRUE))
   } else if (is.null(all_lkps_maps)) {
     if (Sys.getenv("ALL_LKPS_MAPS_DB") != "") {
       # message(paste0("Attempting to connect to ", Sys.getenv("ALL_LKPS_MAPS_DB")))
       con <-
         check_all_lkps_maps_path(Sys.getenv("ALL_LKPS_MAPS_DB"))
-      all_lkps_maps <- db_tables_to_list(con)
+      all_lkps_maps <- ukbwranglr::db_tables_to_list(con)
       on.exit(DBI::dbDisconnect(con, shutdown = TRUE))
     } else if (file.exists("all_lkps_maps.db")) {
       # message("Attempting to connect to all_lkps_maps.db in current working directory")
       con <- check_all_lkps_maps_path("all_lkps_maps.db")
-      all_lkps_maps <- db_tables_to_list(con)
+      all_lkps_maps <- ukbwranglr::db_tables_to_list(con)
       on.exit(DBI::dbDisconnect(con, shutdown = TRUE))
     } else {
       stop(
@@ -632,19 +632,19 @@ get_relatives_sct <- function(codes = "269823000",
   # connect to database file path if `all_lkps_maps` is a string, or `NULL`
   if (is.character(all_lkps_maps)) {
     con <- check_all_lkps_maps_path(all_lkps_maps)
-    all_lkps_maps <- db_tables_to_list(con)
+    all_lkps_maps <- ukbwranglr::db_tables_to_list(con)
     on.exit(DBI::dbDisconnect(con, shutdown = TRUE))
   } else if (is.null(all_lkps_maps)) {
     if (Sys.getenv("ALL_LKPS_MAPS_DB") != "") {
       # message(paste0("Attempting to connect to ", Sys.getenv("ALL_LKPS_MAPS_DB")))
       con <-
         check_all_lkps_maps_path(Sys.getenv("ALL_LKPS_MAPS_DB"))
-      all_lkps_maps <- db_tables_to_list(con)
+      all_lkps_maps <- ukbwranglr::db_tables_to_list(con)
       on.exit(DBI::dbDisconnect(con, shutdown = TRUE))
     } else if (file.exists("all_lkps_maps.db")) {
       # message("Attempting to connect to all_lkps_maps.db in current working directory")
       con <- check_all_lkps_maps_path("all_lkps_maps.db")
-      all_lkps_maps <- db_tables_to_list(con)
+      all_lkps_maps <- ukbwranglr::db_tables_to_list(con)
       on.exit(DBI::dbDisconnect(con, shutdown = TRUE))
     } else {
       stop(
@@ -753,19 +753,19 @@ map_codes <- function(codes,
   if (is.character(all_lkps_maps)) {
     con <- check_all_lkps_maps_path(all_lkps_maps)
     all_lkps_maps <- ukbwranglr::db_tables_to_list(con)
-    on.exit(DBI::dbDisconnect(con))
+    on.exit(DBI::dbDisconnect(con, shutdown = TRUE))
   } else if (is.null(all_lkps_maps)) {
     if (Sys.getenv("ALL_LKPS_MAPS_DB") != "") {
-      message(paste0("Attempting to connect to ", Sys.getenv("ALL_LKPS_MAPS_DB")))
+      # message(paste0("Attempting to connect to ", Sys.getenv("ALL_LKPS_MAPS_DB")))
       con <-
         check_all_lkps_maps_path(Sys.getenv("ALL_LKPS_MAPS_DB"))
       all_lkps_maps <- ukbwranglr::db_tables_to_list(con)
-      on.exit(DBI::dbDisconnect(con))
+      on.exit(DBI::dbDisconnect(con, shutdown = TRUE))
     } else if (file.exists("all_lkps_maps.db")) {
-      message("Attempting to connect to all_lkps_maps.db in current working directory")
+      # message("Attempting to connect to all_lkps_maps.db in current working directory")
       con <- check_all_lkps_maps_path("all_lkps_maps.db")
       all_lkps_maps <- ukbwranglr::db_tables_to_list(con)
-      on.exit(DBI::dbDisconnect(con))
+      on.exit(DBI::dbDisconnect(con, shutdown = TRUE))
     } else {
       stop(
         "No/invalid path supplied to `all_lkps_maps` and no file called 'all_lkps_maps.db' found in current working directory. See `?all_lkps_maps_to_db()`"
@@ -776,11 +776,11 @@ map_codes <- function(codes,
   validate_all_lkps_maps()
 
   assertthat::assert_that(is.logical(codes_only),
-    msg = "`code_only` must be either 'TRUE' or 'FALSE'"
+                          msg = "`code_only` must be either 'TRUE' or 'FALSE'"
   )
 
   assertthat::assert_that(!(codes_only & standardise_output),
-    msg = "Error! `codes_only` and `standardise_output` cannot both be `TRUE`"
+                          msg = "Error! `codes_only` and `standardise_output` cannot both be `TRUE`"
   )
 
   if (!is.null(preferred_description_only)) {
@@ -868,7 +868,7 @@ map_codes <- function(codes,
           code_type = to,
           all_lkps_maps = all_lkps_maps,
           preferred_description_only = preferred_description_only,
-          unrecognised_codes = "error"
+          unrecognised_codes = unrecognised_codes
         )
       )
     } else {
@@ -935,9 +935,9 @@ get_mapping_df <- function(from,
 
   if (!is.null(rename_from_to)) {
     assertthat::assert_that(is.character(rename_from_to) &&
-      (length(rename_from_to) == 2) &&
-      all(c("from", "to") %in% names(rename_from_to)),
-    msg = rename_from_to_error_msg
+                              (length(rename_from_to) == 2) &&
+                              all(c("from", "to") %in% names(rename_from_to)),
+                            msg = rename_from_to_error_msg
     )
   }
 
@@ -945,19 +945,19 @@ get_mapping_df <- function(from,
   if (is.character(all_lkps_maps)) {
     con <- check_all_lkps_maps_path(all_lkps_maps)
     all_lkps_maps <- ukbwranglr::db_tables_to_list(con)
-    on.exit(DBI::dbDisconnect(con))
+    on.exit(DBI::dbDisconnect(con, shutdown = TRUE))
   } else if (is.null(all_lkps_maps)) {
     if (Sys.getenv("ALL_LKPS_MAPS_DB") != "") {
-      message(paste0("Attempting to connect to ", Sys.getenv("ALL_LKPS_MAPS_DB")))
+      # message(paste0("Attempting to connect to ", Sys.getenv("ALL_LKPS_MAPS_DB")))
       con <-
         check_all_lkps_maps_path(Sys.getenv("ALL_LKPS_MAPS_DB"))
       all_lkps_maps <- ukbwranglr::db_tables_to_list(con)
-      on.exit(DBI::dbDisconnect(con))
+      on.exit(DBI::dbDisconnect(con, shutdown = TRUE))
     } else if (file.exists("all_lkps_maps.db")) {
-      message("Attempting to connect to all_lkps_maps.db in current working directory")
+      # message("Attempting to connect to all_lkps_maps.db in current working directory")
       con <- check_all_lkps_maps_path("all_lkps_maps.db")
       all_lkps_maps <- ukbwranglr::db_tables_to_list(con)
-      on.exit(DBI::dbDisconnect(con))
+      on.exit(DBI::dbDisconnect(con, shutdown = TRUE))
     } else {
       stop(
         "No/invalid path supplied to `all_lkps_maps` and no file called 'all_lkps_maps.db' found in current working directory. See `?all_lkps_maps_to_db()`"
@@ -997,7 +997,7 @@ get_mapping_df <- function(from,
   # descriptions for read 3 'J5311')
   result <- result %>%
     dplyr::distinct(dplyr::across(tidyselect::everything()),
-      .keep_all = TRUE
+                    .keep_all = TRUE
     )
 
   # rename
@@ -1014,7 +1014,7 @@ get_mapping_df <- function(from,
   }
 
   result <- result %>%
-    ukbwranglr:::rename_cols(
+    rename_cols(
       old_colnames = from_to_cols,
       new_colnames = new_from_to_cols
     )
