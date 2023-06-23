@@ -610,7 +610,8 @@ map_codes_ukb_clinical_events <- function(clinical_events,
 
   result <- clinical_events %>%
     dplyr::inner_join(mapping_df,
-      by = join_by
+      by = join_by,
+      relationship = "many-to-many"
     ) %>%
     # remove duplicated rows
     dplyr::distinct()
