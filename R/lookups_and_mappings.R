@@ -700,7 +700,7 @@ reformat_read_v2_icd10 <- function(read_v2_icd10,
 #'
 #' @param read_ctv3_icd10 A data frame.
 #'
-#' @return
+#' @return A data frame
 #' @noRd
 reformat_read_ctv3_icd10 <- function(read_ctv3_icd10) {
   read_ctv3_icd10 %>%

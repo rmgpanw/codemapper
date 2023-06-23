@@ -8,3 +8,4 @@ docs/*
 .Renviron
 inst/doc
 *.pptx
+.vscode/*

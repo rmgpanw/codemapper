@@ -19,14 +19,14 @@ codes_starting_with(
 codes.}
 
 \item{code_type}{character. The type of clinical code system to be searched.
-Must be one obnf, dmd, icd9, icd10, read2, read2_drugs, read3, opcs4, data_coding_3, data_coding_4, data_coding_5, data_coding_6, sct, or phecode)`.}
+Must be one of bnf, dmd, icd9, icd10, read2, read2_drugs, read3, opcs4, data_coding_3, data_coding_4, data_coding_5, data_coding_6, sct, or phecode.}
 
 \item{all_lkps_maps}{Either a named list of lookup and mapping tables (either
-data frames or \code{tbl_dbi} objects), or the path to a SQLite database
+data frames or \code{tbl_dbi} objects), or the path to a Duckdb database
 containing these tables (see also \code{\link[=build_all_lkps_maps]{build_all_lkps_maps()}} and
-\code{\link[=all_lkps_maps_to_db]{all_lkps_maps_to_db()}}). If \code{NULL}, will attempt to connect to an SQLite
+\code{\link[=all_lkps_maps_to_db]{all_lkps_maps_to_db()}}). If \code{NULL}, will attempt to connect to an Duckdb
 database named 'all_lkps_maps.db' in the current working directory, or to a
-a SQLite database specified by an environmental variable named
+a Duckdb database specified by an environmental variable named
 'ALL_LKPS_MAPS_DB' (see
 \href{https://resources.numbat.space/using-rprofile-and-renviron.html#renviron}{here}
 for how to set environment variables using a \code{.Renviron} file). The latter
@@ -41,9 +41,7 @@ for clinical codes with synonyms. Default value is \code{TRUE}.}
 
 \item{standardise_output}{bool. If \code{TRUE} (default), outputs a data
 frame with columns named 'code', 'description' and 'code_type'. Otherwise
-returns a data frame with all columns for the relevant lookup sheet from
-(\href{https://biobank.ndph.ox.ac.uk/ukb/refer.cgi?id=592}{UK Biobank
-resource 592}).}
+returns a data frame with all columns from the relevant look up table.}
 
 \item{col_filters}{A named list where each name in the list refers to the
 name of a lookup or mapping table. Each item is also a named list, where

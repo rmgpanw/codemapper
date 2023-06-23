@@ -12,11 +12,11 @@ RunCodelistBuilder(
 }
 \arguments{
 \item{all_lkps_maps}{Either a named list of lookup and mapping tables (either
-data frames or \code{tbl_dbi} objects), or the path to a SQLite database
+data frames or \code{tbl_dbi} objects), or the path to a Duckdb database
 containing these tables (see also \code{\link[=build_all_lkps_maps]{build_all_lkps_maps()}} and
-\code{\link[=all_lkps_maps_to_db]{all_lkps_maps_to_db()}}). If \code{NULL}, will attempt to connect to an SQLite
+\code{\link[=all_lkps_maps_to_db]{all_lkps_maps_to_db()}}). If \code{NULL}, will attempt to connect to an Duckdb
 database named 'all_lkps_maps.db' in the current working directory, or to a
-a SQLite database specified by an environmental variable named
+a Duckdb database specified by an environmental variable named
 'ALL_LKPS_MAPS_DB' (see
 \href{https://resources.numbat.space/using-rprofile-and-renviron.html#renviron}{here}
 for how to set environment variables using a \code{.Renviron} file). The latter

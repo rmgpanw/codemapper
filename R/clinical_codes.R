@@ -1014,7 +1014,7 @@ get_mapping_df <- function(from,
   }
 
   result <- result %>%
-    rename_cols(
+    ukbwranglr:::rename_cols(
       old_colnames = from_to_cols,
       new_colnames = new_from_to_cols
     )

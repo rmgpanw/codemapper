@@ -2,7 +2,7 @@
 % Please edit documentation in R/lookups_and_mappings.R
 \name{all_lkps_maps_to_db}
 \alias{all_lkps_maps_to_db}
-\title{Build a SQLite database of clinical code look up and mapping tables}
+\title{Build a Duckdb database of clinical code look up and mapping tables}
 \usage{
 all_lkps_maps_to_db(
   all_lkps_maps = build_all_lkps_maps(),
@@ -14,7 +14,7 @@ all_lkps_maps_to_db(
 \item{all_lkps_maps}{A named list of look up and mapping tables, created
 by \code{\link{build_all_lkps_maps}}.}
 
-\item{db_path}{Where the database will be created. If an SQLite database file
+\item{db_path}{Where the database will be created. If an Duckdb database file
 already exists here, then the lookup and mapping tables will be added to
 this. If \code{NULL} (default), then no database will be created/modified.}
 
@@ -25,13 +25,13 @@ already exist. Default value is \code{FALSE}.}
 Returns \code{db_path} invisibly
 }
 \description{
-Write the output from \code{\link{build_all_lkps_maps}} to a SQLite database.
+Write the output from \code{\link{build_all_lkps_maps}} to a Duckdb database.
 }
 \examples{
 # build dummy all_lkps_maps resource (supressing warning messages)
 all_lkps_maps_dummy <- build_all_lkps_maps_dummy()
 
-# write to SQLite database file
+# write to Duckdb database file
 db_path <- suppressMessages(
   all_lkps_maps_to_db(
     all_lkps_maps = all_lkps_maps_dummy,
@@ -39,8 +39,8 @@ db_path <- suppressMessages(
   )
 )
 
-# connect to SQLite database
-con <- DBI::dbConnect(RSQLite::SQLite(), db_path)
+# connect to Duckdb database
+con <- DBI::dbConnect(duckdb::duckdb(), db_path)
 
 # create named list of tbl_dbi objects
 all_lkps_maps_dummy_db <- ukbwranglr::db_tables_to_list(con)

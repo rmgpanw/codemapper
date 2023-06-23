@@ -25,11 +25,11 @@ map_codes(
 \item{to}{Coding system to map \code{codes} to.}
 
 \item{all_lkps_maps}{Either a named list of lookup and mapping tables (either
-data frames or \code{tbl_dbi} objects), or the path to a SQLite database
+data frames or \code{tbl_dbi} objects), or the path to a Duckdb database
 containing these tables (see also \code{\link[=build_all_lkps_maps]{build_all_lkps_maps()}} and
-\code{\link[=all_lkps_maps_to_db]{all_lkps_maps_to_db()}}). If \code{NULL}, will attempt to connect to an SQLite
+\code{\link[=all_lkps_maps_to_db]{all_lkps_maps_to_db()}}). If \code{NULL}, will attempt to connect to an Duckdb
 database named 'all_lkps_maps.db' in the current working directory, or to a
-a SQLite database specified by an environmental variable named
+a Duckdb database specified by an environmental variable named
 'ALL_LKPS_MAPS_DB' (see
 \href{https://resources.numbat.space/using-rprofile-and-renviron.html#renviron}{here}
 for how to set environment variables using a \code{.Renviron} file). The latter
@@ -41,9 +41,7 @@ results including code descriptions (useful for manual validation).}
 
 \item{standardise_output}{bool. If \code{TRUE} (default), outputs a data
 frame with columns named 'code', 'description' and 'code_type'. Otherwise
-returns a data frame with all columns for the relevant lookup sheet from
-(\href{https://biobank.ndph.ox.ac.uk/ukb/refer.cgi?id=592}{UK Biobank
-resource 592}).}
+returns a data frame with all columns from the relevant look up table.}
 
 \item{unrecognised_codes}{Either 'error' (default) or 'warning'. If any input
 \code{codes} are unrecognised for the coding system being mapped from, then
