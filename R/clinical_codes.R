@@ -399,7 +399,11 @@ code_descriptions_like <- function(reg_expr,
                                    standardise_output = TRUE,
                                    col_filters = default_col_filters()) {
   # validate args
-  check_codes(reg_expr)
+  assertthat::is.string(reg_expr)
+
+  assertthat::assert_that(!(codes_only & standardise_output),
+                          msg = "Error! `codes_only` and `standardise_output` cannot both be `TRUE`"
+  )
 
   match.arg(
     arg = code_type,
