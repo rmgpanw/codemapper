@@ -18,6 +18,9 @@ lookup_codes(
 \arguments{
 \item{codes}{character. Vector of codes to lookup}
 
+\item{code_type}{character. The type of clinical code system to be searched.
+Must be one of bnf, dmd, icd9, icd10, read2, read2_drugs, read3, opcs4, data_coding_3, data_coding_4, data_coding_5, data_coding_6, sct, or phecode.}
+
 \item{all_lkps_maps}{Either a named list of lookup and mapping tables
 (either data frames or \code{tbl_dbi} objects), or the path to a Duckdb database
 containing these tables. If \code{NULL}, will attempt to connect to a Duckdb
@@ -38,12 +41,15 @@ returns a data frame with all columns from the relevant look up table.}
 \item{unrecognised_codes}{Either 'error' (default) or 'warning'. If any input
 \code{codes} are unrecognised, then either an error or warning will be raised.}
 
+\item{col_filters}{A named list where each name in the list refers to the
+name of a lookup or mapping table. Each item is also a named list, where
+the names refer to column names in the corresponding table, and the items
+are vectors of values to filter for. For example, \verb{list(my_lookup_table = list(colA = c("A", "B"))} will result in \code{my_lookup_table} being filtered
+for rows where \code{colA} is either 'A' or 'B'. Uses \code{default_col_filters()} by
+default. Set to \code{NULL} to remove all filters.}
+
 \item{.return_unrecognised_codes}{If \code{TRUE}, return a vector of unrecognised
 codes only.}
-
-\item{codes_only}{bool. If \code{TRUE}, return a character vector of
-\emph{unique} codes. If \code{FALSE} (default), return a data frame of all
-results including code descriptions (useful for manual validation).}
 }
 \value{
 data frame

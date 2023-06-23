@@ -26,6 +26,16 @@ those which are currently inactive.}
 
 \item{include_descendants}{If \code{TRUE} (default) return all descendant codes,
 as well as immediate children.}
+
+\item{all_lkps_maps}{Either a named list of lookup and mapping tables
+(either data frames or \code{tbl_dbi} objects), or the path to a Duckdb database
+containing these tables. If \code{NULL}, will attempt to connect to a Duckdb
+database named 'all_lkps_maps.db' in the current working directory, or to
+a a Duckdb database specified by an environmental variable named
+'ALL_LKPS_MAPS_DB' (see
+\href{https://resources.numbat.space/using-rprofile-and-renviron.html#renviron}{here}
+for how to set environment variables using a \code{.Renviron} file). The latter
+method will be used in preference.}
 }
 \value{
 A dataframe

@@ -9,10 +9,10 @@ build_all_lkps_maps(
   ukb_codings = ukbwranglr::get_ukb_codings(),
   bnf_dmd = get_nhsbsa_snomed_bnf(),
   self_report_med_to_atc_map = get_ukb_self_report_med_to_atc_map(),
-  ctv3sctmap2 = NULL,
   phecode_1_2_lkp = get_phecode_definitions(),
   icd10_phecode_1_2 = get_phecode_icd10_map(),
-  icd9_phecode_1_2 = get_phecode_icd9_map()
+  icd9_phecode_1_2 = get_phecode_icd9_map(),
+  snomed_ct_uk_monolith = NULL
 )
 }
 \arguments{
@@ -29,17 +29,16 @@ build_all_lkps_maps(
 self-reported medication to ATC map (see
 \code{\link[=get_ukb_self_report_med_to_atc_map]{get_ukb_self_report_med_to_atc_map()}}).}
 
-\item{ctv3sctmap2}{Optional: path to the NHS TRUD mapping file for Read 3 to
-SNOMEDCT ("ctv3sctmap2_uk_20200401000001.txt").}
-
-\item{phecode_1_2_lkp}{Optional: path to the phecode v1.2 lookup file
-(see \code{\link[=get_phecode_definitions]{get_phecode_definitions()}}).}
+\item{phecode_1_2_lkp}{Optional: path to the phecode v1.2 lookup file (see
+\code{\link[=get_phecode_definitions]{get_phecode_definitions()}}).}
 
 \item{icd10_phecode_1_2}{Optional: path to the phecode v1.2 to ICD10 mapping
 file (see \code{\link[=get_phecode_icd10_map]{get_phecode_icd10_map()}}).}
 
 \item{icd9_phecode_1_2}{Optional: path to the phecode v1.2 to ICD10 mapping
 file (see \code{\link[=get_phecode_icd9_map]{get_phecode_icd9_map()}}).}
+
+\item{snomed_ct_uk_monolith}{Optional: path to the unzipped \href{https://isd.digital.nhs.uk/trud/users/guest/filters/2/categories/26/items/1799/releases}{SNOMED CT UK Monolith Edition}.}
 }
 \value{
 Returns a named list of data frames.
@@ -60,7 +59,7 @@ build_all_lkps_maps(
   ukb_codings = read_ukb_codings_dummy(),
   bnf_dmd = NULL,
   self_report_med_to_atc_map = NULL,
-  ctv3sctmap2 = NULL,
+  snomed_ct_uk_monolith = NULL,
   phecode_1_2_lkp = NULL,
   icd10_phecode_1_2 = NULL,
   icd9_phecode_1_2 = NULL
