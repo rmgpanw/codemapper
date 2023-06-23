@@ -477,7 +477,7 @@ code_descriptions_like <- function(reg_expr,
     ))
 
   ## then expand to include both primary and secondary descriptions
-  lookup_codes(
+  result <- lookup_codes(
     codes = unique(result[[code_col]]),
     code_type = code_type,
     all_lkps_maps = all_lkps_maps,
@@ -487,6 +487,16 @@ code_descriptions_like <- function(reg_expr,
     unrecognised_codes = "error",
     .return_unrecognised_codes = FALSE
   )
+
+  if (codes_only) {
+    if (standardise_output) {
+      return(result$code)
+    } else {
+      return(result[[code_col]])
+    }
+  } else {
+    return(result)
+  }
 }
 
 #' Get children for SNOMED codes
