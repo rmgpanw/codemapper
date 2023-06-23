@@ -55,7 +55,7 @@ all_lkps_maps_to_db <- function(all_lkps_maps = build_all_lkps_maps(),
 
   # connect to db
   con <- DBI::dbConnect(duckdb::duckdb(), db_path)
-  on.exit(DBI::dbDisconnect(con))
+  on.exit(DBI::dbDisconnect(con, shutdown = TRUE))
 
   if (check_tables_do_not_already_exist) {
     tables_to_be_written <- c(
@@ -765,7 +765,7 @@ reformat_icd10_phecode_map_1_2 <- function(icd10_phecode,
   # message listing ICD10 codes with modifiers that will map to >1 ICD10 code in
   # ALT_CODE format. Also raises warning if any unrecognised ICD10 codes are
   # present.
-  icd10_codes_in_icd10_phecode <- codemapper::reformat_icd10_codes(
+  icd10_codes_in_icd10_phecode <- reformat_icd10_codes(
     icd10_codes = icd10_phecode$ICD10,
     all_lkps_maps = all_lkps_maps,
     input_icd10_format = "ICD10_CODE",
@@ -783,7 +783,8 @@ reformat_icd10_phecode_map_1_2 <- function(icd10_phecode,
     dplyr::filter(.data[["ALT_CODE"]] %in% !!icd10_codes_in_icd10_phecode) %>%
     dplyr::collect() %>%
     dplyr::right_join(icd10_phecode,
-      by = c("ICD10_CODE" = "ICD10")
+      by = c("ICD10_CODE" = "ICD10"),
+      relationship = "many-to-many"
     )
 
   # remove empty PHECODE rows
@@ -840,15 +841,15 @@ extend_bnf_lkp <- function(all_lkps_maps) {
         end = 13
       )
     ) %>%
-    dplyr::rename("code_full" = .data[["BNF_Presentation_Code"]]) %>%
+    dplyr::rename("code_full" = tidyselect::all_of("BNF_Presentation_Code")) %>%
     tidyr::pivot_longer(
       cols = tidyselect::starts_with("code"),
       names_to = "BNF_Code_Level",
       values_to = "BNF_Code"
     ) %>%
     dplyr::select(
-      .data[["BNF_Code_Level"]],
-      .data[["BNF_Code"]],
+      tidyselect::all_of("BNF_Code_Level"),
+      tidyselect::all_of("BNF_Code"),
       tidyselect::everything()
     ) %>%
     dplyr::mutate("BNF_Code_Level" = stringr::str_remove(

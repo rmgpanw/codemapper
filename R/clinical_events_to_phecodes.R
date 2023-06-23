@@ -68,19 +68,19 @@ map_clinical_events_to_phecodes <- function(clinical_events,
   if (is.character(all_lkps_maps)) {
     con <- check_all_lkps_maps_path(all_lkps_maps)
     all_lkps_maps <- ukbwranglr::db_tables_to_list(con)
-    on.exit(DBI::dbDisconnect(con))
+    on.exit(DBI::dbDisconnect(con, shutdown = TRUE))
   } else if (is.null(all_lkps_maps)) {
     if (Sys.getenv("ALL_LKPS_MAPS_DB") != "") {
       message(paste0("Attempting to connect to ", Sys.getenv("ALL_LKPS_MAPS_DB")))
       con <-
         check_all_lkps_maps_path(Sys.getenv("ALL_LKPS_MAPS_DB"))
       all_lkps_maps <- ukbwranglr::db_tables_to_list(con)
-      on.exit(DBI::dbDisconnect(con))
+      on.exit(DBI::dbDisconnect(con, shutdown = TRUE))
     } else if (file.exists("all_lkps_maps.db")) {
       message("Attempting to connect to all_lkps_maps.db in current working directory")
       con <- check_all_lkps_maps_path("all_lkps_maps.db")
       all_lkps_maps <- ukbwranglr::db_tables_to_list(con)
-      on.exit(DBI::dbDisconnect(con))
+      on.exit(DBI::dbDisconnect(con, shutdown = TRUE))
     } else {
       stop(
         "No/invalid path supplied to `all_lkps_maps` and no file called 'all_lkps_maps.db' found in current working directory. See `?all_lkps_maps_to_db()`"
@@ -90,7 +90,7 @@ map_clinical_events_to_phecodes <- function(clinical_events,
 
   # ascertain available code types in `clinical_events`
   available_clinical_events_sources <- clinical_events %>%
-    dplyr::select(.data[["source"]]) %>%
+    dplyr::select(tidyselect::all_of("source")) %>%
     dplyr::distinct() %>%
     dplyr::collect()
 
@@ -101,7 +101,7 @@ map_clinical_events_to_phecodes <- function(clinical_events,
     dplyr::filter(
       .data[["source"]] %in% !!CLINICAL_EVENTS_SOURCES_MAPPED_TO_PHECODES
     ) %>%
-    dplyr::arrange(.data[["category"]])
+    dplyr::arrange(dplyr::across(tidyselect::all_of("category")))
 
   # list of clinical events sources to actually be mapped (intersect of above)
   clinical_events_sources_to_map <- clinical_events_sources_to_map %>%
@@ -163,7 +163,7 @@ map_clinical_events_to_phecodes <- function(clinical_events,
         .data[["eid"]],
         .data[["phecode"]]
       ) %>%
-      dplyr::arrange(.data[["date"]]) %>%
+      dplyr::arrange(dplyr::across(tidyselect::all_of("date"))) %>%
       dplyr::slice_head(n = 1) %>%
       dplyr::ungroup()
   }
@@ -216,19 +216,19 @@ make_phecode_reverse_map <- function(clinical_events_phecodes,
   if (is.character(all_lkps_maps)) {
     con <- check_all_lkps_maps_path(all_lkps_maps)
     all_lkps_maps <- ukbwranglr::db_tables_to_list(con)
-    on.exit(DBI::dbDisconnect(con))
+    on.exit(DBI::dbDisconnect(con, shutdown = TRUE))
   } else if (is.null(all_lkps_maps)) {
     if (Sys.getenv("ALL_LKPS_MAPS_DB") != "") {
       message(paste0("Attempting to connect to ", Sys.getenv("ALL_LKPS_MAPS_DB")))
       con <-
         check_all_lkps_maps_path(Sys.getenv("ALL_LKPS_MAPS_DB"))
       all_lkps_maps <- ukbwranglr::db_tables_to_list(con)
-      on.exit(DBI::dbDisconnect(con))
+      on.exit(DBI::dbDisconnect(con, shutdown = TRUE))
     } else if (file.exists("all_lkps_maps.db")) {
       message("Attempting to connect to all_lkps_maps.db in current working directory")
       con <- check_all_lkps_maps_path("all_lkps_maps.db")
       all_lkps_maps <- ukbwranglr::db_tables_to_list(con)
-      on.exit(DBI::dbDisconnect(con))
+      on.exit(DBI::dbDisconnect(con, shutdown = TRUE))
     } else {
       stop(
         "No/invalid path supplied to `all_lkps_maps` and no file called 'all_lkps_maps.db' found in current working directory. See `?all_lkps_maps_to_db()`"
@@ -360,8 +360,8 @@ make_phecode_reverse_map <- function(clinical_events_phecodes,
     col_filters = default_col_filters()
   ) %>%
     dplyr::select(
-      "phecode" = .data[["code"]],
-      "phecode_description" = .data[["description"]]
+      "phecode" = tidyselect::all_of("code"),
+      "phecode_description" = tidyselect::all_of("description")
     )
 
   clinical_events_phecodes <- clinical_events_phecodes %>%
@@ -380,8 +380,8 @@ make_phecode_reverse_map <- function(clinical_events_phecodes,
     col_filters = default_col_filters()
   ) %>%
     dplyr::select(
-      "icd10" = .data[["code"]],
-      "icd10_description" = .data[["description"]]
+      "icd10" = tidyselect::all_of("code"),
+      "icd10_description" = tidyselect::all_of("description")
     )
 
   clinical_events_phecodes <- clinical_events_phecodes %>%
@@ -398,17 +398,18 @@ make_phecode_reverse_map <- function(clinical_events_phecodes,
 
   # reorder cols
   clinical_events_phecodes <- clinical_events_phecodes %>%
-    dplyr::select(tidyselect::all_of(
-      c(
-        "phecode",
-        "phecode_description",
-        "data_coding",
-        "code",
-        "description"
-      )
-    ),
-    "icd10_equivalent" = .data[["icd10"]],
-    .data[["icd10_description"]]
+    dplyr::select(
+      tidyselect::all_of(
+        c(
+          "phecode",
+          "phecode_description",
+          "data_coding",
+          "code",
+          "description"
+        )
+      ),
+      "icd10_equivalent" = tidyselect::all_of("icd10"),
+      tidyselect::all_of("icd10_description")
     )
 
   # TODO - codes_like() function, use this to make get_undivided_3char_icd10()
@@ -456,7 +457,7 @@ map_clinical_events_source_to_phecode <- function(source,
       )
 
     clinical_events_source <- clinical_events_source %>%
-      dplyr::rename("icd10" = .data[["code"]])
+      dplyr::rename("icd10" = tidyselect::all_of("code"))
 
     # need to re-append 'X' to undivided 3 character ICD10 codes (e.g. 'I10X'
     # hypertension)
@@ -585,7 +586,7 @@ map_codes_ukb_clinical_events <- function(clinical_events,
   if (is.character(all_lkps_maps)) {
     con <- check_all_lkps_maps_path(all_lkps_maps)
     all_lkps_maps <- ukbwranglr::db_tables_to_list(con)
-    on.exit(DBI::dbDisconnect(con))
+    on.exit(DBI::dbDisconnect(con, shutdown = TRUE))
   }
 
   # create mapping df
@@ -649,7 +650,7 @@ get_clinical_events_source <- function(clinical_events,
   # check selected sources are present
   check_sources <- clinical_events %>%
     dplyr::filter(.data[["source"]] %in% !!sources) %>%
-    dplyr::distinct(.data[["source"]],
+    dplyr::distinct(dplyr::across(tidyselect::all_of("source")),
       .keep_all = FALSE
     ) %>%
     dplyr::collect()

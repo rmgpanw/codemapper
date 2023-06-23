@@ -88,11 +88,11 @@ rm_footer_rows_all_lkps_maps_df <- function(df,
       yes = .data[["rowid"]],
       no = NA_character_
     )) %>%
-    tidyr::fill(.data[["rowid"]],
+    tidyr::fill(tidyselect::all_of("rowid"),
       .direction = "down"
     ) %>%
     dplyr::filter(is.na(.data[["rowid"]])) %>%
-    dplyr::select(-.data[["rowid"]])
+    dplyr::select(-tidyselect::all_of("rowid"))
 }
 
 make_lkp_from_ukb_codings <- function(ukb_codings,

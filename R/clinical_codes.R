@@ -74,19 +74,19 @@ codes_starting_with <- function(codes,
   if (is.character(all_lkps_maps)) {
     con <- check_all_lkps_maps_path(all_lkps_maps)
     all_lkps_maps <- ukbwranglr::db_tables_to_list(con)
-    on.exit(DBI::dbDisconnect(con))
+    on.exit(DBI::dbDisconnect(con, shutdown = TRUE))
   } else if (is.null(all_lkps_maps)) {
     if (Sys.getenv("ALL_LKPS_MAPS_DB") != "") {
       message(paste0("Attempting to connect to ", Sys.getenv("ALL_LKPS_MAPS_DB")))
       con <-
         check_all_lkps_maps_path(Sys.getenv("ALL_LKPS_MAPS_DB"))
       all_lkps_maps <- ukbwranglr::db_tables_to_list(con)
-      on.exit(DBI::dbDisconnect(con))
+      on.exit(DBI::dbDisconnect(con, shutdown = TRUE))
     } else if (file.exists("all_lkps_maps.db")) {
       message("Attempting to connect to all_lkps_maps.db in current working directory")
       con <- check_all_lkps_maps_path("all_lkps_maps.db")
       all_lkps_maps <- ukbwranglr::db_tables_to_list(con)
-      on.exit(DBI::dbDisconnect(con))
+      on.exit(DBI::dbDisconnect(con, shutdown = TRUE))
     } else {
       stop(
         "No/invalid path supplied to `all_lkps_maps` and no file called 'all_lkps_maps.db' found in current working directory. See `?all_lkps_maps_to_db()`"
@@ -1101,19 +1101,19 @@ reformat_icd10_codes <- function(icd10_codes,
   if (is.character(all_lkps_maps)) {
     con <- check_all_lkps_maps_path(all_lkps_maps)
     all_lkps_maps <- ukbwranglr::db_tables_to_list(con)
-    on.exit(DBI::dbDisconnect(con))
+    on.exit(DBI::dbDisconnect(con, shutdown = TRUE))
   } else if (is.null(all_lkps_maps)) {
     if (Sys.getenv("ALL_LKPS_MAPS_DB") != "") {
       message(paste0("Attempting to connect to ", Sys.getenv("ALL_LKPS_MAPS_DB")))
       con <-
         check_all_lkps_maps_path(Sys.getenv("ALL_LKPS_MAPS_DB"))
       all_lkps_maps <- ukbwranglr::db_tables_to_list(con)
-      on.exit(DBI::dbDisconnect(con))
+      on.exit(DBI::dbDisconnect(con, shutdown = TRUE))
     } else if (file.exists("all_lkps_maps.db")) {
       message("Attempting to connect to all_lkps_maps.db in current working directory")
       con <- check_all_lkps_maps_path("all_lkps_maps.db")
       all_lkps_maps <- ukbwranglr::db_tables_to_list(con)
-      on.exit(DBI::dbDisconnect(con))
+      on.exit(DBI::dbDisconnect(con, shutdown = TRUE))
     } else {
       stop(
         "No/invalid path supplied to `all_lkps_maps` and no file called 'all_lkps_maps.db' found in current working directory. See `?all_lkps_maps_to_db()`"
@@ -1423,14 +1423,16 @@ reformat_standardised_codelist <- function(standardised_codelist,
       "category" = disease_category,
       "author" = author,
     ) %>%
-    dplyr::select(
-      .data[["disease"]],
-      .data[["description"]],
-      .data[["category"]],
-      .data[["code_type"]],
-      .data[["code"]],
-      .data[["author"]]
-    )
+    dplyr::select(tidyselect::all_of(
+      c(
+        "disease",
+        "description",
+        "category",
+        "code_type",
+        "code",
+        "author"
+      )
+    ))
 
   return(standardised_codelist)
 }
@@ -1642,7 +1644,7 @@ get_icd10_code_alt_code_x_map <- function(icd10_lkp,
 
   # make mapping df
   icd10_lkp_alt_x_map <- icd10_lkp %>%
-    dplyr::select(.data[["ALT_CODE"]]) %>%
+    dplyr::select(tidyselect::all_of("ALT_CODE")) %>%
     dplyr::filter(!is.na(.data[["ALT_CODE"]])) %>%
     dplyr::collect() %>%
     dplyr::mutate("ALT_CODE_minus_x" = stringr::str_remove(.data[["ALT_CODE"]],
