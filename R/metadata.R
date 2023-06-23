@@ -69,7 +69,7 @@ CODE_TYPE_TO_LKP_TABLE_MAP <- tibble::tribble(
   "data_coding_4", "Self-reported medications (dc-4)", "self_report_medication", "data_coding_4", "description", NA, NA, "category",
   "data_coding_5", "Self-reported operations (dc-5)", "self_report_operation", "data_coding_5", "description", NA, NA, "category",
   "data_coding_6", "Self-reported non-cancer (dc-6)", "self_report_non_cancer", "data_coding_6", "description", NA, NA, "category",
-  "sct", "SNOMED CT", "read_ctv3_sct", "SCT_CONCEPTID", "CTV3_CONCEPTID", NA, NA, NA,
+  "sct", "SNOMED CT", "sct_description", "conceptId", "term", "typeId", "900000000000003001", NA,
   "phecode", "Phecode", "phecode_lkp", "phecode", "phenotype", NA, NA, "category"
 )
 
@@ -95,7 +95,9 @@ CLINICAL_CODE_MAPPINGS_MAP <- tibble::tribble(
   "bnf", "dmd", "bnf_dmd", "bnf_code", "snomed_code", NA, NA,
   "read3", "sct", "read_ctv3_sct", "CTV3_CONCEPTID", "SCT_CONCEPTID", NA, NA,
   "icd10", "phecode", "icd10_phecode", "ALT_CODE", "PHECODE", NA, NA,
-  "icd9", "phecode", "icd9_phecode", "icd9", "phecode", NA, NA
+  "icd9", "phecode", "icd9_phecode", "icd9", "phecode", NA, NA,
+  "sct", "icd10", "sct_icd10", "referencedComponentId", "mapTarget", NA, NA,
+  "sct", "opcs4", "sct_opcs4", "referencedComponentId", "mapTarget", NA, NA
 )
 
 # PUBLIC ------------------------------------------------------------------
