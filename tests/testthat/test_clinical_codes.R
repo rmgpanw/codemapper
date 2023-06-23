@@ -10,7 +10,7 @@ all_lkps_maps <-
     ukb_codings = ukb_codings,
     bnf_dmd = NULL,
     self_report_med_to_atc_map = NULL,
-    ctv3sctmap2 = NULL,
+    snomed_ct_uk_monolith = NULL,
     phecode_1_2_lkp = NULL,
     icd10_phecode_1_2 = NULL,
     icd9_phecode_1_2 = NULL

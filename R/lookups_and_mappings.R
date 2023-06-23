@@ -143,10 +143,11 @@ all_lkps_maps_to_db <- function(all_lkps_maps = build_all_lkps_maps(),
 #' @param self_report_med_to_atc_map Optional: path to a UK Biobank
 #'   self-reported medication to ATC map (see
 #'   [get_ukb_self_report_med_to_atc_map()]).
-#' @param ctv3sctmap2 Optional: path to the NHS TRUD mapping file for Read 3 to
-#'   SNOMEDCT ("ctv3sctmap2_uk_20200401000001.txt").
-#' @param phecode_1_2_lkp Optional: path to the phecode v1.2 lookup file
-#'   (see [get_phecode_definitions()]).
+#' @param snomed_ct_uk_monolith Optional: path to the unzipped [SNOMED CT UK
+#'   Monolith
+#'   Edition](https://isd.digital.nhs.uk/trud/users/guest/filters/2/categories/26/items/1799/releases).
+#' @param phecode_1_2_lkp Optional: path to the phecode v1.2 lookup file (see
+#'   [get_phecode_definitions()]).
 #' @param icd10_phecode_1_2 Optional: path to the phecode v1.2 to ICD10 mapping
 #'   file (see [get_phecode_icd10_map()]).
 #' @param icd9_phecode_1_2 Optional: path to the phecode v1.2 to ICD10 mapping
@@ -162,7 +163,7 @@ all_lkps_maps_to_db <- function(all_lkps_maps = build_all_lkps_maps(),
 #'   ukb_codings = read_ukb_codings_dummy(),
 #'   bnf_dmd = NULL,
 #'   self_report_med_to_atc_map = NULL,
-#'   ctv3sctmap2 = NULL,
+#'   snomed_ct_uk_monolith = NULL,
 #'   phecode_1_2_lkp = NULL,
 #'   icd10_phecode_1_2 = NULL,
 #'   icd9_phecode_1_2 = NULL
@@ -172,10 +173,10 @@ build_all_lkps_maps <-
            ukb_codings = ukbwranglr::get_ukb_codings(),
            bnf_dmd = get_nhsbsa_snomed_bnf(),
            self_report_med_to_atc_map = get_ukb_self_report_med_to_atc_map(),
-           ctv3sctmap2 = NULL,
            phecode_1_2_lkp = get_phecode_definitions(),
            icd10_phecode_1_2 = get_phecode_icd10_map(),
-           icd9_phecode_1_2 = get_phecode_icd9_map()) {
+           icd9_phecode_1_2 = get_phecode_icd9_map(),
+           snomed_ct_uk_monolith = NULL) {
     # ukb resource 592 ----------------
 
     ## remove metadata footer rows and add row index column -------------------
@@ -307,9 +308,47 @@ build_all_lkps_maps <-
         )
     }
 
-    ## NHS TRUD Read 3 to SNOMEDCT mapping table ---------
-    if (!is.null(ctv3sctmap2)) {
-      read_ctv3_sct <- readr::read_tsv(ctv3sctmap2)
+    ## SNOMED CT UK Monolith Edition ---------
+    if (!is.null(snomed_ct_uk_monolith)) {
+
+      # terminology and refset tables
+      snomed_monolith_terminology <- file.path(snomed_ct_uk_monolith,
+                                               "Snapshot",
+                                               "Terminology") %>%
+        list.files(full.names = TRUE) %>%
+        purrr::set_names(nm = fs::path_file) %>%
+        purrr::map(~ data.table::fread(.x,
+                                       sep = "\t",
+                                       colClasses = "character"))
+
+      snomed_monolith_refset <- file.path(snomed_ct_uk_monolith,
+                                          "Snapshot",
+                                          "Refset") %>%
+        list.files(full.names = TRUE) %>%
+        purrr::set_names(nm = fs::path_file) %>%
+        purrr::map(
+          ~ .x %>%
+            list.files(full.names = TRUE) %>%
+            purrr::set_names(nm = fs::path_file) %>%
+            purrr::map( ~ data.table::fread(
+              .x,
+              sep = "\t",
+              colClasses = "character"
+            ))
+        )
+
+      snomed_monolith_refset_Map <- snomed_monolith_refset$Map
+
+      # rename - remove edition date from filenames
+      names(snomed_monolith_terminology) <-
+        stringr::str_replace(string = names(snomed_monolith_terminology),
+                             pattern = "_GB_[0-9]+\\.txt",
+                             ".txt")
+
+      names(snomed_monolith_refset_Map) <-
+        stringr::str_replace(string = names(snomed_monolith_refset_Map),
+                             pattern = "_GB_[0-9]+\\.txt",
+                             ".txt")
     }
 
     ## Phecode lookup ----------------
@@ -369,10 +408,37 @@ build_all_lkps_maps <-
       )
     }
 
-    if (!is.null(ctv3sctmap2)) {
+    if (!is.null(snomed_ct_uk_monolith)) {
       all_lkps_maps <- c(
         all_lkps_maps,
-        list(read_ctv3_sct = read_ctv3_sct)
+        list(
+          sct_description = snomed_monolith_terminology$`sct2_Description_MONOSnapshot-en.txt`,
+          sct_relationship = snomed_monolith_terminology$sct2_Relationship_MONOSnapshot.txt,
+          sct_icd10 = snomed_monolith_refset_Map$der2_iisssciRefset_ExtendedMapMONOSnapshot.txt %>%
+            dplyr::filter(.data[["refsetId"]] == "999002271000000101") %>%
+            dplyr::filter(stringr::str_detect(.data[["mapTarget"]],
+                                              "#",
+                                              negate = TRUE)) %>%
+
+            # separate asterisk/dagger flag from ICD-10 codes
+            dplyr::mutate(
+              "asterisk_dagger" = dplyr::case_when(
+                stringr::str_detect(.data[["mapTarget"]],
+                                    stringr::regex("A$")) ~ "A",
+                stringr::str_detect(.data[["mapTarget"]],
+                                    stringr::regex("D$")) ~ "D",
+                TRUE ~ NA_character_
+              )
+            ) %>%
+            dplyr::mutate("mapTarget" = stringr::str_trim(
+              stringr::str_remove(.data[["mapTarget"]], stringr::regex("[A|D]$"))
+            )) ,
+          sct_opcs4 = snomed_monolith_refset_Map$der2_iisssciRefset_ExtendedMapMONOSnapshot.txt %>%
+            dplyr::filter(.data[["refsetId"]] == "1126441000000105") %>%
+            dplyr::filter(stringr::str_detect(.data[["mapTarget"]],
+                                              "#",
+                                              negate = TRUE))
+        )
       )
     }
 

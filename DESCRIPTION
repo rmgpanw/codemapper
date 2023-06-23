@@ -26,9 +26,11 @@ Suggests:
 Config/testthat/edition: 3
 Imports: 
     assertthat,
+    data.table,
     DBI,
     dplyr,
     duckdb,
+    fs,
     magrittr,
     purrr,
     reactable,

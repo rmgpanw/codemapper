@@ -84,7 +84,7 @@ build_all_lkps_maps_dummy <- function() {
     ukb_codings = read_ukb_codings_dummy(),
     bnf_dmd = NULL,
     self_report_med_to_atc_map = NULL,
-    ctv3sctmap2 = NULL,
+    snomed_ct_uk_monolith = NULL,
     phecode_1_2_lkp = dummy_phecode_lkp_path(),
     icd10_phecode_1_2 = dummy_icd10_phecode_map_path(),
     icd9_phecode_1_2 = NULL
