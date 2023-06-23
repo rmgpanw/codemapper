@@ -206,9 +206,6 @@ codes_starting_with <- function(codes,
 #'   codes only.
 #' @param preferred_description_only bool. Return only preferred descriptions
 #'   for clinical codes with synonyms. Default value is \code{TRUE}.
-#' @param codes_only bool. If \code{TRUE}, return a character vector of
-#'   \emph{unique} codes. If \code{FALSE} (default), return a data frame of all
-#'   results including code descriptions (useful for manual validation).
 #' @param all_lkps_maps Either a named list of lookup and mapping tables
 #'   (either data frames or `tbl_dbi` objects), or the path to a Duckdb database
 #'   containing these tables. If `NULL`, will attempt to connect to a Duckdb
@@ -218,6 +215,7 @@ codes_starting_with <- function(codes,
 #'   [here](https://resources.numbat.space/using-rprofile-and-renviron.html#renviron)
 #'   for how to set environment variables using a `.Renviron` file). The latter
 #'   method will be used in preference.
+#' @inheritParams codes_starting_with
 #'
 #' @return data frame
 #' @export
@@ -513,6 +511,7 @@ code_descriptions_like <- function(reg_expr,
 #' @param include_self If `TRUE` (default) include input codes in the result.
 #' @param include_descendants If `TRUE` (default) return all descendant codes,
 #'   as well as immediate children.
+#' @inheritParams lookup_codes
 #'
 #' @return A dataframe
 #' @export
@@ -575,7 +574,7 @@ get_children_sct <- function(codes = "269823000",
     if (!rlang::is_empty(inactive_codes)) {
       warning(paste0(length(inactive_codes),
                      " inactive codes returned from `sct_description` table, despite being marked as active in `sct_relationship` table, including: ",
-                     paste(head(inactive_codes),
+                     paste(utils::head(inactive_codes),
                            sep = "",
                            collapse = ", ")))
     }
@@ -614,6 +613,7 @@ get_children_sct <- function(codes = "269823000",
 #'   codes.
 #' @param active_only If `FALSE` (default), return all relationships, even if
 #'   currently inactive.
+#' @inheritParams lookup_codes
 #'
 #' @return A data frame
 get_relatives_sct <- function(codes = "269823000",
