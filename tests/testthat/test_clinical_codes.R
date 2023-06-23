@@ -170,9 +170,66 @@ test_that("`code_descriptions_like()` returns expected results", {
       code_type = "icd10",
       all_lkps_maps = all_lkps_maps,
       ignore_case = TRUE,
-      codes_only = TRUE
+      codes_only = TRUE,
+      standardise_output = FALSE
     ),
     "H360"
+  )
+
+  expect_equal(
+    code_descriptions_like(
+      reg_expr = "diabetic retinopathy",
+      code_type = "icd10",
+      all_lkps_maps = all_lkps_maps,
+      ignore_case = TRUE,
+      codes_only = FALSE,
+      standardise_output = TRUE
+    ),
+    tibble::tibble(
+      code = "H360",
+      description = "Diabetic retinopathy",
+      code_type = "icd10"
+    )
+  )
+})
+
+test_that("`codes_descriptions_like()` returns primary descriptions for codes with a secondary description that matches the search string", {
+  # Returns 'Type I diabetes mellitus' when searching for 'IDDM'
+  expect_equal(
+    code_descriptions_like(
+      reg_expr = "IDDM",
+      code_type = "read3",
+      all_lkps_maps = all_lkps_maps,
+      ignore_case = TRUE,
+      codes_only = FALSE,
+      standardise_output = TRUE,
+      preferred_description_only = TRUE
+    ),
+    tibble::tibble(
+      code = "X40J4",
+      description = "Type I diabetes mellitus",
+      code_type = "read3"
+    )
+  )
+
+  expect_equal(
+    code_descriptions_like(
+      reg_expr = "IDDM",
+      code_type = "read3",
+      all_lkps_maps = all_lkps_maps,
+      ignore_case = TRUE,
+      codes_only = FALSE,
+      standardise_output = TRUE,
+      preferred_description_only = FALSE
+    ),
+    tibble::tribble(
+      ~code,                                 ~description, ~code_type,
+      "X40J4",                   "Type I diabetes mellitus",    "read3",
+      "X40J4",                   "Type 1 diabetes mellitus",    "read3",
+      "X40J4", "IDDM - Insulin-dependent diabetes mellitus",    "read3",
+      "X40J4",           "Juvenile onset diabetes mellitus",    "read3",
+      "X40J4",        "Insulin-dependent diabetes mellitus",    "read3"
+    )
   )
 })
 
