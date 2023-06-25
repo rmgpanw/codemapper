@@ -348,6 +348,19 @@ lookup_codes <- function(codes,
   }
 }
 
+#' Get descendents for a code
+#'
+#' Calls either [codes_starting_with()] or [get_children_sct()] for SNOMED
+#' codes. Note that currently it is not possible to retrieve children codes for
+#' Read 3.
+#'
+#' @inheritParams codes_starting_with
+#'
+#' @return A data frame
+#' @export
+#'
+#' @examples
+#' # TODO
 get_child_codes <- function(codes,
                             code_type,
                             all_lkps_maps = NULL,
@@ -361,17 +374,17 @@ get_child_codes <- function(codes,
   if (code_type == "sct") {
     get_children_sct(
       codes = codes,
-      standarise_output = standardise_output,
+      standardise_output = standardise_output,
       active_only = FALSE,
       include_self = TRUE,
       include_descendants = TRUE,
       all_lkps_maps = all_lkps_maps,
-
-      # TODO
-      codes_only,
-      preferred_description_only,
-      col_filters
+      codes_only = codes_only,
+      preferred_description_only = preferred_description_only,
+      col_filters = col_filters
     )
+  } else if (code_type == "read3") {
+    stop("Currently codemapper is unable to retrieve children codes for Read 3")
   } else {
     codes_starting_with(codes = codes,
                         code_type = code_type,
@@ -563,7 +576,7 @@ codes_starting_with <- function(codes,
 #' Get children for SNOMED codes
 #'
 #' @param codes Character vector of SNOMED codes.
-#' @param standarise_output If `TRUE` (default) return a data frame with columns
+#' @param standardise_output If `TRUE` (default) return a data frame with columns
 #'   'code', 'description' and 'code_type'.
 #' @param active_only If `FALSE` (default) return all codes including those
 #'   which are currently inactive.
@@ -571,15 +584,19 @@ codes_starting_with <- function(codes,
 #' @param include_descendants If `TRUE` (default) return all descendant codes,
 #'   as well as immediate children.
 #' @inheritParams lookup_codes
+#' @inheritParams codes_starting_with
 #'
 #' @return A dataframe
 #' @export
 get_children_sct <- function(codes = "269823000",
-                             standarise_output = TRUE,
+                             standardise_output = TRUE,
                              active_only = FALSE,
                              include_self = TRUE,
                              include_descendants = TRUE,
-                             all_lkps_maps = NULL) {
+                             all_lkps_maps = NULL,
+                             codes_only = FALSE,
+                             preferred_description_only = TRUE,
+                             col_filters = default_col_filters()) {
 
   # get child codes
   out_codes <- get_relatives_sct(
@@ -620,15 +637,31 @@ get_children_sct <- function(codes = "269823000",
                         !out_codes %in% codes)
   }
 
+  # determine relevant lookup sheet
+  lkp_table <- get_lookup_sheet(code_type = "sct")
+
+  # determine code column for lookup sheet
+  code_col <- get_col_for_lookup_sheet(
+    lookup_sheet = lkp_table,
+    column = "code_col"
+  )
+
+  # determine description column for lookup sheet
+  description_col <-
+    get_col_for_lookup_sheet(
+      lookup_sheet = lkp_table,
+      column = "description_col"
+    )
+
   # get descriptions
-  result <- all_lkps_maps$sct_description %>%
-    dplyr::filter(.data[["conceptId"]] %in% !!out_codes)
+  result <- all_lkps_maps[[lkp_table]] %>%
+    dplyr::filter(.data[[code_col]] %in% !!out_codes)
 
   # adapt output according to user input
   if (active_only) {
     inactive_codes <- result %>%
       dplyr::filter(.data[["active"]] == "0") %>%
-      dplyr::pull(.data[["conceptId"]])
+      dplyr::pull(.data[[code_col]])
 
     if (!rlang::is_empty(inactive_codes)) {
       warning(paste0(length(inactive_codes),
@@ -639,11 +672,11 @@ get_children_sct <- function(codes = "269823000",
     }
   }
 
-  if (standarise_output) {
+  if (standardise_output) {
     result <- result %>%
       dplyr::select(
-        "code" = tidyselect::all_of("conceptId"),
-        "description" = tidyselect::all_of("term")
+        "code" = tidyselect::all_of(code_col),
+        "description" = tidyselect::all_of(description_col)
       ) %>%
       dplyr::mutate("code_type" = "sct")
   }
@@ -651,12 +684,27 @@ get_children_sct <- function(codes = "269823000",
   # collect and return result
   result <- dplyr::collect(result)
 
-  if (nrow(result) == 0) {
-    warning("No codes identified, returning `NULL`")
-    result <- NULL
-  }
+  ## then expand to include both primary and secondary descriptions
+  result <- lookup_codes(
+    codes = unique(result[[code_col]]),
+    code_type = "sct",
+    all_lkps_maps = all_lkps_maps,
+    preferred_description_only = preferred_description_only,
+    standardise_output = standardise_output,
+    col_filters = col_filters,
+    unrecognised_codes = "error",
+    .return_unrecognised_codes = FALSE
+  )
 
-  return(result)
+  if (codes_only) {
+    if (standardise_output) {
+      return(result$code)
+    } else {
+      return(result[[code_col]])
+    }
+  } else {
+    return(result)
+  }
 }
 
 #' Get related SNOMED codes
@@ -673,6 +721,7 @@ get_children_sct <- function(codes = "269823000",
 #' @param active_only If `FALSE` (default), return all relationships, even if
 #'   currently inactive.
 #' @inheritParams lookup_codes
+#' @export
 #'
 #' @return A data frame
 get_relatives_sct <- function(codes = "269823000",

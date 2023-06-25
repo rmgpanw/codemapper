@@ -6,17 +6,20 @@
 \usage{
 get_children_sct(
   codes = "269823000",
-  standarise_output = TRUE,
+  standardise_output = TRUE,
   active_only = FALSE,
   include_self = TRUE,
   include_descendants = TRUE,
-  all_lkps_maps = NULL
+  all_lkps_maps = NULL,
+  codes_only = FALSE,
+  preferred_description_only = TRUE,
+  col_filters = default_col_filters()
 )
 }
 \arguments{
 \item{codes}{Character vector of SNOMED codes.}
 
-\item{standarise_output}{If \code{TRUE} (default) return a data frame with columns
+\item{standardise_output}{If \code{TRUE} (default) return a data frame with columns
 'code', 'description' and 'code_type'.}
 
 \item{active_only}{If \code{FALSE} (default) return all codes including those
@@ -36,6 +39,20 @@ a a Duckdb database specified by an environmental variable named
 \href{https://resources.numbat.space/using-rprofile-and-renviron.html#renviron}{here}
 for how to set environment variables using a \code{.Renviron} file). The latter
 method will be used in preference.}
+
+\item{codes_only}{bool. If \code{TRUE}, return a character vector of
+\emph{unique} codes. If \code{FALSE} (default), return a data frame of all
+results including code descriptions (useful for manual validation).}
+
+\item{preferred_description_only}{bool. Return only preferred descriptions
+for clinical codes with synonyms. Default value is \code{TRUE}.}
+
+\item{col_filters}{A named list where each name in the list refers to the
+name of a lookup or mapping table. Each item is also a named list, where
+the names refer to column names in the corresponding table, and the items
+are vectors of values to filter for. For example, \verb{list(my_lookup_table = list(colA = c("A", "B"))} will result in \code{my_lookup_table} being filtered
+for rows where \code{colA} is either 'A' or 'B'. Uses \code{default_col_filters()} by
+default. Set to \code{NULL} to remove all filters.}
 }
 \value{
 A dataframe
