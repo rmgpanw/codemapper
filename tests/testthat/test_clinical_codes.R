@@ -233,6 +233,60 @@ test_that("`codes_descriptions_like()` returns primary descriptions for codes wi
   )
 })
 
+test_that("`codes_descriptions_like` returns same result for all_lkps_maps_db and all_lkps_maps", {
+
+  # expect no result with `ignore_case = FALSE`
+  expect_null(
+    code_descriptions_like(
+      reg_expr = "diabetic retinopathy",
+      code_type = "icd10",
+      all_lkps_maps = all_lkps_maps,
+      ignore_case = FALSE,
+      codes_only = TRUE,
+      standardise_output = FALSE
+    )
+  )
+
+  expect_equal(
+    code_descriptions_like(
+      reg_expr = "diabetic retinopathy",
+      code_type = "icd10",
+      all_lkps_maps = all_lkps_maps,
+      ignore_case = FALSE,
+      codes_only = TRUE,
+      standardise_output = FALSE
+    ),
+    code_descriptions_like(
+      reg_expr = "diabetic retinopathy",
+      code_type = "icd10",
+      all_lkps_maps = all_lkps_maps_db,
+      ignore_case = FALSE,
+      codes_only = TRUE,
+      standardise_output = FALSE
+    )
+  )
+
+  # expect matching code with `ignore_case = TRUE`
+  expect_equal(
+    code_descriptions_like(
+      reg_expr = "diabetic retinopathy",
+      code_type = "icd10",
+      all_lkps_maps = all_lkps_maps,
+      ignore_case = TRUE,
+      codes_only = TRUE,
+      standardise_output = FALSE
+    ),
+    code_descriptions_like(
+      reg_expr = "diabetic retinopathy",
+      code_type = "icd10",
+      all_lkps_maps = all_lkps_maps_db,
+      ignore_case = TRUE,
+      codes_only = TRUE,
+      standardise_output = FALSE
+    )
+  )
+})
+
 # `map_codes()` -----------------------------------------------------------
 
 test_that(

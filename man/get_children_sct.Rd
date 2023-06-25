@@ -19,8 +19,8 @@ get_children_sct(
 \item{standarise_output}{If \code{TRUE} (default) return a data frame with columns
 'code', 'description' and 'code_type'.}
 
-\item{active_only}{If \code{FALSE} (default) return all codes including currently
-those which are currently inactive.}
+\item{active_only}{If \code{FALSE} (default) return all codes including those
+which are currently inactive.}
 
 \item{include_self}{If \code{TRUE} (default) include input codes in the result.}
 

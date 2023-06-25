@@ -31,6 +31,7 @@ Imports:
     dplyr,
     duckdb,
     fs,
+    glue,
     magrittr,
     purrr,
     reactable,

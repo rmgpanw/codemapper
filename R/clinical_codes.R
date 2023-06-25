@@ -116,15 +116,41 @@ code_descriptions_like <- function(reg_expr,
   ## first get all codes matching description. This may not capture the primary
   ## description though e.g. searching for 'QOF' won't capture the primary
   ## description 'Quality and Outcome...'
+
+  # Note - it isn't possible to specify `ignore_case` when using dbplyr
+  if (ignore_case) {
+    if (is.data.frame(all_lkps_maps[[lkp_table]])) {
+      result <- all_lkps_maps[[lkp_table]] %>%
+        dplyr::filter(stringr::str_detect(
+          string = .data[[description_col]],
+          pattern = stringr::regex(
+            pattern = reg_expr,
+            ignore_case = TRUE
+          )
+        ))
+    } else if (dplyr::is.tbl(all_lkps_maps[[lkp_table]])) {
+      # build SQL query
+      sql <- glue::glue_sql(
+        "SELECT *
+        FROM {`lkp_table`}
+        WHERE (REGEXP_MATCHES({`description_col`}, {reg_expr}, 'i'))",
+        .con = con
+      )
+
+      # collect results
+      query <- DBI::dbSendQuery(con, sql)
+      result <- DBI::dbFetch(query, Inf)
+    }
+  } else {
+    # if `ignore_case` is `FALSE`, then same code will work for both data
+    # frame/tbl_dbi object
   result <- all_lkps_maps[[lkp_table]] %>%
-    dplyr::collect() %>%
     dplyr::filter(stringr::str_detect(
       string = .data[[description_col]],
-      pattern = stringr::regex(
-        pattern = reg_expr,
-        ignore_case = ignore_case
-      )
-    ))
+      pattern = reg_expr
+    )) %>%
+    dplyr::collect()
+  }
 
   ## then expand to include both primary and secondary descriptions
   result <- lookup_codes(
@@ -485,12 +511,9 @@ codes_starting_with <- function(codes,
 
   # get children (filter for codes which match ANY of those in `codes` arg)
   result <- all_lkps_maps[[lkp_table]] %>%
-    dplyr::collect() %>%
     dplyr::filter(stringr::str_detect(.data[[code_col]],
-                                      pattern = stringr::regex(codes,
-                                                               ignore_case = FALSE
-                                      )
-    ))
+                                      pattern = codes)) %>%
+    dplyr::collect()
 
   # filter on `col_filters` parameters
   if (!is.null(col_filters)) {
