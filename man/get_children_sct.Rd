@@ -60,3 +60,16 @@ A dataframe
 \description{
 Get children for SNOMED codes
 }
+\seealso{
+\code{\link[=get_child_codes]{get_child_codes()}}, \code{\link[=get_relatives_sct]{get_relatives_sct()}}
+
+Other Clinical code lookups and mappings: 
+\code{\link{default_col_filters}()},
+\code{\link{get_child_codes}()},
+\code{\link{get_mapping_df}()},
+\code{\link{get_relatives_sct}()},
+\code{\link{lookup_codes}()},
+\code{\link{map_codes}()},
+\code{\link{reformat_icd10_codes}()}
+}
+\concept{Clinical code lookups and mappings}

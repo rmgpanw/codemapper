@@ -18,8 +18,8 @@ lookup_codes(
 \arguments{
 \item{codes}{character. Vector of codes to lookup}
 
-\item{code_type}{character. The type of clinical code system to be searched.
-Must be one of bnf, dmd, icd9, icd10, read2, read2_drugs, read3, opcs4, data_coding_3, data_coding_4, data_coding_5, data_coding_6, sct, or phecode.}
+\item{code_type}{character. Type of clinical code system to be searched. One
+of bnf, dmd, icd9, icd10, read2, read2_drugs, read3, opcs4, data_coding_3, data_coding_4, data_coding_5, data_coding_6, sct, or phecode.}
 
 \item{all_lkps_maps}{Either a named list of lookup and mapping tables
 (either data frames or \code{tbl_dbi} objects), or the path to a Duckdb database
@@ -70,9 +70,11 @@ lookup_codes(
 }
 \seealso{
 Other Clinical code lookups and mappings: 
-\code{\link{codes_starting_with}()},
 \code{\link{default_col_filters}()},
+\code{\link{get_child_codes}()},
+\code{\link{get_children_sct}()},
 \code{\link{get_mapping_df}()},
+\code{\link{get_relatives_sct}()},
 \code{\link{map_codes}()},
 \code{\link{reformat_icd10_codes}()}
 }

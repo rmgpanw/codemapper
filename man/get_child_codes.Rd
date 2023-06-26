@@ -15,18 +15,16 @@ get_child_codes(
 )
 }
 \arguments{
-\item{codes}{character. A vector of code strings to search for matching
-codes.}
+\item{codes}{character. A vector of code strings to retrieve child codes for.}
 
-\item{code_type}{character. The type of clinical code system to be searched.
-Must be one of bnf, dmd, icd9, icd10, read2, read2_drugs, read3, opcs4, data_coding_3, data_coding_4, data_coding_5, data_coding_6, sct, or phecode.}
+\item{code_type}{character. Type of clinical code system to be searched. One
+of bnf, dmd, icd9, icd10, read2, read2_drugs, read3, opcs4, data_coding_3, data_coding_4, data_coding_5, data_coding_6, sct, or phecode.}
 
-\item{all_lkps_maps}{Either a named list of lookup and mapping tables (either
-data frames or \code{tbl_dbi} objects), or the path to a Duckdb database
-containing these tables (see also \code{\link[=build_all_lkps_maps]{build_all_lkps_maps()}} and
-\code{\link[=all_lkps_maps_to_db]{all_lkps_maps_to_db()}}). If \code{NULL}, will attempt to connect to an Duckdb
-database named 'all_lkps_maps.db' in the current working directory, or to a
-a Duckdb database specified by an environmental variable named
+\item{all_lkps_maps}{Either a named list of lookup and mapping tables
+(either data frames or \code{tbl_dbi} objects), or the path to a Duckdb database
+containing these tables. If \code{NULL}, will attempt to connect to a Duckdb
+database named 'all_lkps_maps.db' in the current working directory, or to
+a a Duckdb database specified by an environmental variable named
 'ALL_LKPS_MAPS_DB' (see
 \href{https://resources.numbat.space/using-rprofile-and-renviron.html#renviron}{here}
 for how to set environment variables using a \code{.Renviron} file). The latter
@@ -54,10 +52,23 @@ default. Set to \code{NULL} to remove all filters.}
 A data frame
 }
 \description{
-Calls either \code{\link[=codes_starting_with]{codes_starting_with()}} or \code{\link[=get_children_sct]{get_children_sct()}} for SNOMED
-codes. Note that currently it is not possible to retrieve children codes for
-Read 3.
+Retrieves children codes for a given set of codes (including the codes
+themselves). Note that currently it is not possible to retrieve children
+codes for certain clinical coding systems, such as Read 3.
 }
 \examples{
 # TODO
 }
+\seealso{
+\code{\link[=get_children_sct]{get_children_sct()}}
+
+Other Clinical code lookups and mappings: 
+\code{\link{default_col_filters}()},
+\code{\link{get_children_sct}()},
+\code{\link{get_mapping_df}()},
+\code{\link{get_relatives_sct}()},
+\code{\link{lookup_codes}()},
+\code{\link{map_codes}()},
+\code{\link{reformat_icd10_codes}()}
+}
+\concept{Clinical code lookups and mappings}

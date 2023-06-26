@@ -311,33 +311,13 @@ build_all_lkps_maps <-
     ## SNOMED CT UK Monolith Edition ---------
     if (!is.null(snomed_ct_uk_monolith)) {
 
-      # terminology and refset tables
-      snomed_monolith_terminology <- file.path(snomed_ct_uk_monolith,
-                                               "Snapshot",
-                                               "Terminology") %>%
-        list.files(full.names = TRUE) %>%
-        purrr::set_names(nm = fs::path_file) %>%
-        purrr::map(~ data.table::fread(.x,
-                                       sep = "\t",
-                                       colClasses = "character"))
+      snomed_ct_uk_monolith_full <-
+        read_snomed_ct_uk_monolith(snomed_ct_uk_monolith_dir = snomed_ct_uk_monolith)
 
-      snomed_monolith_refset <- file.path(snomed_ct_uk_monolith,
-                                          "Snapshot",
-                                          "Refset") %>%
-        list.files(full.names = TRUE) %>%
-        purrr::set_names(nm = fs::path_file) %>%
-        purrr::map(
-          ~ .x %>%
-            list.files(full.names = TRUE) %>%
-            purrr::set_names(nm = fs::path_file) %>%
-            purrr::map( ~ data.table::fread(
-              .x,
-              sep = "\t",
-              colClasses = "character"
-            ))
-        )
 
-      snomed_monolith_refset_Map <- snomed_monolith_refset$Map
+      # TODO - tidy when more familiar with this dataset
+      snomed_monolith_terminology <- snomed_ct_uk_monolith_full$snomed_monolith_terminology
+      snomed_monolith_refset_Map <- snomed_ct_uk_monolith_full$snomed_monolith_refset$Map
 
       # rename - remove edition date from filenames
       names(snomed_monolith_terminology) <-
@@ -1076,4 +1056,48 @@ extend_read_v2_drugs_bnf <- function(all_lkps_maps) {
   )
 
   return(result)
+}
+
+#' Read the SNOMED CT UK Monolith Edition into R
+#'
+#' @param snomed_ct_uk_monolith_dir Optional: path to the unzipped [SNOMED CT UK
+#'   Monolith
+#'   Edition](https://isd.digital.nhs.uk/trud/users/guest/filters/2/categories/26/items/1799/releases).
+#'
+#' @return A list.
+#' @noRd
+read_snomed_ct_uk_monolith <- function(snomed_ct_uk_monolith_dir) {
+  # terminology and refset tables
+  snomed_monolith_terminology <-
+    file.path(snomed_ct_uk_monolith_dir,
+              "Snapshot",
+              "Terminology") %>%
+    list.files(full.names = TRUE) %>%
+    purrr::set_names(nm = fs::path_file) %>%
+    purrr::map( ~ data.table::fread(.x,
+                                    sep = "\t",
+                                    colClasses = "character"))
+
+  snomed_monolith_refset <- file.path(snomed_ct_uk_monolith_dir,
+                                      "Snapshot",
+                                      "Refset") %>%
+    list.files(full.names = TRUE) %>%
+    purrr::set_names(nm = fs::path_file) %>%
+    purrr::map(
+      ~ .x %>%
+        list.files(full.names = TRUE) %>%
+        purrr::set_names(nm = fs::path_file) %>%
+        purrr::map(~ data.table::fread(
+          .x,
+          sep = "\t",
+          colClasses = "character"
+        ))
+    )
+
+  return(
+    list(
+      snomed_monolith_terminology = snomed_monolith_terminology,
+      snomed_monolith_refset = snomed_monolith_refset
+    )
+  )
 }

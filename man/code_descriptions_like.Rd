@@ -18,23 +18,20 @@ code_descriptions_like(
 \arguments{
 \item{reg_expr}{a regular expression to search for}
 
-\item{code_type}{character. The type of clinical code system to be searched.
-Must be one of bnf, dmd, icd9, icd10, read2, read2_drugs, read3, opcs4, data_coding_3, data_coding_4, data_coding_5, data_coding_6, sct, or phecode.}
+\item{code_type}{character. Type of clinical code system to be searched. One
+of bnf, dmd, icd9, icd10, read2, read2_drugs, read3, opcs4, data_coding_3, data_coding_4, data_coding_5, data_coding_6, sct, or phecode.}
 
-\item{all_lkps_maps}{Either a named list of lookup and mapping tables (either
-data frames or \code{tbl_dbi} objects), or the path to a Duckdb database
-containing these tables (see also \code{\link[=build_all_lkps_maps]{build_all_lkps_maps()}} and
-\code{\link[=all_lkps_maps_to_db]{all_lkps_maps_to_db()}}). If \code{NULL}, will attempt to connect to an Duckdb
-database named 'all_lkps_maps.db' in the current working directory, or to a
-a Duckdb database specified by an environmental variable named
+\item{all_lkps_maps}{Either a named list of lookup and mapping tables
+(either data frames or \code{tbl_dbi} objects), or the path to a Duckdb database
+containing these tables. If \code{NULL}, will attempt to connect to a Duckdb
+database named 'all_lkps_maps.db' in the current working directory, or to
+a a Duckdb database specified by an environmental variable named
 'ALL_LKPS_MAPS_DB' (see
 \href{https://resources.numbat.space/using-rprofile-and-renviron.html#renviron}{here}
 for how to set environment variables using a \code{.Renviron} file). The latter
 method will be used in preference.}
 
-\item{ignore_case}{Should case differences be ignored in the match?
-For \code{fixed()}, this uses a simple algorithm which assumes a
-one-to-one mapping between upper and lower case letters.}
+\item{ignore_case}{If \code{TRUE} (default), ignore case in \code{reg_expr}.}
 
 \item{codes_only}{bool. If \code{TRUE}, return a character vector of
 \emph{unique} codes. If \code{FALSE} (default), return a data frame of all

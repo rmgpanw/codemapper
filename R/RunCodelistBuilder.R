@@ -35,7 +35,7 @@
 #'   \strong{CAUTION:} make sure there are no inadvertent white spaces (e.g.
 #'   'search term', not 'search term  ').}
 #'
-#' @inheritParams codes_starting_with
+#' @inheritParams get_child_codes
 #' @param ... Additional args passed on to \code{\link[shiny]{shinyApp}}
 #' @inheritParams shiny::shinyApp
 #'

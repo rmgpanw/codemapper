@@ -50,7 +50,8 @@ test_that("`codes_starting_with()` returns the expected nuber of results, escapi
       code_type = "read2",
       all_lkps_maps = all_lkps_maps,
       codes_only = TRUE,
-      standardise_output = FALSE
+      standardise_output = FALSE,
+      escape_dot = TRUE
     ),
     expected = "C10E."
   )
@@ -62,7 +63,8 @@ test_that("`codes_starting_with()` returns the expected nuber of results, escapi
       code_type = "read2",
       all_lkps_maps = all_lkps_maps,
       codes_only = TRUE,
-      standardise_output = FALSE
+      standardise_output = FALSE,
+      escape_dot = TRUE
     )),
     expected = 3
   )
@@ -74,7 +76,8 @@ test_that("`codes_starting_with()` returns the expected nuber of results, escapi
       code_type = "read2",
       all_lkps_maps = all_lkps_maps,
       codes_only = FALSE,
-      preferred_description_only = FALSE
+      preferred_description_only = FALSE,
+      escape_dot = TRUE
     )
   ),
   expected = 3
@@ -86,10 +89,51 @@ test_that("`codes_starting_with()` returns the expected nuber of results, escapi
       code_type = "read2",
       all_lkps_maps = all_lkps_maps,
       codes_only = FALSE,
-      preferred_description_only = TRUE
+      preferred_description_only = TRUE,
+      escape_dot = TRUE
     )
   ),
   expected = 1
+  )
+})
+
+
+# `get_child_codes()` -----------------------------------------------------
+
+test_that("`get_child_codes()` returns error for unrecognised codes", {
+  expect_error(
+    get_child_codes(
+      codes = c("C10"),
+      code_type = "read2",
+      all_lkps_maps = all_lkps_maps,
+      codes_only = TRUE,
+      standardise_output = FALSE
+    ),
+    regexp = "not found for 'read2' in table 'read_v2_lkp"
+  )
+})
+
+test_that("`get_child_codes()` works as expected for read2", {
+  expect_equal(
+    get_child_codes(
+      codes = c("C10.."),
+      code_type = "read2",
+      all_lkps_maps = all_lkps_maps,
+      codes_only = TRUE,
+      standardise_output = FALSE),
+    c("C10..", "C108.", "C10E.")
+  )
+})
+
+test_that("`get_child_codes()` raises error for unsupported code types e.g. read3", {
+  expect_error(
+    get_child_codes(
+      codes = "C10..",
+      code_type = "read3",
+      all_lkps_maps = all_lkps_maps,
+      codes_only = TRUE,
+      standardise_output = FALSE),
+    "Currently codemapper is unable to retrieve child codes for read3"
   )
 })
 

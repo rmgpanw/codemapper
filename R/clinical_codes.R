@@ -21,7 +21,11 @@
 #'
 #' @param reg_expr a regular expression to search for
 #' @inheritParams stringr::regex
-#' @inheritParams codes_starting_with
+#' @inheritParams lookup_codes
+#' @param ignore_case If `TRUE` (default), ignore case in `reg_expr`.
+#' @param codes_only bool. If \code{TRUE}, return a character vector of
+#'   \emph{unique} codes. If \code{FALSE} (default), return a data frame of all
+#'   results including code descriptions (useful for manual validation).
 #'
 #' @return data frame by default, or a character vector of codes if
 #'   \code{codes_only} is \code{TRUE}.
@@ -180,6 +184,8 @@ code_descriptions_like <- function(reg_expr,
 #' Returns a data frame including descriptions for the codes of interest
 #'
 #' @param codes character. Vector of codes to lookup
+#' @param code_type character. Type of clinical code system to be searched. One
+#'   of `r knitr::combine_words(CODE_TYPE_TO_LKP_TABLE_MAP$code, and = "or ")`.
 #' @param standardise_output bool. If \code{TRUE} (default), outputs a data
 #'   frame with columns named 'code', 'description' and 'code_type'. Otherwise
 #'   returns a data frame with all columns from the relevant look up table.
@@ -187,6 +193,13 @@ code_descriptions_like <- function(reg_expr,
 #'   `codes` are unrecognised, then either an error or warning will be raised.
 #' @param .return_unrecognised_codes If `TRUE`, return a vector of unrecognised
 #'   codes only.
+#' @param col_filters A named list where each name in the list refers to the
+#'   name of a lookup or mapping table. Each item is also a named list, where
+#'   the names refer to column names in the corresponding table, and the items
+#'   are vectors of values to filter for. For example, `list(my_lookup_table =
+#'   list(colA = c("A", "B"))` will result in `my_lookup_table` being filtered
+#'   for rows where `colA` is either 'A' or 'B'. Uses `default_col_filters()` by
+#'   default. Set to `NULL` to remove all filters.
 #' @param preferred_description_only bool. Return only preferred descriptions
 #'   for clinical codes with synonyms. Default value is \code{TRUE}.
 #' @param all_lkps_maps Either a named list of lookup and mapping tables
@@ -198,7 +211,6 @@ code_descriptions_like <- function(reg_expr,
 #'   [here](https://resources.numbat.space/using-rprofile-and-renviron.html#renviron)
 #'   for how to set environment variables using a `.Renviron` file). The latter
 #'   method will be used in preference.
-#' @inheritParams codes_starting_with
 #'
 #' @return data frame
 #' @export
@@ -350,15 +362,21 @@ lookup_codes <- function(codes,
 
 #' Get descendents for a code
 #'
-#' Calls either [codes_starting_with()] or [get_children_sct()] for SNOMED
-#' codes. Note that currently it is not possible to retrieve children codes for
-#' Read 3.
+#' Retrieves children codes for a given set of codes (including the codes
+#' themselves). Note that currently it is not possible to retrieve children
+#' codes for certain clinical coding systems, such as Read 3.
 #'
-#' @inheritParams codes_starting_with
+#' @param codes character. A vector of code strings to retrieve child codes for.
+#' @param codes_only bool. If \code{TRUE}, return a character vector of
+#'   \emph{unique} codes. If \code{FALSE} (default), return a data frame of all
+#'   results including code descriptions (useful for manual validation).
+#' @inheritParams lookup_codes
 #'
 #' @return A data frame
 #' @export
 #'
+#' @seealso [get_children_sct()]
+#' @family Clinical code lookups and mappings
 #' @examples
 #' # TODO
 get_child_codes <- function(codes,
@@ -369,8 +387,20 @@ get_child_codes <- function(codes,
                             standardise_output = TRUE,
                             col_filters = default_col_filters()) {
 
-  assertthat::is.string(code_type)
+  # check codes exist
+  codes <- lookup_codes(
+    codes = codes,
+    code_type = code_type,
+    all_lkps_maps = all_lkps_maps,
+    preferred_description_only = TRUE,
+    standardise_output = TRUE,
+    unrecognised_codes = "error",
+    col_filters = col_filters,
+    .return_unrecognised_codes = FALSE
+  ) %>%
+    dplyr::pull(tidyselect::all_of("code"))
 
+  # get child codes
   if (code_type == "sct") {
     get_children_sct(
       codes = codes,
@@ -383,194 +413,30 @@ get_child_codes <- function(codes,
       preferred_description_only = preferred_description_only,
       col_filters = col_filters
     )
-  } else if (code_type == "read3") {
-    stop("Currently codemapper is unable to retrieve children codes for Read 3")
-  } else {
+  } else if (code_type %in% c(
+    "bnf",
+    "icd9",
+    "icd10",
+    "read2",
+    "read2_drugs",
+    "opcs4",
+    "phecode"
+  )) {
     codes_starting_with(codes = codes,
                         code_type = code_type,
                         all_lkps_maps = all_lkps_maps,
                         codes_only = codes_only,
                         preferred_description_only = preferred_description_only,
                         standardise_output = standardise_output,
-                        col_filters = col_filters)
-  }
-
-}
-
-#' Get codes that start with...
-#'
-#' This is case \emph{sensitive} (important for read codes especially).
-#'
-#' @param codes character. A vector of code strings to search for matching
-#'   codes.
-#' @param code_type character. The type of clinical code system to be searched.
-#'   Must be one of `r knitr::combine_words(CODE_TYPE_TO_LKP_TABLE_MAP$code, and = "or ")`.
-#' @param all_lkps_maps Either a named list of lookup and mapping tables (either
-#'   data frames or `tbl_dbi` objects), or the path to a Duckdb database
-#'   containing these tables (see also [build_all_lkps_maps()] and
-#'   [all_lkps_maps_to_db()]). If `NULL`, will attempt to connect to an Duckdb
-#'   database named 'all_lkps_maps.db' in the current working directory, or to a
-#'   a Duckdb database specified by an environmental variable named
-#'   'ALL_LKPS_MAPS_DB' (see
-#'   [here](https://resources.numbat.space/using-rprofile-and-renviron.html#renviron)
-#'    for how to set environment variables using a `.Renviron` file). The latter
-#'   method will be used in preference.
-#' @param codes_only bool. If \code{TRUE}, return a character vector of
-#'   \emph{unique} codes. If \code{FALSE} (default), return a data frame of all
-#'   results including code descriptions (useful for manual validation).
-#' @param preferred_description_only bool. Return only preferred descriptions
-#'   for clinical codes with synonyms. Default value is \code{TRUE}.
-#' @param col_filters A named list where each name in the list refers to the
-#'   name of a lookup or mapping table. Each item is also a named list, where
-#'   the names refer to column names in the corresponding table, and the items
-#'   are vectors of values to filter for. For example, `list(my_lookup_table =
-#'   list(colA = c("A", "B"))` will result in `my_lookup_table` being filtered
-#'   for rows where `colA` is either 'A' or 'B'. Uses `default_col_filters()` by
-#'   default. Set to `NULL` to remove all filters.
-#'
-#' @inheritParams lookup_codes
-#' @export
-#' @family Clinical code lookups and mappings
-#' @examples
-#' # build dummy all_lkps_maps
-#' all_lkps_maps_dummy <- build_all_lkps_maps_dummy()
-#'
-#' # lookup codes
-#' lookup_codes(
-#'   codes = c("E10", "E11"),
-#'   code_type = "icd10",
-#'   all_lkps_maps = all_lkps_maps_dummy
-#' )
-codes_starting_with <- function(codes,
-                                code_type,
-                                all_lkps_maps = NULL,
-                                codes_only = FALSE,
-                                preferred_description_only = TRUE,
-                                standardise_output = TRUE,
-                                col_filters = default_col_filters()) {
-  # validate args
-  match.arg(
-    arg = code_type,
-    choices = CODE_TYPE_TO_LKP_TABLE_MAP$code
-  )
-
-  # connect to database file path if `all_lkps_maps` is a string, or `NULL`
-  if (is.character(all_lkps_maps)) {
-    con <- check_all_lkps_maps_path(all_lkps_maps)
-    all_lkps_maps <- ukbwranglr::db_tables_to_list(con)
-    on.exit(DBI::dbDisconnect(con, shutdown = TRUE))
-  } else if (is.null(all_lkps_maps)) {
-    if (Sys.getenv("ALL_LKPS_MAPS_DB") != "") {
-      message(paste0("Attempting to connect to ", Sys.getenv("ALL_LKPS_MAPS_DB")))
-      con <-
-        check_all_lkps_maps_path(Sys.getenv("ALL_LKPS_MAPS_DB"))
-      all_lkps_maps <- ukbwranglr::db_tables_to_list(con)
-      on.exit(DBI::dbDisconnect(con, shutdown = TRUE))
-    } else if (file.exists("all_lkps_maps.db")) {
-      message("Attempting to connect to all_lkps_maps.db in current working directory")
-      con <- check_all_lkps_maps_path("all_lkps_maps.db")
-      all_lkps_maps <- ukbwranglr::db_tables_to_list(con)
-      on.exit(DBI::dbDisconnect(con, shutdown = TRUE))
-    } else {
-      stop(
-        "No/invalid path supplied to `all_lkps_maps` and no file called 'all_lkps_maps.db' found in current working directory. See `?all_lkps_maps_to_db()`"
-      )
-    }
-  }
-
-  check_codes(codes)
-
-  assertthat::assert_that(is.logical(codes_only),
-                          msg = "`code_only` must be either 'TRUE' or 'FALSE'"
-  )
-
-  assertthat::assert_that(!(codes_only & standardise_output),
-                          msg = "Error! `codes_only` and `standardise_output` cannot both be `TRUE`"
-  )
-
-  # TODO check all sheets are present
-  validate_all_lkps_maps()
-
-  # determine relevant lookup sheet
-  lkp_table <- get_lookup_sheet(code_type = code_type)
-
-  # determine code column for lookup sheet
-  code_col <- get_col_for_lookup_sheet(
-    lookup_sheet = lkp_table,
-    column = "code_col"
-  )
-
-  # determine relevant column indicating whether code description is preferred
-  # (for code types with synonymous code descriptions like read 2 and read 3)
-  preferred_description_col <-
-    get_col_for_lookup_sheet(
-      lookup_sheet = lkp_table,
-      column = "preferred_synonym_col"
-    )
-
-  # get preferred code, if appropriate
-  if (!is.na(preferred_description_col)) {
-    preferred_description_code <-
-      get_preferred_description_code_for_lookup_sheet(lookup_sheet = lkp_table)
-  }
-
-  # reformat codes - escape '.', prefix with anchor and append '.*'
-  codes <-
-    stringr::str_replace_all(codes, pattern = "\\.", replacement = "\\\\.")
-  codes <- paste0("^", codes, ".*")
-
-  # combine into single string, separated by "|"
-  codes <- stringr::str_c(codes, sep = "", collapse = "|")
-
-  # get children (filter for codes which match ANY of those in `codes` arg)
-  result <- all_lkps_maps[[lkp_table]] %>%
-    dplyr::filter(stringr::str_detect(.data[[code_col]],
-                                      pattern = codes)) %>%
-    dplyr::collect()
-
-  # filter on `col_filters` parameters
-  if (!is.null(col_filters)) {
-    result <- filter_cols(
-      df = result,
-      df_name = lkp_table,
-      col_filters = col_filters
-    )
-  }
-
-  # filter for preferred code descriptions only if requested
-  if (preferred_description_only &
-      !is.na(preferred_description_col)) {
-    result <- result %>%
-      dplyr::filter(.data[[preferred_description_col]] == preferred_description_code)
-  }
-
-  # return result
-  if (nrow(result) == 0) {
-    message("No matching codes found. Returning `NULL`")
-    return(NULL)
+                        col_filters = col_filters,
+                        escape_dot = FALSE)
   } else {
-    # return either unique codes only, or df including code descriptions
-    if (codes_only) {
-      return(unique(result[[code_col]]))
-    } else if (standardise_output) {
-      # Note, not all mapping sheets in UKB resource 592 contain descriptions
-      # (e.g. 'read_v2_icd9'). Therefore need to use `lookup_codes` if
-      # `standardise_output` is `TRUE`
-      codes <- unique(result[[code_col]])
-
-      return(
-        lookup_codes(
-          codes = codes,
-          code_type = code_type,
-          all_lkps_maps = all_lkps_maps,
-          preferred_description_only = preferred_description_only,
-          unrecognised_codes = "error"
-        )
-      )
-    } else {
-      return(result)
-    }
+    stop(paste0(
+      "Currently codemapper is unable to retrieve child codes for ",
+      code_type
+    ))
   }
+
 }
 
 #' Get children for SNOMED codes
@@ -584,9 +450,11 @@ codes_starting_with <- function(codes,
 #' @param include_descendants If `TRUE` (default) return all descendant codes,
 #'   as well as immediate children.
 #' @inheritParams lookup_codes
-#' @inheritParams codes_starting_with
+#' @inheritParams get_child_codes
 #'
 #' @return A dataframe
+#' @seealso [get_child_codes()], [get_relatives_sct()]
+#' @family Clinical code lookups and mappings
 #' @export
 get_children_sct <- function(codes = "269823000",
                              standardise_output = TRUE,
@@ -721,6 +589,7 @@ get_children_sct <- function(codes = "269823000",
 #' @param active_only If `FALSE` (default), return all relationships, even if
 #'   currently inactive.
 #' @inheritParams lookup_codes
+#' @family Clinical code lookups and mappings
 #' @export
 #'
 #' @return A data frame
@@ -842,7 +711,7 @@ get_relatives_sct <- function(codes = "269823000",
 #'   'warning', will raise a warning and attempt to use an existing mapping
 #'   table in the opposite direction (for example, a mapping from ICD10 to Read
 #'   3 would be attempted using the Read 3-to-ICD10 mapping table).
-#' @inheritParams codes_starting_with
+#' @inheritParams get_child_codes
 #' @inheritParams lookup_codes
 #'
 #' @export
@@ -1006,7 +875,7 @@ map_codes <- function(codes,
 #'
 #' @param from A clinical coding system to map from.
 #' @param to A clinical coding system to map to.
-#' @inheritParams codes_starting_with
+#' @inheritParams get_child_codes
 #' @inheritParams map_codes
 #' @param rename_from_to Optionally supply a named vector to rename the 'from'
 #'   and 'to' columns. For example `c(from = "original_codes", to =
@@ -1165,7 +1034,7 @@ get_mapping_df <- function(from,
 #'   "ALT_CODE".
 #' @param output_icd10_format character. Must be either "ICD10_CODE" or
 #'   "ALT_CODE".
-#' @inheritParams codes_starting_with
+#' @inheritParams get_child_codes
 #' @inheritParams lookup_codes
 #' @param strip_x If `TRUE` and converting to `ALT_CODE` format, 'X' is removed
 #'   from the end of undivided 3 character codes (default is `FALSE`).
@@ -1352,6 +1221,151 @@ default_col_filters <- function() {
 
 # PRIVATE FUNCTIONS -------------------------------------------------------
 
+#' Get codes that start with...
+#'
+#' This is case \emph{sensitive} (important for read codes especially).
+#'
+#' @param escape_dot If `TRUE`, escape any '.' characters in `codes`. Default is
+#'   `FALSE`
+#' @inheritParams lookup_codes
+#' @inheritParams get_child_codes
+#' @noRd
+#' @family Clinical code lookups and mappings
+codes_starting_with <- function(codes,
+                                code_type,
+                                all_lkps_maps = NULL,
+                                codes_only = FALSE,
+                                preferred_description_only = TRUE,
+                                standardise_output = TRUE,
+                                col_filters = default_col_filters(),
+                                escape_dot = FALSE) {
+  # validate args
+  match.arg(
+    arg = code_type,
+    choices = CODE_TYPE_TO_LKP_TABLE_MAP$code
+  )
+
+  # connect to database file path if `all_lkps_maps` is a string, or `NULL`
+  if (is.character(all_lkps_maps)) {
+    con <- check_all_lkps_maps_path(all_lkps_maps)
+    all_lkps_maps <- ukbwranglr::db_tables_to_list(con)
+    on.exit(DBI::dbDisconnect(con, shutdown = TRUE))
+  } else if (is.null(all_lkps_maps)) {
+    if (Sys.getenv("ALL_LKPS_MAPS_DB") != "") {
+      message(paste0("Attempting to connect to ", Sys.getenv("ALL_LKPS_MAPS_DB")))
+      con <-
+        check_all_lkps_maps_path(Sys.getenv("ALL_LKPS_MAPS_DB"))
+      all_lkps_maps <- ukbwranglr::db_tables_to_list(con)
+      on.exit(DBI::dbDisconnect(con, shutdown = TRUE))
+    } else if (file.exists("all_lkps_maps.db")) {
+      message("Attempting to connect to all_lkps_maps.db in current working directory")
+      con <- check_all_lkps_maps_path("all_lkps_maps.db")
+      all_lkps_maps <- ukbwranglr::db_tables_to_list(con)
+      on.exit(DBI::dbDisconnect(con, shutdown = TRUE))
+    } else {
+      stop(
+        "No/invalid path supplied to `all_lkps_maps` and no file called 'all_lkps_maps.db' found in current working directory. See `?all_lkps_maps_to_db()`"
+      )
+    }
+  }
+
+  check_codes(codes)
+
+  assertthat::assert_that(is.logical(codes_only),
+                          msg = "`code_only` must be either 'TRUE' or 'FALSE'"
+  )
+
+  assertthat::assert_that(!(codes_only & standardise_output),
+                          msg = "Error! `codes_only` and `standardise_output` cannot both be `TRUE`"
+  )
+
+  # TODO check all sheets are present
+  validate_all_lkps_maps()
+
+  # determine relevant lookup sheet
+  lkp_table <- get_lookup_sheet(code_type = code_type)
+
+  # determine code column for lookup sheet
+  code_col <- get_col_for_lookup_sheet(
+    lookup_sheet = lkp_table,
+    column = "code_col"
+  )
+
+  # determine relevant column indicating whether code description is preferred
+  # (for code types with synonymous code descriptions like read 2 and read 3)
+  preferred_description_col <-
+    get_col_for_lookup_sheet(
+      lookup_sheet = lkp_table,
+      column = "preferred_synonym_col"
+    )
+
+  # get preferred code, if appropriate
+  if (!is.na(preferred_description_col)) {
+    preferred_description_code <-
+      get_preferred_description_code_for_lookup_sheet(lookup_sheet = lkp_table)
+  }
+
+  # reformat codes - prefix with anchor '^', optionally escape '.'
+  codes <- paste0("^", codes)
+
+  if (escape_dot) {
+    codes <-
+      stringr::str_replace_all(codes, pattern = "\\.", replacement = "\\\\.")
+  }
+
+  # combine into single string, separated by "|"
+  codes <- stringr::str_c(codes, sep = "", collapse = "|")
+
+  # get children (filter for codes which match ANY of those in `codes` arg)
+  result <- all_lkps_maps[[lkp_table]] %>%
+    dplyr::filter(stringr::str_detect(.data[[code_col]],
+                                      pattern = codes)) %>%
+    dplyr::collect()
+
+  # filter on `col_filters` parameters
+  if (!is.null(col_filters)) {
+    result <- filter_cols(
+      df = result,
+      df_name = lkp_table,
+      col_filters = col_filters
+    )
+  }
+
+  # filter for preferred code descriptions only if requested
+  if (preferred_description_only &
+      !is.na(preferred_description_col)) {
+    result <- result %>%
+      dplyr::filter(.data[[preferred_description_col]] == preferred_description_code)
+  }
+
+  # return result
+  if (nrow(result) == 0) {
+    message("No matching codes found. Returning `NULL`")
+    return(NULL)
+  } else {
+    # return either unique codes only, or df including code descriptions
+    if (codes_only) {
+      return(unique(result[[code_col]]))
+    } else if (standardise_output) {
+      # Note, not all mapping sheets in UKB resource 592 contain descriptions
+      # (e.g. 'read_v2_icd9'). Therefore need to use `lookup_codes` if
+      # `standardise_output` is `TRUE`
+      codes <- unique(result[[code_col]])
+
+      return(
+        lookup_codes(
+          codes = codes,
+          code_type = code_type,
+          all_lkps_maps = all_lkps_maps,
+          preferred_description_only = preferred_description_only,
+          unrecognised_codes = "error"
+        )
+      )
+    } else {
+      return(result)
+    }
+  }
+}
 
 #' Helper function for \code{\link{map_codes}}
 #'
