@@ -381,23 +381,6 @@ test_that(
       )),
       3
     )
-
-    # codes and preferred descriptions only - should raise an error as can miss
-    # codes e.g. try searching for "D4104", will only return the secondary
-    # description for its Read3 equivalent (which is also "D4104")
-    expect_error(
-      map_codes(
-        codes = c("C10E.", "C108."),
-        from = "read2",
-        to = "read3",
-        all_lkps_maps = all_lkps_maps,
-        unrecognised_codes = "error",
-        codes_only = FALSE,
-        preferred_description_only = TRUE,
-        standardise_output = FALSE
-      ),
-      regexp = "Error! `preferred_description_only` cannot be `TRUE` unless `standardise_output` is also `TRUE`"
-    )
   }
 )
 

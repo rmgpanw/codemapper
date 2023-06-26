@@ -1,7 +1,6 @@
 # Script to build local copy of all_lkps_maps.db
 library(codemapper)
 
-
 # Constants ---------------------------------------------------------------
 
 SNOMED_CT_UK_MONOLITH <- ifelse(

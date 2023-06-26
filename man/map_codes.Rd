@@ -12,7 +12,7 @@ map_codes(
   codes_only = FALSE,
   standardise_output = TRUE,
   unrecognised_codes = "error",
-  preferred_description_only = NULL,
+  preferred_description_only = TRUE,
   reverse_mapping = "error",
   col_filters = default_col_filters()
 )
@@ -40,16 +40,16 @@ results including code descriptions (useful for manual validation).}
 
 \item{standardise_output}{bool. If \code{TRUE} (default), outputs a data
 frame with columns named 'code', 'description' and 'code_type'. Otherwise
-returns a data frame with all columns from the relevant look up table.}
+returns a data frame with all columns from the relevant mapping table. Note
+that this may or may not include code descriptions.}
 
 \item{unrecognised_codes}{Either 'error' (default) or 'warning'. If any input
 \code{codes} are unrecognised for the coding system being mapped from, then
 either an error or warning will be raised.}
 
-\item{preferred_description_only}{If \code{TRUE}, return only preferred
-descriptions for clinical codes with synonyms. Can only be \code{TRUE} if
-\code{standardise_output} is also \code{TRUE}. Default value is
-\code{NULL}.}
+\item{preferred_description_only}{If \code{TRUE} (default), return only preferred
+descriptions for clinical codes with synonyms. Will only apply if
+\code{standardise_output} is also \code{TRUE}.}
 
 \item{reverse_mapping}{If 'error' (default), an error raised if attempting to
 map between coding systems for which a mapping table does not exist. If

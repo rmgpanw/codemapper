@@ -31,8 +31,9 @@ a a Duckdb database specified by an environmental variable named
 for how to set environment variables using a \code{.Renviron} file). The latter
 method will be used in preference.}
 
-\item{preferred_description_only}{bool. Return only preferred descriptions
-for clinical codes with synonyms. Default value is \code{TRUE}.}
+\item{preferred_description_only}{If \code{TRUE} (default), return only preferred
+descriptions for clinical codes with synonyms. Will only apply if
+\code{standardise_output} is also \code{TRUE}.}
 
 \item{standardise_output}{bool. If \code{TRUE} (default), outputs a data
 frame with columns named 'code', 'description' and 'code_type'. Otherwise

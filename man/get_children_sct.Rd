@@ -5,7 +5,7 @@
 \title{Get children for SNOMED codes}
 \usage{
 get_children_sct(
-  codes = "269823000",
+  codes,
   standardise_output = TRUE,
   active_only = FALSE,
   include_self = TRUE,
@@ -44,8 +44,9 @@ method will be used in preference.}
 \emph{unique} codes. If \code{FALSE} (default), return a data frame of all
 results including code descriptions (useful for manual validation).}
 
-\item{preferred_description_only}{bool. Return only preferred descriptions
-for clinical codes with synonyms. Default value is \code{TRUE}.}
+\item{preferred_description_only}{If \code{TRUE} (default), return only preferred
+descriptions for clinical codes with synonyms. Will only apply if
+\code{standardise_output} is also \code{TRUE}.}
 
 \item{col_filters}{A named list where each name in the list refers to the
 name of a lookup or mapping table. Each item is also a named list, where

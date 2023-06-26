@@ -200,8 +200,9 @@ code_descriptions_like <- function(reg_expr,
 #'   list(colA = c("A", "B"))` will result in `my_lookup_table` being filtered
 #'   for rows where `colA` is either 'A' or 'B'. Uses `default_col_filters()` by
 #'   default. Set to `NULL` to remove all filters.
-#' @param preferred_description_only bool. Return only preferred descriptions
-#'   for clinical codes with synonyms. Default value is \code{TRUE}.
+#' @param preferred_description_only If `TRUE` (default), return only preferred
+#'   descriptions for clinical codes with synonyms. Will only apply if
+#'   \code{standardise_output} is also \code{TRUE}.
 #' @param all_lkps_maps Either a named list of lookup and mapping tables
 #'   (either data frames or `tbl_dbi` objects), or the path to a Duckdb database
 #'   containing these tables. If `NULL`, will attempt to connect to a Duckdb
@@ -331,12 +332,10 @@ lookup_codes <- function(codes,
   )
 
   # filter for preferred code descriptions only if requested
-  if (!is.null(preferred_description_only)) {
-    if (preferred_description_only &
-        !is.na(preferred_description_col)) {
-      result <- result %>%
-        dplyr::filter(.data[[preferred_description_col]] == preferred_description_code)
-    }
+  if (preferred_description_only &
+      !is.na(preferred_description_col)) {
+    result <- result %>%
+      dplyr::filter(.data[[preferred_description_col]] == preferred_description_code)
   }
 
   # standardise output if requested
@@ -398,7 +397,8 @@ get_child_codes <- function(codes,
     col_filters = col_filters,
     .return_unrecognised_codes = FALSE
   ) %>%
-    dplyr::pull(tidyselect::all_of("code"))
+    dplyr::pull(tidyselect::all_of("code")) %>%
+    unique()
 
   # get child codes
   if (code_type == "sct") {
@@ -456,7 +456,7 @@ get_child_codes <- function(codes,
 #' @seealso [get_child_codes()], [get_relatives_sct()]
 #' @family Clinical code lookups and mappings
 #' @export
-get_children_sct <- function(codes = "269823000",
+get_children_sct <- function(codes,
                              standardise_output = TRUE,
                              active_only = FALSE,
                              include_self = TRUE,
@@ -538,15 +538,6 @@ get_children_sct <- function(codes = "269823000",
                            sep = "",
                            collapse = ", ")))
     }
-  }
-
-  if (standardise_output) {
-    result <- result %>%
-      dplyr::select(
-        "code" = tidyselect::all_of(code_col),
-        "description" = tidyselect::all_of(description_col)
-      ) %>%
-      dplyr::mutate("code_type" = "sct")
   }
 
   # collect and return result
@@ -702,15 +693,15 @@ get_relatives_sct <- function(codes = "269823000",
 #' @param unrecognised_codes Either 'error' (default) or 'warning'. If any input
 #'   `codes` are unrecognised for the coding system being mapped from, then
 #'   either an error or warning will be raised.
-#' @param preferred_description_only If `TRUE`, return only preferred
-#'   descriptions for clinical codes with synonyms. Can only be \code{TRUE} if
-#'   \code{standardise_output} is also \code{TRUE}. Default value is
-#'   \code{NULL}.
 #' @param reverse_mapping If 'error' (default), an error raised if attempting to
 #'   map between coding systems for which a mapping table does not exist. If
 #'   'warning', will raise a warning and attempt to use an existing mapping
 #'   table in the opposite direction (for example, a mapping from ICD10 to Read
 #'   3 would be attempted using the Read 3-to-ICD10 mapping table).
+#' @param standardise_output bool. If \code{TRUE} (default), outputs a data
+#'   frame with columns named 'code', 'description' and 'code_type'. Otherwise
+#'   returns a data frame with all columns from the relevant mapping table. Note
+#'   that this may or may not include code descriptions.
 #' @inheritParams get_child_codes
 #' @inheritParams lookup_codes
 #'
@@ -734,7 +725,7 @@ map_codes <- function(codes,
                       codes_only = FALSE,
                       standardise_output = TRUE,
                       unrecognised_codes = "error",
-                      preferred_description_only = NULL,
+                      preferred_description_only = TRUE,
                       reverse_mapping = "error",
                       col_filters = default_col_filters()) {
   # validate args
@@ -773,14 +764,6 @@ map_codes <- function(codes,
   assertthat::assert_that(!(codes_only & standardise_output),
                           msg = "Error! `codes_only` and `standardise_output` cannot both be `TRUE`"
   )
-
-  if (!is.null(preferred_description_only)) {
-    assertthat::assert_that(!(
-      preferred_description_only == TRUE & standardise_output == FALSE
-    ),
-    msg = "Error! `preferred_description_only` cannot be `TRUE` unless `standardise_output` is also `TRUE`"
-    )
-  }
 
   # check mapping args and get required details - mapping_table, from_col and
   # to_col
