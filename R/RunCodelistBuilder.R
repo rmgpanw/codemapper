@@ -78,7 +78,7 @@ RunCodelistBuilder <- function(all_lkps_maps = NULL,
   # UI ----------------------------------------------------------------------
 
   ui <- fluidPage(
-    RunCodelistBuilder_ui("RunCodelistBuilder")
+    RunCodelistBuilder_ui("RunCodelistBuilder", all_lkps_maps)
   )
   # Server ------------------------------------------------------------------
   server <- function(input, output, session) {
@@ -96,7 +96,36 @@ RunCodelistBuilder <- function(all_lkps_maps = NULL,
 #' @import shiny
 #'
 #' @noRd
-RunCodelistBuilder_ui <- function(id) {
+RunCodelistBuilder_ui <- function(id, all_lkps_maps) {
+
+  # determine which tables are available
+  CODE_TYPE_TO_LKP_TABLE_MAP_AVAILABLE <- CODE_TYPE_TO_LKP_TABLE_MAP %>%
+    dplyr::filter(.data[["lkp_table"]] %in% names(all_lkps_maps))
+
+  # pre-selected code types
+  pre_selected_code_types <- c(
+    # 'bnf',
+    # 'dmd',
+    "icd9",
+    "icd10",
+    "read2",
+    # 'read2_drugs',
+    "read3",
+    "opcs4",
+    "data_coding_3",
+    # "data_coding_4",
+    # "data_coding_5",
+    "data_coding_6",
+    "sct",
+    "phecode"
+  )
+
+  pre_selected_code_types <- subset(
+    pre_selected_code_types,
+    pre_selected_code_types %in% CODE_TYPE_TO_LKP_TABLE_MAP_AVAILABLE$code
+  )
+
+  # begin UI
   tagList(
     # Application title
     shinyFeedback::useShinyFeedback(),
@@ -122,23 +151,10 @@ RunCodelistBuilder_ui <- function(id) {
           inputId = NS(id, "code_type"),
           label = "Code types",
           choices = stats::setNames(
-            object = CODE_TYPE_TO_LKP_TABLE_MAP$code,
-            nm = CODE_TYPE_TO_LKP_TABLE_MAP$code_label
+            object = CODE_TYPE_TO_LKP_TABLE_MAP_AVAILABLE$code,
+            nm = CODE_TYPE_TO_LKP_TABLE_MAP_AVAILABLE$code_label
           ),
-          selected = c(
-            # 'bnf',
-            # 'dmd',
-            "icd9",
-            "icd10",
-            "read2",
-            # 'read2_drugs',
-            "read3",
-            "opcs4",
-            "data_coding_3",
-            "data_coding_4",
-            "data_coding_5",
-            "data_coding_6"
-          )
+          selected = pre_selected_code_types
         ),
         h4("Upload codelist"),
         fileInput(NS(id, "upload"),
