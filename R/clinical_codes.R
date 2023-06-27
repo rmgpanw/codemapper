@@ -667,7 +667,9 @@ get_relatives_sct <- function(codes = "269823000",
           codes = result,
           relationship = relationship,
           relationship_direction = relationship_direction,
-          recursive = recursive
+          recursive = recursive,
+          active_only = active_only,
+          all_lkps_maps = all_lkps_maps
         )
       )
     } else {
