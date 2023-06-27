@@ -1,3 +1,3 @@
-disease,description,category,code_type,code,author,description_search_strategy,code_starts_search_strategy,included_code_types,selected
+disease,description,category,code_type,code,author,description_search_strategy,child_codes_search_strategy,included_code_types,selected
 Hypertension,Essential (primary) hypertension,,icd10,I10X,Me,'hypertension' NOT 'intracranial|pulmonary',,icd10,
 Hypertension,"Pre-existing essential hypertension complicating pregnancy, childbirth and the puerperium",,icd10,O100,Me,,,,
