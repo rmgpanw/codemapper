@@ -204,15 +204,15 @@ RunCodelistBuilder_ui <- function(id) {
               width = 6
             ),
             column(
-              h4("Codes starting with..."),
+              h4("Child codes for..."),
               textInput(NS(id, "bnf_starts"),
                 "BNF",
                 value = ""
               ),
-              textInput(NS(id, "dmd_starts"),
-                "DMD",
-                value = ""
-              ),
+              # textInput(NS(id, "dmd_starts"),
+              #   "DMD",
+              #   value = ""
+              # ),
               textInput(NS(id, "icd9_starts"),
                 "ICD-9",
                 value = ""
@@ -229,13 +229,17 @@ RunCodelistBuilder_ui <- function(id) {
                 "Read 2 drugs",
                 value = ""
               ),
-              textInput(NS(id, "read3_starts"),
-                "Read 3",
-                value = ""
-              ),
+              # textInput(NS(id, "read3_starts"),
+              #   "Read 3",
+              #   value = ""
+              # ),
               textInput(NS(id, "opcs4_starts"),
                 "OPCS4",
                 value = ""
+              ),
+              textInput(NS(id, "sct_children"),
+                        "SNOMED CT",
+                        value = ""
               ),
               width = 6
             ),
@@ -277,13 +281,13 @@ RunCodelistBuilder_server <- function(id, all_lkps_maps) {
 
     matching_codes <- eventReactive(input$new_search, {
       # prepare to match codes starting with...
-      code_starts_params <- tibble::tribble(
+      children_codes_params <- tibble::tribble(
         ~code_type,
-        ~starts_with,
+        ~children,
         "bnf",
         input$bnf_starts,
-        "dmd",
-        input$dmd_starts,
+        # "dmd",
+        # input$dmd_starts,
         "icd9",
         input$icd9_starts,
         "icd10",
@@ -292,18 +296,20 @@ RunCodelistBuilder_server <- function(id, all_lkps_maps) {
         input$read2_starts,
         "read2_drugs",
         input$read2_drugs_starts,
-        "read3",
-        input$read3_starts,
+        # "read3",
+        # input$read3_starts,
         "opcs4",
-        input$opcs4_starts
+        input$opcs4_starts,
+        "sct",
+        input$sct_children,
       )
 
-      code_starts_params <- code_starts_params %>%
-        dplyr::filter(.data[["starts_with"]] != "")
+      children_codes_params <- children_codes_params %>%
+        dplyr::filter(.data[["children"]] != "")
 
       # error message if both description and code search boxes are empty
       if ((input$description_search == "") &
-        (nrow(code_starts_params) == 0)) {
+        (nrow(children_codes_params) == 0)) {
         validate(
           "Invalid request: a search value is required for at least one of 'Code description like...' or 'Codes starting with...' "
         )
@@ -400,16 +406,16 @@ RunCodelistBuilder_server <- function(id, all_lkps_maps) {
         description_search_strategy <- NA
       }
 
-      # match codes starting with
-      if (nrow(code_starts_params) > 0) {
+      # retrieve children codes
+      if (nrow(children_codes_params) > 0) {
         notify("Searching for codes starting with...", id = id)
 
-        matching_codes_starts_with <-
-          code_starts_params$code_type %>%
+        matching_codes_children <-
+          children_codes_params$code_type %>%
           purrr::set_names() %>%
           purrr::map(
-            ~ codes_starting_with(
-              codes = code_starts_params[code_starts_params$code_type == .x, ]$starts_with,
+            ~ get_child_codes(
+              codes = children_codes_params[children_codes_params$code_type == .x, ]$children,
               code_type = .x,
               all_lkps_maps = all_lkps_maps,
               codes_only = FALSE,
@@ -419,30 +425,30 @@ RunCodelistBuilder_server <- function(id, all_lkps_maps) {
           ) %>%
           dplyr::bind_rows()
 
-        if (nrow(matching_codes_starts_with) == 0) {
-          matching_codes_starts_with <- NULL
+        if (nrow(matching_codes_children) == 0) {
+          matching_codes_children <- NULL
         }
       } else {
-        matching_codes_starts_with <- NULL
+        matching_codes_children <- NULL
       }
 
       # combine results (codes matching EITHER search criteria), or UI message if not matching codes found
       if (is.null(matching_codes_description) &
-        is.null(matching_codes_starts_with)) {
+        is.null(matching_codes_children)) {
         notify("No codes found matching search criteria!", id = id)
         validate("No codes found matching search criteria!")
       } else if (!is.null(matching_codes_description) &
-        is.null(matching_codes_starts_with)) {
+        is.null(matching_codes_children)) {
         matching_codes <- matching_codes_description
       } else if (is.null(matching_codes_description) &
-        !is.null(matching_codes_starts_with)) {
-        matching_codes <- matching_codes_starts_with
+        !is.null(matching_codes_children)) {
+        matching_codes <- matching_codes_children
       } else {
         # combine
         matching_codes <-
           dplyr::full_join(
             matching_codes_description,
-            matching_codes_starts_with,
+            matching_codes_children,
             by = c("code", "description", "code_type")
           )
       }
@@ -452,24 +458,24 @@ RunCodelistBuilder_server <- function(id, all_lkps_maps) {
       matching_codes$description_search_strategy <-
         description_search_strategy
 
-      matching_codes$code_starts_search_strategy <- NA
+      matching_codes$child_codes_search_strategy <- NA
 
-      if (!is.null(matching_codes_starts_with)) {
-        code_starts_search_strategy <- paste0(
-          code_starts_params$code_type,
+      if (!is.null(matching_codes_children)) {
+        child_codes_search_strategy <- paste0(
+          children_codes_params$code_type,
           ": '",
-          code_starts_params$starts_with,
+          children_codes_params$children,
           "'"
         ) %>%
           stringr::str_c(sep = "", collapse = "; ")
 
-        code_starts_search_strategy <- paste0(
+        child_codes_search_strategy <- paste0(
           "STARTS WITH - ",
-          code_starts_search_strategy
+          child_codes_search_strategy
         )
 
-        matching_codes$code_starts_search_strategy <-
-          code_starts_search_strategy
+        matching_codes$child_codes_search_strategy <-
+          child_codes_search_strategy
       }
 
       # add column showing included code types
@@ -490,7 +496,7 @@ RunCodelistBuilder_server <- function(id, all_lkps_maps) {
           c(
             names(ukbwranglr::example_clinical_codes()),
             "description_search_strategy",
-            "code_starts_search_strategy",
+            "child_codes_search_strategy",
             "included_code_types"
           )
         ))
@@ -716,7 +722,7 @@ RunCodelistBuilder_server <- function(id, all_lkps_maps) {
         # include search strategy and included codes in first row only
         if (nrow(result) > 1) {
           result$description_search_strategy[2:nrow(result)] <- NA
-          result$code_starts_search_strategy[2:nrow(result)] <- NA
+          result$child_codes_search_strategy[2:nrow(result)] <- NA
           result$included_code_types[2:nrow(result)] <- NA
         }
 
@@ -747,7 +753,7 @@ RunCodelistBuilder_server <- function(id, all_lkps_maps) {
           # include search strategy and included codes in first row only
           if (nrow(result) > 1) {
             result$description_search_strategy[2:nrow(result)] <- NA
-            result$code_starts_search_strategy[2:nrow(result)] <- NA
+            result$child_codes_search_strategy[2:nrow(result)] <- NA
             result$included_code_types[2:nrow(result)] <- NA
           }
 
