@@ -138,11 +138,11 @@ code_descriptions_like <- function(reg_expr,
         "SELECT *
         FROM {`lkp_table`}
         WHERE (REGEXP_MATCHES({`description_col`}, {reg_expr}, 'i'))",
-        .con = con
+        .con = dbplyr::remote_con(x = all_lkps_maps[[lkp_table]])
       )
 
       # collect results
-      query <- DBI::dbSendQuery(con, sql)
+      query <- DBI::dbSendQuery(dbplyr::remote_con(x = all_lkps_maps[[lkp_table]]), sql)
       result <- DBI::dbFetch(query, Inf)
     }
   } else {
