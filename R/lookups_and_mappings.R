@@ -494,7 +494,7 @@ get_nhsbsa_snomed_bnf <- function(path = file.path(
 #' Get UK Biobank resource 592 directly from UKB
 #' website
 #'
-#' Downloads the UK Biobank code mappings file (\code{all_lkps_maps_v3.xlsx},
+#' Downloads the UK Biobank code mappings file (\code{all_lkps_maps_v4.xlsx},
 #' \href{https://biobank.ndph.ox.ac.uk/ukb/refer.cgi?id=592}{resource 592})
 #' directly from the UKB website.
 #'
@@ -502,7 +502,7 @@ get_nhsbsa_snomed_bnf <- function(path = file.path(
 #'
 #' @param dir_path Directory path to download to.
 #'
-#' @return File path to downloaded `all_lkps_maps_v3.xlsx`.
+#' @return File path to downloaded `all_lkps_maps_v4.xlsx`.
 #' @export
 #' @examples
 #' \dontrun{
@@ -515,7 +515,7 @@ get_nhsbsa_snomed_bnf <- function(path = file.path(
 get_ukb_all_lkps_maps <- function(dir_path = tempdir()) {
   message("Getting UKB resource 592")
   # name of resource 592 excel file
-  primarycare_codings <- "all_lkps_maps_v3.xlsx"
+  primarycare_codings <- "all_lkps_maps_v4.xlsx"
 
   # filepaths in tempdir
   primarycare_codings_zip_filepath <-
@@ -534,7 +534,7 @@ get_ukb_all_lkps_maps <- function(dir_path = tempdir()) {
   }
 
   # extract excel file only from zip
-  message("Extracting all_lkps_maps_v3.xlsx from zip file to tempdir")
+  message("Extracting all_lkps_maps_v4.xlsx from zip file to tempdir")
   utils::unzip(primarycare_codings_zip_filepath,
     files = primarycare_codings,
     exdir = dir_path
@@ -570,13 +570,13 @@ get_ukb_self_report_med_to_atc_map <- function(path = file.path(
 
 #' Read UK Biobank resource 592 into a named list
 #'
-#' Reads the UK Biobank code mappings file (`all_lkps_maps_v3.xlsx`,
+#' Reads the UK Biobank code mappings file (`all_lkps_maps_v4.xlsx`,
 #' \href{https://biobank.ndph.ox.ac.uk/ukb/refer.cgi?id=592}{resource 592}) into
 #' a named list of data frames.
 #'
 #' \strong{Note:} This is a large object (>450 MB)
 #'
-#' @param path Path to `all_lkps_maps_v3.xlsx`. By default, this is downloaded
+#' @param path Path to `all_lkps_maps_v4.xlsx`. By default, this is downloaded
 #'   from the UK Biobank website using [get_ukb_all_lkps_maps()].
 #'
 #' @return A named list of data frames.
