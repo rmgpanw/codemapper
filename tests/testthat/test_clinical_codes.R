@@ -237,6 +237,28 @@ test_that("`code_descriptions_like()` returns expected results", {
   )
 })
 
+test_that("`code_descriptions_like()` returns ICD10 codes where MODIFIER_4/MODIFIER_5 matches the search string", {
+  expect_equal(
+    code_descriptions_like(
+      reg_expr = "With ophthalmic complications",
+      code_type = "icd10",
+      all_lkps_maps = all_lkps_maps,
+      ignore_case = TRUE,
+      codes_only = FALSE,
+      standardise_output = TRUE,
+      preferred_description_only = TRUE
+    ),
+    tibble::tribble(
+      ~code,                                                           ~description, ~code_type,
+      "E103",               "Type 1 diabetes mellitus With ophthalmic complications",    "icd10",
+      "E113",               "Type 2 diabetes mellitus With ophthalmic complications",    "icd10",
+      "E123", "Malnutrition-related diabetes mellitus With ophthalmic complications",    "icd10",
+      "E133",      "Other specified diabetes mellitus With ophthalmic complications",    "icd10",
+      "E143",          "Unspecified diabetes mellitus With ophthalmic complications",    "icd10"
+    )
+  )
+})
+
 test_that("`codes_descriptions_like()` returns primary descriptions for codes with a secondary description that matches the search string", {
   # Returns 'Type I diabetes mellitus' when searching for 'IDDM'
   expect_equal(

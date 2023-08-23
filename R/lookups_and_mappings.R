@@ -189,6 +189,22 @@ build_all_lkps_maps <-
 
     ## reformat tables individually ---------------
 
+    ### icd10 ------------------------
+
+    # Some ICD-10 descriptions include a modifier e.g. "E10" = "Type 1 diabetes
+    # mellitus", whereas "E10.0" = "Type 1 diabetes mellitus with coma". "With
+    # coma" is contained in the modifier columns "MODIFIER-4". See 'S27' for an
+    # example code where additional description is contained in the "MODIFER-5"
+    # column. There are no codes with a modifier description in
+    # both "MODIFIER_4" and "MODIFIER_5".
+
+    all_lkps_maps$icd10_lkp <- all_lkps_maps$icd10_lkp %>%
+      dplyr::mutate("DESCRIPTION" = dplyr::case_when(
+        !is.na(MODIFIER_4) ~ paste(DESCRIPTION, MODIFIER_4),
+        !is.na(MODIFIER_5) ~ paste(DESCRIPTION, MODIFIER_5),
+        TRUE ~ DESCRIPTION
+      ))
+
     ### icd9_icd10 -------------------
 
     all_lkps_maps$icd9_icd10 <- reformat_icd9_icd10(all_lkps_maps$icd9_icd10)

@@ -1567,23 +1567,6 @@ standardise_output_fn <-
     names(df)[which(names(df) == code_col)] <- "code"
     names(df)[which(names(df) == description_col)] <- "description"
 
-    # Some ICD-10 descriptions include a modifier e.g. "E10" = "Type 1 diabetes
-    # mellitus", whereas "E10.0" = "Type 1 diabetes mellitus with coma". "With
-    # coma" is contained in the modifier columns "MODIFIER-4". See 'S27' for an
-    # example code where additional description is contained in the "MODIFER-5"
-    # column. The returned "description" column from `standardise_output == TRUE`
-    # therefore combines the 'DESCRIPTION' column with one of these 2 columns
-    # (whichever is not NA). There are no codes with a modifier description in
-    # both "MODIFIER_4" and "MODIFIER_5".
-
-    if (lkp_table == "icd10_lkp") {
-      df$description <- dplyr::case_when(
-        !is.na(df$MODIFIER_4) ~ paste(df$description, df$MODIFIER_4),
-        !is.na(df$MODIFIER_5) ~ paste(df$description, df$MODIFIER_5),
-        TRUE ~ df$description
-      )
-    }
-
     # return code, description and code_type cols only
     df <- df[c("code", "description")]
     df[["code_type"]] <- code_type
