@@ -41,7 +41,7 @@
 #'   all_lkps_maps = all_lkps_maps_dummy
 #' )
 code_descriptions_like <- function(reg_expr,
-                                   code_type,
+                                   code_type = getOption("codemapper.code_type"),
                                    all_lkps_maps = NULL,
                                    ignore_case = TRUE,
                                    codes_only = FALSE,
@@ -227,7 +227,7 @@ code_descriptions_like <- function(reg_expr,
 #'   all_lkps_maps = all_lkps_maps_dummy
 #' )
 lookup_codes <- function(codes,
-                         code_type,
+                         code_type = getOption("codemapper.code_type"),
                          all_lkps_maps = NULL,
                          preferred_description_only = TRUE,
                          standardise_output = TRUE,
@@ -379,7 +379,7 @@ lookup_codes <- function(codes,
 #' @examples
 #' # TODO
 get_child_codes <- function(codes,
-                            code_type,
+                            code_type = getOption("codemapper.code_type"),
                             all_lkps_maps = NULL,
                             codes_only = FALSE,
                             preferred_description_only = TRUE,
@@ -721,8 +721,8 @@ get_relatives_sct <- function(codes = "269823000",
 #'   all_lkps_maps = all_lkps_maps_dummy
 #' )
 map_codes <- function(codes,
-                      from,
-                      to,
+                      to = getOption("codemapper.map_to"),
+                      from = getOption("codemapper.map_from"),
                       all_lkps_maps = NULL,
                       codes_only = FALSE,
                       standardise_output = TRUE,
@@ -884,8 +884,8 @@ map_codes <- function(codes,
 #'   to = "icd10",
 #'   all_lkps_maps = all_lkps_maps_dummy
 #' )
-get_mapping_df <- function(from,
-                           to,
+get_mapping_df <- function(to = getOption("codemapper.map_to"),
+                           from = getOption("codemapper.map_from"),
                            all_lkps_maps = NULL,
                            rename_from_to = NULL,
                            na.rm = TRUE,
@@ -1217,7 +1217,7 @@ default_col_filters <- function() {
 #' @noRd
 #' @family Clinical code lookups and mappings
 codes_starting_with <- function(codes,
-                                code_type,
+                                code_type = getOption("codemapper.code_type"),
                                 all_lkps_maps = NULL,
                                 codes_only = FALSE,
                                 preferred_description_only = TRUE,
@@ -1498,7 +1498,7 @@ get_preferred_description_code_for_lookup_sheet <-
 #'   'description', 'category', 'code_type', 'code' and 'author'.
 #' @noRd
 reformat_standardised_codelist <- function(standardised_codelist,
-                                           code_type,
+                                           code_type = getOption("codemapper.code_type"),
                                            disease,
                                            disease_category,
                                            author) {
@@ -2212,7 +2212,7 @@ handle_unrecognised_codes <-
 check_codes_exist <- function(codes,
                               lkp_codes,
                               table_name,
-                              code_type,
+                              code_type = getOption("codemapper.code_type"),
                               return_unrecognised_codes = FALSE,
                               unrecognised_codes = "error") {
   # check for unrecognised('missing') codes
