@@ -5,8 +5,8 @@
 \title{Get a 'from-to' mapping data frame}
 \usage{
 get_mapping_df(
-  from,
-  to,
+  to = getOption("codemapper.map_to"),
+  from = getOption("codemapper.map_from"),
   all_lkps_maps = NULL,
   rename_from_to = NULL,
   na.rm = TRUE,
@@ -15,9 +15,9 @@ get_mapping_df(
 )
 }
 \arguments{
-\item{from}{A clinical coding system to map from.}
-
 \item{to}{A clinical coding system to map to.}
+
+\item{from}{A clinical coding system to map from.}
 
 \item{all_lkps_maps}{Either a named list of lookup and mapping tables
 (either data frames or \code{tbl_dbi} objects), or the path to a Duckdb database

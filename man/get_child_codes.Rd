@@ -6,11 +6,12 @@
 \usage{
 get_child_codes(
   codes,
-  code_type,
+  code_type = getOption("codemapper.code_type"),
   all_lkps_maps = NULL,
   codes_only = FALSE,
   preferred_description_only = TRUE,
   standardise_output = TRUE,
+  unrecognised_codes = "error",
   col_filters = default_col_filters()
 )
 }
@@ -41,6 +42,9 @@ descriptions for clinical codes with synonyms. Will only apply if
 \item{standardise_output}{bool. If \code{TRUE} (default), outputs a data
 frame with columns named 'code', 'description' and 'code_type'. Otherwise
 returns a data frame with all columns from the relevant look up table.}
+
+\item{unrecognised_codes}{Either 'error' (default) or 'warning'. If any input
+\code{codes} are unrecognised, then either an error or warning will be raised.}
 
 \item{col_filters}{A named list where each name in the list refers to the
 name of a lookup or mapping table. Each item is also a named list, where

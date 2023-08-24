@@ -11,10 +11,10 @@ get_ukb_all_lkps_maps(dir_path = tempdir())
 \item{dir_path}{Directory path to download to.}
 }
 \value{
-File path to downloaded \code{all_lkps_maps_v3.xlsx}.
+File path to downloaded \code{all_lkps_maps_v4.xlsx}.
 }
 \description{
-Downloads the UK Biobank code mappings file (\code{all_lkps_maps_v3.xlsx},
+Downloads the UK Biobank code mappings file (\code{all_lkps_maps_v4.xlsx},
 \href{https://biobank.ndph.ox.ac.uk/ukb/refer.cgi?id=592}{resource 592})
 directly from the UKB website.
 }

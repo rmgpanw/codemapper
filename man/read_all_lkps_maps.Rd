@@ -7,14 +7,14 @@
 read_all_lkps_maps(path = get_ukb_all_lkps_maps())
 }
 \arguments{
-\item{path}{Path to \code{all_lkps_maps_v3.xlsx}. By default, this is downloaded
+\item{path}{Path to \code{all_lkps_maps_v4.xlsx}. By default, this is downloaded
 from the UK Biobank website using \code{\link[=get_ukb_all_lkps_maps]{get_ukb_all_lkps_maps()}}.}
 }
 \value{
 A named list of data frames.
 }
 \description{
-Reads the UK Biobank code mappings file (\code{all_lkps_maps_v3.xlsx},
+Reads the UK Biobank code mappings file (\code{all_lkps_maps_v4.xlsx},
 \href{https://biobank.ndph.ox.ac.uk/ukb/refer.cgi?id=592}{resource 592}) into
 a named list of data frames.
 }

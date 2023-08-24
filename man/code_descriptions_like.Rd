@@ -6,7 +6,7 @@
 \usage{
 code_descriptions_like(
   reg_expr,
-  code_type,
+  code_type = getOption("codemapper.code_type"),
   all_lkps_maps = NULL,
   ignore_case = TRUE,
   codes_only = FALSE,

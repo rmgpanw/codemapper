@@ -6,7 +6,7 @@
 \usage{
 lookup_codes(
   codes,
-  code_type,
+  code_type = getOption("codemapper.code_type"),
   all_lkps_maps = NULL,
   preferred_description_only = TRUE,
   standardise_output = TRUE,

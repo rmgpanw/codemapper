@@ -6,8 +6,8 @@
 \usage{
 map_codes(
   codes,
-  from,
-  to,
+  to = getOption("codemapper.map_to"),
+  from = getOption("codemapper.map_from"),
   all_lkps_maps = NULL,
   codes_only = FALSE,
   standardise_output = TRUE,
@@ -20,9 +20,9 @@ map_codes(
 \arguments{
 \item{codes}{A character vector of codes to be mapped.}
 
-\item{from}{Coding system that \code{codes} belong to.}
-
 \item{to}{Coding system to map \code{codes} to.}
+
+\item{from}{Coding system that \code{codes} belong to.}
 
 \item{all_lkps_maps}{Either a named list of lookup and mapping tables
 (either data frames or \code{tbl_dbi} objects), or the path to a Duckdb database
