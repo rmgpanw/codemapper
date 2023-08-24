@@ -384,6 +384,7 @@ get_child_codes <- function(codes,
                             codes_only = FALSE,
                             preferred_description_only = TRUE,
                             standardise_output = TRUE,
+                            unrecognised_codes = "error",
                             col_filters = default_col_filters()) {
 
   # check codes exist
@@ -393,12 +394,18 @@ get_child_codes <- function(codes,
     all_lkps_maps = all_lkps_maps,
     preferred_description_only = TRUE,
     standardise_output = TRUE,
-    unrecognised_codes = "error",
+    unrecognised_codes = unrecognised_codes,
     col_filters = col_filters,
     .return_unrecognised_codes = FALSE
-  ) %>%
+  )
+
+  if (!is.null(codes)) {
+   codes <- codes %>%
     dplyr::pull(tidyselect::all_of("code")) %>%
     unique()
+  } else {
+    return(codes)
+  }
 
   # get child codes
   if (code_type == "sct") {
