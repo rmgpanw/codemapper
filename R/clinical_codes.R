@@ -2095,7 +2095,7 @@ check_all_lkps_maps_path <- function(file_path) {
   ))
 
   # return con object if tests pass
-  DBI::dbConnect(duckdb::duckdb(), file_path)
+  DBI::dbConnect(duckdb::duckdb(), file_path, read_only = TRUE)
 }
 
 check_rowid_col_present <- function(df,

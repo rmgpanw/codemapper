@@ -70,7 +70,7 @@ Connect to this and create a named list of `dbplyr::tbl_dbi`[^2] objects:
 
 ```{r}
 # connect to Duckdb database
-con <- DBI::dbConnect(duckdb::duckdb(), db_path)
+con <- DBI::dbConnect(duckdb::duckdb(), db_path, read_only = TRUE)
 
 # create named list of tbl_db objects
 all_lkps_maps_dummy_db <- ukbwranglr::db_tables_to_list(con)
