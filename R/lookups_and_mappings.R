@@ -29,6 +29,7 @@
 #'
 #' # connect to Duckdb database
 #' con <- DBI::dbConnect(duckdb::duckdb(), db_path, read_only = TRUE)
+#' on.exit(DBI::dbDisconnect(con, shutdown = TRUE))
 #'
 #' # create named list of tbl_dbi objects
 #' all_lkps_maps_dummy_db <- ukbwranglr::db_tables_to_list(con)

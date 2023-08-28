@@ -22,8 +22,13 @@ Suggests:
     PheWAS,
     reactable,
     rmarkdown,
+    shiny,
     shinyFeedback,
     shinytest,
+    visNetwork,
+    withr,
+    igraph,
+    jqbr,
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
 Imports: 
@@ -40,7 +45,6 @@ Imports:
     readr,
     readxl,
     rlang,
-    shiny,
     stats,
     stringr,
     tibble,
@@ -50,5 +54,6 @@ Imports:
     utils
 Remotes: 
     github::rmgpanw/ukbwranglr,
-    github::PheWAS/PheWAS
+    github::PheWAS/PheWAS,
+    github::hfshr/jqbr
 VignetteBuilder: knitr

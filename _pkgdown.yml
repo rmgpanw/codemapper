@@ -13,7 +13,9 @@ reference:
   desc:  Functions for looking up clinical codes and mapping between different coding systems.
 - contents:
   - lookup_codes
-  - codes_starting_with
+  - get_child_codes
+  - get_children_sct
+  - get_relatives_sct
   - code_descriptions_like
   - map_codes
   - get_mapping_df
@@ -49,6 +51,7 @@ reference:
 - title:: Utilities
   desc: Miscellaneous utility functions.
 - contents:
+  - infix_setops
   - codemapper_metadata
   - get_nhsbsa_snomed_bnf
   - get_ukb_self_report_med_to_atc_map

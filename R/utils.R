@@ -16,8 +16,8 @@
 #'
 #' @name infix_setops
 #' @examples
-#' df1 <- tibble(x = 1:3)
-#' df2 <- tibble(x = 3:5)
+#' df1 <- tibble::tibble(x = 1:3)
+#' df2 <- tibble::tibble(x = 3:5)
 #'
 #' # equivalent of dplyr::intersect(df1, df2)
 #' df1 %AND% df2
@@ -26,9 +26,8 @@
 #' df1 %OR% df2
 #'
 #' # equivalent of dplyr::setdiff(df1, df2). Note that argument order matters
-#' # here
-#' df1 %OR% df2
-#' df2 %OR% df1
+#' df1 %NOT% df2
+#' df2 %NOT% df1
 NULL
 
 #' @rdname infix_setops

@@ -404,7 +404,7 @@ codelistBuilderServer <- function(id) {
         "result.csv"
       },
       content = function(file) {
-        write.csv(data.frame(result = query_result()$result),
+        utils::write.csv(data.frame(result = query_result()$result),
                   file,
                   row.names = FALSE)
       }
@@ -887,6 +887,7 @@ operators <- c(code_type_operators,
 #' @param node_rm If `TRUE` (default), remove `node` from output
 #'
 #' @return A character vector of nodes that are upstream of `node`
+#' @noRd
 find_node_dependencies <- function(graph,
                                    node,
                                    mode = "out",
@@ -926,6 +927,7 @@ find_node_dependencies <- function(graph,
 #' @param code_type character
 #'
 #' @return Called for side effects within an observer.
+#' @noRd
 update_saved_queries <- function(query,
                                  query_result,
                                  code_type,
@@ -1050,6 +1052,7 @@ update_saved_queries <- function(query,
 #' @param saved_queries Reactive.
 #'
 #' @return Called for side effects within an observer.
+#' @noRd
 remove_saved_queries <- function(updated_dag,
                                  saved_queries) {
   stopifnot(is.reactive(updated_dag))
