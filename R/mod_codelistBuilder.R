@@ -280,7 +280,7 @@ codelistBuilderServer <- function(id) {
           code_type = input$code_type
         )
 
-        if (rlang::is_empty(x$result$result) || !rlang::is_empty(x$result$error)) {
+        if (!rlang::is_empty(x$result$error) || nrow(x$result$result) == 0) {
           x <- x$result
         } else {
           x$result <- x$result$result

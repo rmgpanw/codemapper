@@ -351,8 +351,8 @@ lookup_codes <- function(codes,
 
   # return result
   if (nrow(result) == 0) {
-    message("No matching codes found. Returning `NULL`")
-    return(NULL)
+    message("No matching codes found")
+    return(result)
   } else {
     # return either unique codes only, or df including code descriptions
     return(result)
@@ -830,8 +830,8 @@ map_codes <- function(codes,
 
   # return result
   if (nrow(result) == 0) {
-    message("No codes found after mapping. Returning `NULL`")
-    return(NULL)
+    message("No codes found after mapping.")
+    return(result)
   } else {
     # return either unique codes only, or df including descriptions
     if (codes_only) {
@@ -1332,8 +1332,8 @@ codes_starting_with <- function(codes,
 
   # return result
   if (nrow(result) == 0) {
-    message("No matching codes found. Returning `NULL`")
-    return(NULL)
+    message("No matching codes found.")
+    return(result)
   } else {
     # return either unique codes only, or df including code descriptions
     if (codes_only) {
