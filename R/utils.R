@@ -1,4 +1,55 @@
 
+
+# PUBLIC ------------------------------------------------------------------
+
+
+## Set ops -----------------------------------------------------------------
+
+
+#' Infix set operations
+#'
+#' Infix versions of [dplyr::setops]. `%AND%`, `%OR%` and `%NOT%` are the
+#' equivalents of [dplyr::intersect()], [dplyr::union()] and [dplyr::setdiff()]
+#' respectively.
+#'
+#' @inheritParams dplyr::setops
+#'
+#' @name infix_setops
+#' @examples
+#' df1 <- tibble(x = 1:3)
+#' df2 <- tibble(x = 3:5)
+#'
+#' # equivalent of dplyr::intersect(df1, df2)
+#' df1 %AND% df2
+#'
+#' # equivalent of dplyr::union(df1, df2)
+#' df1 %OR% df2
+#'
+#' # equivalent of dplyr::setdiff(df1, df2). Note that argument order matters
+#' # here
+#' df1 %OR% df2
+#' df2 %OR% df1
+NULL
+
+#' @rdname infix_setops
+#' @export
+`%AND%` <- function(x, y) {
+  dplyr::intersect(x, y)
+}
+
+#' @rdname infix_setops
+#' @export
+`%OR%` <- function(x, y) {
+  dplyr::union(x, y)
+}
+
+#' @rdname infix_setops
+#' @export
+`%NOT%` <- function(x, y) {
+  dplyr::setdiff(x, y)
+}
+
+
 # CONSTANTS ---------------------------------------------------------------
 
 UPDATE_CODE_SELECTION_MATCHING_VARS <- c("disease", "code_type", "code")
