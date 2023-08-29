@@ -137,6 +137,10 @@ codelistBuilderInput <- function(id, available_code_types) {
 
       ## Main panel ------------------------------------
       mainPanel = mainPanel(
+        navbarPage(title = "CodelistBuilder",
+                   id = ns("mainpanel"),
+                   tabPanel("Build query",
+
         ### Query builder input -----------------------------------------------------
         jqbr::queryBuilderInput(
           ns("qb"),
@@ -209,8 +213,8 @@ codelistBuilderInput <- function(id, available_code_types) {
             ),
             textOutput(ns("result_summary")),
             reactable::reactableOutput(ns("result")))
-        ),
-        h1("DAG"),
+        )),
+      tabPanel("Saved queries",
         tabsetPanel(
           id = ns("tabs_dag"),
           tabPanel(title = "DAG",
@@ -222,6 +226,7 @@ codelistBuilderInput <- function(id, available_code_types) {
           tabPanel(title = "Edges",
                    tableOutput(ns("dag_edges")))
         )
+      ))
       )
     )
   )
