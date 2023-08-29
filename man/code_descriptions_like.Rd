@@ -2,9 +2,21 @@
 % Please edit documentation in R/clinical_codes.R
 \name{code_descriptions_like}
 \alias{code_descriptions_like}
+\alias{DESCRIPTION}
 \title{Search for codes that match a description}
 \usage{
 code_descriptions_like(
+  reg_expr,
+  code_type = getOption("codemapper.code_type"),
+  all_lkps_maps = NULL,
+  ignore_case = TRUE,
+  codes_only = FALSE,
+  preferred_description_only = TRUE,
+  standardise_output = TRUE,
+  col_filters = default_col_filters()
+)
+
+DESCRIPTION(
   reg_expr,
   code_type = getOption("codemapper.code_type"),
   all_lkps_maps = NULL,

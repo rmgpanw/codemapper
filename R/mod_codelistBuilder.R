@@ -1125,12 +1125,12 @@ convert_rules_to_expr <- function(x) {
     switch(
       x$id,
       "description" = rlang::call2(
-        .fn = "code_descriptions_like",
+        .fn = "DESCRIPTION",
         x$value
       ),
       "saved_query" = as.symbol(x$value),
       "child_codes" = rlang::call2(
-        .fn = "get_child_codes",
+        .fn = "CHILDREN",
         x$value
       ),
       stop("Unrecognised filter!")

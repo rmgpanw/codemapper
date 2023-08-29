@@ -2,9 +2,21 @@
 % Please edit documentation in R/clinical_codes.R
 \name{get_child_codes}
 \alias{get_child_codes}
+\alias{CHILDREN}
 \title{Get descendents for a code}
 \usage{
 get_child_codes(
+  codes,
+  code_type = getOption("codemapper.code_type"),
+  all_lkps_maps = NULL,
+  codes_only = FALSE,
+  preferred_description_only = TRUE,
+  standardise_output = TRUE,
+  unrecognised_codes = "error",
+  col_filters = default_col_filters()
+)
+
+CHILDREN(
   codes,
   code_type = getOption("codemapper.code_type"),
   all_lkps_maps = NULL,

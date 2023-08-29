@@ -30,6 +30,7 @@
 #' @return data frame by default, or a character vector of codes if
 #'   \code{codes_only} is \code{TRUE}.
 #' @export
+#' @name code_descriptions_like
 #' @examples
 #' # build dummy all_lkps_maps
 #' all_lkps_maps_dummy <- build_all_lkps_maps_dummy()
@@ -178,6 +179,10 @@ code_descriptions_like <- function(reg_expr,
     return(result)
   }
 }
+
+#' @rdname code_descriptions_like
+#' @export
+DESCRIPTION <- code_descriptions_like
 
 #' Look up descriptions for clinical codes
 #'
@@ -372,6 +377,7 @@ lookup_codes <- function(codes,
 #' @inheritParams lookup_codes
 #'
 #' @return A data frame
+#' @name get_child_codes
 #' @export
 #'
 #' @seealso [get_children_sct()]
@@ -445,6 +451,11 @@ get_child_codes <- function(codes,
   }
 
 }
+
+
+#' @rdname get_child_codes
+#' @export
+CHILDREN <- get_child_codes
 
 #' Get children for SNOMED codes
 #'
