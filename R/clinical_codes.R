@@ -242,6 +242,10 @@ lookup_codes <- function(codes,
   # validate args
   check_codes(codes)
 
+  if (length(codes) == 1) {
+    codes <- codes_string_to_vector(codes)
+  }
+
   match.arg(
     arg = code_type,
     choices = CODE_TYPE_TO_LKP_TABLE_MAP$code
@@ -750,6 +754,10 @@ map_codes <- function(codes,
                       col_filters = default_col_filters()) {
   # validate args
   check_codes(codes)
+
+  if (length(codes) == 1) {
+    codes <- codes_string_to_vector(codes)
+  }
 
   # connect to database file path if `all_lkps_maps` is a string, or `NULL`
   if (is.character(all_lkps_maps)) {
@@ -1998,6 +2006,13 @@ expand_icd10_ranges <- function(read_v2_icd10,
       "end_icd10_code",
       "icd10_range_new"
     )))
+}
+
+codes_string_to_vector <- function(codes) {
+  codes %>%
+    stringr::str_split_1(pattern = "\\|") %>%
+    stringr::str_remove(pattern = "<<.*>>") %>%
+    stringr::str_trim(side = "both")
 }
 
 ## Validation helpers ---------------------------

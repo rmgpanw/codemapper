@@ -1134,3 +1134,12 @@ test_that("`check_codes()` raises an error appropriately", {
     regexp = "must be a character vector"
   )
 })
+
+# `codes_string_to_vector()` ----------------------------------------------
+
+test_that("`codes_string_to_vector()` works as expected", {
+  codes <- "E10<<comment>>|E11<<<comment>>>|E12<<>>|E13|E14<<comment <<subcomment>>> | E15 << comment with spaces >>"
+
+  expect_equal(codes_string_to_vector(codes),
+               paste0("E1", 0:5))
+})
