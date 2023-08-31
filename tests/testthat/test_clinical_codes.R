@@ -302,7 +302,7 @@ test_that("`codes_descriptions_like()` returns primary descriptions for codes wi
 test_that("`codes_descriptions_like` returns same result for all_lkps_maps_db and all_lkps_maps", {
 
   # expect no result with `ignore_case = FALSE`
-  expect_null(
+  expect_equal(
     code_descriptions_like(
       reg_expr = "diabetic retinopathy",
       code_type = "icd10",
@@ -310,7 +310,8 @@ test_that("`codes_descriptions_like` returns same result for all_lkps_maps_db an
       ignore_case = FALSE,
       codes_only = TRUE,
       standardise_output = FALSE
-    )
+    ),
+    character()
   )
 
   expect_equal(
