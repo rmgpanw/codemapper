@@ -258,6 +258,10 @@ codelistBuilderServer <- function(id) {
       }
     })
 
+    # observe({
+    #   lobstr::tree(input$qb)
+    # })
+
 
     ## Reset query builder -----------------------------------------------------
 
@@ -462,8 +466,8 @@ codelistBuilderServer <- function(id) {
       new_description_contains_filter <- description_contains_filter
       new_description_contains_filter$operators <- list(input$code_type)
 
-      # new_codes_filter <- codes_filter
-      # new_codes_filter$operators <- list(input$code_type)
+      new_codes_filter <- codes_filter
+      new_codes_filter$operators <- list(input$code_type)
 
       new_child_codes_filter <- child_codes_filter
       new_child_codes_filter$operators <- list(input$code_type)
@@ -472,7 +476,7 @@ codelistBuilderServer <- function(id) {
         inputId = "qb",
         setFilters = list(
           new_description_contains_filter,
-          # new_codes_filter,
+          new_codes_filter,
           new_child_codes_filter,
           # new_map_codes_filter,
           new_saved_query_filter
@@ -650,7 +654,7 @@ codelistBuilderServer <- function(id) {
         inputId = "qb",
         setFilters = list(
           description_contains_filter,
-          # codes_filter,
+          codes_filter,
           child_codes_filter,
           # new_map_codes_filter,
           new_saved_query_filter
@@ -856,16 +860,16 @@ description_contains_filter <- list(
   operators = list("read2")
 )
 
-# codes_filter <- list(
-#   id = "codes",
-#   label = "Codes",
-#   type = "string",
-#   operators = list("read2")
-# )
+codes_filter <- list(
+  id = "codes",
+  label = "Codes",
+  type = "string",
+  operators = list("read2")
+)
 
 filters <- list(
   description_contains_filter,
-  # codes_filter,
+  codes_filter,
   child_codes_filter,
   empty_saved_query_filter
 )
@@ -1120,7 +1124,7 @@ get_qbr_saved_queries <- function(x) {
       switch(x$id,
              "description" = NULL,
              "child_codes" = NULL,
-             # "codes" = NULL,
+             "codes" = NULL,
              "saved_query" = x$value,
              # "map_codes" = x$value,
              stop("Unrecognised filter!"))
@@ -1152,10 +1156,10 @@ convert_rules_to_expr <- function(x) {
         .fn = "CHILDREN",
         x$value
       ),
-      # "codes" = rlang::call2(
-      #   .fn = "CODES",
-      #   x$value
-      # ),
+      "codes" = rlang::call2(
+        .fn = "CODES",
+        x$value
+      ),
       stop("Unrecognised filter!")
     )
 
