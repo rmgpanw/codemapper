@@ -137,8 +137,7 @@ codelistBuilderInput <- function(id, available_code_types) {
 
       ## Main panel ------------------------------------
       mainPanel = mainPanel(
-        navbarPage(title = "CodelistBuilder",
-                   id = ns("mainpanel"),
+        tabsetPanel(id = ns("mainpanel"),
                    tabPanel("Build query",
 
         ### Query builder input -----------------------------------------------------
