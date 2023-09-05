@@ -2,9 +2,21 @@
 % Please edit documentation in R/clinical_codes.R
 \name{lookup_codes}
 \alias{lookup_codes}
+\alias{CODES}
 \title{Look up descriptions for clinical codes}
 \usage{
 lookup_codes(
+  codes,
+  code_type = getOption("codemapper.code_type"),
+  all_lkps_maps = NULL,
+  preferred_description_only = TRUE,
+  standardise_output = TRUE,
+  unrecognised_codes = "error",
+  col_filters = default_col_filters(),
+  .return_unrecognised_codes = FALSE
+)
+
+CODES(
   codes,
   code_type = getOption("codemapper.code_type"),
   all_lkps_maps = NULL,

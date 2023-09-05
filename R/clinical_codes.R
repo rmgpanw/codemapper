@@ -220,6 +220,7 @@ DESCRIPTION <- code_descriptions_like
 #'
 #' @return data frame
 #' @export
+#' @name lookup_codes
 #' @family Clinical code lookups and mappings
 #' @examples
 #' # build dummy all_lkps_maps
@@ -367,6 +368,10 @@ lookup_codes <- function(codes,
     return(result)
   }
 }
+
+#' @rdname lookup_codes
+#' @export
+CODES <- lookup_codes
 
 #' Get descendents for a code
 #'
