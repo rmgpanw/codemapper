@@ -15,6 +15,7 @@
 #' @return `NULL`
 #' @export
 #' @import shiny
+#' @import shinydashboard
 #'
 #' @examples
 #' \dontrun{
@@ -54,7 +55,29 @@ RunCodelistBuilder <- function(all_lkps_maps = NULL,
     dplyr::filter(.data[["lkp_table"]] %in% DBI::dbListTables(con)) %>%
     dplyr::pull(.data[["code"]])
 
-  ui <- fluidPage(codelistBuilderInput("builder", available_code_types = available_code_types))
+  ui <- dashboardPage(
+    skin = "purple",
+    dashboardHeader(title = "CodeMapper"),
+    dashboardSidebar(sidebarMenu(
+      menuItem(
+        "Build",
+        tabName = "builder_tab",
+        icon = icon("pen")
+      ),
+      menuItem("Compare", tabName = "compare_tab", icon = icon("hippo")),
+      menuItem("Map", tabName = "map_tab", icon = icon("circle-half-stroke"))
+    )),
+    dashboardBody(tabItems(
+      tabItem(tabName = "builder_tab",
+              fluidPage(
+                codelistBuilderInput("builder", available_code_types = available_code_types)
+              )),
+      tabItem(tabName = "compare_tab",
+              h2("Compare codelists")),
+      tabItem(tabName = "map_tab",
+              h2("Map codes"))
+    ))
+  )
 
   server <- function(input, output, sesion) {
     codelistBuilderServer("builder")

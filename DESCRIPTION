@@ -23,6 +23,7 @@ Suggests:
     reactable,
     rmarkdown,
     shiny,
+    shinydashboard,
     shinyFeedback,
     shinytest,
     visNetwork,
