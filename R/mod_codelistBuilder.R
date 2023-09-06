@@ -57,7 +57,7 @@ RunCodelistBuilder <- function(all_lkps_maps = NULL,
 
   ui <- dashboardPage(
     skin = "purple",
-    dashboardHeader(title = "CodeMapper"),
+    dashboardHeader(title = "Codemapper"),
     dashboardSidebar(sidebarMenu(
       menuItem(
         "Build",
@@ -67,7 +67,8 @@ RunCodelistBuilder <- function(all_lkps_maps = NULL,
       menuItem("Compare", tabName = "compare_tab", icon = icon("hippo")),
       menuItem("Map", tabName = "map_tab", icon = icon("circle-half-stroke"))
     )),
-    dashboardBody(tabItems(
+    dashboardBody(
+                  tabItems(
       tabItem(tabName = "builder_tab",
               fluidPage(
                 codelistBuilderInput("builder", available_code_types = available_code_types)
@@ -106,6 +107,7 @@ codelistBuilderInput <- function(id, available_code_types) {
 
   tagList(
     shinyFeedback::useShinyFeedback(),
+    shinyjs::useShinyjs(),
     jqbr::useQueryBuilder(),
 
     ## Side bar -------------------------------
@@ -441,6 +443,14 @@ codelistBuilderServer <- function(id) {
       }
     )
 
+
+    # Code type ---------------------------------------------------------------
+
+    observe({
+      # print(!is.null(input$qb))
+      # browser()
+      shinyjs::toggleState(ns("code_type"), condition = !is.null(input$qb), asis = TRUE)
+      })
 
     # Saved queries --------------------------------------------------------------
 

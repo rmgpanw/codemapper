@@ -25,6 +25,7 @@ Suggests:
     shiny,
     shinydashboard,
     shinyFeedback,
+    shinyjs,
     shinytest,
     visNetwork,
     withr,
