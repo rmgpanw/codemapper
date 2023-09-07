@@ -10,7 +10,7 @@ get_mapping_df(
   all_lkps_maps = NULL,
   rename_from_to = NULL,
   na.rm = TRUE,
-  reverse_mapping = "error",
+  reverse_mapping = getOption("codemapper.reverse_mapping"),
   col_filters = default_col_filters()
 )
 }

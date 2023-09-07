@@ -12,9 +12,9 @@ map_codes(
   all_lkps_maps = NULL,
   codes_only = FALSE,
   standardise_output = TRUE,
-  unrecognised_codes = "error",
+  unrecognised_codes = getOption("codemapper.unrecognised_codes_mapped"),
   preferred_description_only = TRUE,
-  reverse_mapping = "error",
+  reverse_mapping = getOption("codemapper.reverse_mapping"),
   col_filters = default_col_filters()
 )
 
@@ -25,9 +25,9 @@ MAP(
   all_lkps_maps = NULL,
   codes_only = FALSE,
   standardise_output = TRUE,
-  unrecognised_codes = "error",
+  unrecognised_codes = getOption("codemapper.unrecognised_codes_mapped"),
   preferred_description_only = TRUE,
-  reverse_mapping = "error",
+  reverse_mapping = getOption("codemapper.reverse_mapping"),
   col_filters = default_col_filters()
 )
 }

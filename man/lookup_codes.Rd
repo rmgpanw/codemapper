@@ -11,7 +11,7 @@ lookup_codes(
   all_lkps_maps = NULL,
   preferred_description_only = TRUE,
   standardise_output = TRUE,
-  unrecognised_codes = "error",
+  unrecognised_codes = getOption("codemapper.unrecognised_codes_lookup"),
   col_filters = default_col_filters(),
   .return_unrecognised_codes = FALSE
 )
@@ -22,7 +22,7 @@ CODES(
   all_lkps_maps = NULL,
   preferred_description_only = TRUE,
   standardise_output = TRUE,
-  unrecognised_codes = "error",
+  unrecognised_codes = getOption("codemapper.unrecognised_codes_lookup"),
   col_filters = default_col_filters(),
   .return_unrecognised_codes = FALSE
 )

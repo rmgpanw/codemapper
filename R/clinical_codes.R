@@ -237,7 +237,7 @@ lookup_codes <- function(codes,
                          all_lkps_maps = NULL,
                          preferred_description_only = TRUE,
                          standardise_output = TRUE,
-                         unrecognised_codes = "error",
+                         unrecognised_codes = getOption("codemapper.unrecognised_codes_lookup"),
                          col_filters = default_col_filters(),
                          .return_unrecognised_codes = FALSE) {
   # validate args
@@ -754,7 +754,7 @@ map_codes <- function(codes,
                       all_lkps_maps = NULL,
                       codes_only = FALSE,
                       standardise_output = TRUE,
-                      unrecognised_codes = "error",
+                      unrecognised_codes = getOption("codemapper.unrecognised_codes_mapped"),
                       preferred_description_only = TRUE,
                       reverse_mapping = getOption("codemapper.reverse_mapping"),
                       col_filters = default_col_filters()) {
@@ -2186,6 +2186,11 @@ handle_unrecognised_codes <-
            missing_codes,
            table_name,
            code_type) {
+
+    if (is.null(unrecognised_codes)) {
+      unrecognised_codes <- "error"
+    }
+
     match.arg(unrecognised_codes,
               choices = c("error", "warning"))
 

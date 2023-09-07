@@ -50,10 +50,22 @@ RunCodelistBuilder <- function(all_lkps_maps = NULL,
     con <- check_all_lkps_maps_path(all_lkps_maps)
     on.exit(DBI::dbDisconnect(con, shutdown = TRUE))
 
-  # determine which tables are available
+  # determine which lookup tables are available
   available_code_types <- CODE_TYPE_TO_LKP_TABLE_MAP %>%
     dplyr::filter(.data[["lkp_table"]] %in% DBI::dbListTables(con)) %>%
     dplyr::pull(.data[["code"]])
+
+  # determine which mapping tables are available
+  available_maps <- CLINICAL_CODE_MAPPINGS_MAP %>%
+    dplyr::filter(.data[["mapping_table"]] %in% DBI::dbListTables(con)) %>%
+    dplyr::select(tidyselect::all_of(c("from", "to")))
+
+  available_maps <- dplyr::bind_rows(
+    available_maps,
+    available_maps %>%
+      dplyr::rename("to" = tidyselect::all_of("from"),
+                    "from" = tidyselect::all_of("to"))
+  )
 
   ui <- dashboardPage(
     skin = "purple",
@@ -71,7 +83,9 @@ RunCodelistBuilder <- function(all_lkps_maps = NULL,
                   tabItems(
       tabItem(tabName = "builder_tab",
               fluidPage(
-                codelistBuilderInput("builder", available_code_types = available_code_types)
+                codelistBuilderInput("builder",
+                                     available_code_types = available_code_types,
+                                     available_maps = available_maps)
               )),
       tabItem(tabName = "compare_tab",
               h2("Compare codelists")),
@@ -95,12 +109,15 @@ RunCodelistBuilder <- function(all_lkps_maps = NULL,
 #' UI for codelistBuilder shiny module
 #'
 #' @param id character
-#' @param available_code_types Character vector of code types (must match code types in `CODE_TYPE_TO_LKP_TABLE_MAP$code`)
+#' @param available_code_types Character vector of code types (must match code
+#'   types in `CODE_TYPE_TO_LKP_TABLE_MAP$code`)
+#' @param available_maps Data frame with columns 'from' and 'to' (must match
+#'   'from-to' and 'to-from' combinations in `CLINICAL_CODE_MAPPINGS_MAP`)
 #'
 #' @return UI (html)
 #' @noRd
 #' @import shiny
-codelistBuilderInput <- function(id, available_code_types) {
+codelistBuilderInput <- function(id, available_code_types, available_maps) {
   stopifnot(all(available_code_types %in% CODE_TYPE_TO_LKP_TABLE_MAP$code))
 
   ns <- NS(id)
@@ -303,7 +320,11 @@ codelistBuilderServer <- function(id) {
       } else {
         query <- custom_qbr_translation(input$qb)
 
-        execute_query <- purrr::safely(\(x) withr::with_options(list(codemapper.code_type = input$code_type),
+        execute_query <- purrr::safely(\(x) withr::with_options(list(codemapper.code_type = input$code_type,
+                                                                     codemapper.map_to = input$code_type,
+                                                                     codemapper.reverse_mapping = "warning",
+                                                                     codemapper.unrecognised_codes_mapped = "warning",
+                                                                     codemapper.unrecognised_codes_lookup = "error"),
                                                                 eval(query, envir = saved_queries()$results)))
 
         x <- list(
@@ -485,13 +506,9 @@ codelistBuilderServer <- function(id) {
     observeEvent(list(input$code_type, saved_queries(), input$btn_save_updated_query, input$cancel_query_update), {
       # update qbr saved query filter
       new_saved_query_filter <- empty_saved_query_filter
-      # new_map_codes_filter <- empty_map_codes_filter
 
       new_saved_query_filter$values <-
         as.list(saved_queries()$objects[[input$code_type]])
-
-      # new_map_codes_filter$values <-
-      #   as.list(saved_queries()$objects)
 
       new_saved_query_filter$operators <- list(input$code_type)
 
@@ -500,6 +517,11 @@ codelistBuilderServer <- function(id) {
 
       new_codes_filter <- codes_filter
       new_codes_filter$operators <- list(input$code_type)
+
+      new_map_codes_filter <- map_codes_filter
+      new_map_codes_filter$operators <-
+        get_available_map_from_code_types(available_maps = available_maps,
+                                          to = input$code_type)
 
       new_child_codes_filter <- child_codes_filter
       new_child_codes_filter$operators <- list(input$code_type)
@@ -510,7 +532,7 @@ codelistBuilderServer <- function(id) {
           new_description_contains_filter,
           new_codes_filter,
           new_child_codes_filter,
-          # new_map_codes_filter,
+          new_map_codes_filter,
           new_saved_query_filter
         ),
         setRules = update_qb_operator_code_type(input$qb, input$code_type)
@@ -663,14 +685,9 @@ codelistBuilderServer <- function(id) {
       # new filter
       new_saved_query_filter <- empty_saved_query_filter
 
-      # new_map_codes_filter <- empty_map_codes_filter
-
       if (length(available_saved_queries) > 0) {
         new_saved_query_filter$values <-
           as.list(available_saved_queries)
-
-        # new_map_codes_filter$values <-
-        #   as.list(available_saved_queries)
       }
 
       # finally
@@ -688,7 +705,7 @@ codelistBuilderServer <- function(id) {
           description_contains_filter,
           codes_filter,
           child_codes_filter,
-          # new_map_codes_filter,
+          map_codes_filter,
           new_saved_query_filter
         ),
         setRules = get(
@@ -865,70 +882,6 @@ codelistBuilderServer <- function(id) {
 
 
 # PRIVATE -----------------------------------------------------------------
-
-## jqbr filters and operators --------------------------------------------------------------------
-
-# qbr filters
-empty_saved_query_filter <- list(
-  id = "saved_query",
-  label = "Saved query",
-  type = "string",
-  input = "select",
-  values = list(""),
-  operators = list("read2")
-)
-
-child_codes_filter <- list(
-  id = "child_codes",
-  label = "Children",
-  type = "string",
-  operators = list("read2")
-)
-
-description_contains_filter <- list(
-  id = "description",
-  label = "Description",
-  type = "string",
-  operators = list("read2")
-)
-
-codes_filter <- list(
-  id = "codes",
-  label = "Codes",
-  type = "string",
-  operators = list("read2")
-)
-
-filters <- list(
-  description_contains_filter,
-  codes_filter,
-  child_codes_filter,
-  empty_saved_query_filter
-)
-
-code_type_operators <- CODE_TYPE_TO_LKP_TABLE_MAP %>%
-  dplyr::pull(.data[["code"]]) %>%
-  purrr::map(\(x) list(type = x,
-                       nb_inputs = 1,
-                       multiple = FALSE,
-                       apply_to = "string"))
-
-operators <- c(code_type_operators,
-               list(
-                 list(
-                   type = "equals",
-                   nb_inputs = 1,
-                   multiple = FALSE,
-                   apply_to = "string"
-                 ),
-                 list(
-                   type = "from ICD-10",
-                   optgroup = "Map",
-                   nb_inputs = 1,
-                   multiple = FALSE,
-                   apply_to = "string"
-                 )
-               ))
 
 ## Utils -------------------------------------------------------------------
 
@@ -1158,7 +1111,7 @@ get_qbr_saved_queries <- function(x) {
              "child_codes" = NULL,
              "codes" = NULL,
              "saved_query" = x$value,
-             # "map_codes" = x$value,
+             "map_codes" = NULL,
              stop("Unrecognised filter!"))
 
     } else if (is.list(x)) {
@@ -1191,6 +1144,11 @@ convert_rules_to_expr <- function(x) {
       "codes" = rlang::call2(
         .fn = "CODES",
         x$value
+      ),
+      "map_codes" = rlang::call2(
+        .fn = "MAP",
+        x$value,
+        from = x$operator
       ),
       stop("Unrecognised filter!")
     )
@@ -1267,3 +1225,83 @@ get_objects_from_nodes <- function(nodes) {
                  dplyr::pull(.data[["id"]]) %>%
                  as.list())
 }
+
+get_available_map_from_code_types <- function(available_maps, to) {
+  available_maps %>%
+    dplyr::filter(.data[["to"]] == !!to) %>%
+    dplyr::pull(.data[["from"]]) %>%
+    as.list()
+}
+
+## jqbr filters and operators --------------------------------------------------------------------
+
+# qbr filters
+empty_saved_query_filter <- list(
+  id = "saved_query",
+  label = "Saved query",
+  type = "string",
+  input = "select",
+  values = list(""),
+  operators = list("read2")
+)
+
+child_codes_filter <- list(
+  id = "child_codes",
+  label = "Children",
+  type = "string",
+  operators = list("read2")
+)
+
+description_contains_filter <- list(
+  id = "description",
+  label = "Description",
+  type = "string",
+  operators = list("read2")
+)
+
+codes_filter <- list(
+  id = "codes",
+  label = "Codes",
+  type = "string",
+  operators = list("read2")
+)
+
+map_codes_filter <- list(
+  id = "map_codes",
+  label = "Map codes",
+  type = "string",
+  operators = get_available_map_from_code_types(available_maps = available_maps,
+                                                to = "read2")
+)
+
+filters <- list(
+  description_contains_filter,
+  codes_filter,
+  map_codes_filter,
+  child_codes_filter,
+  empty_saved_query_filter
+)
+
+code_type_operators <- CODE_TYPE_TO_LKP_TABLE_MAP %>%
+  dplyr::pull(.data[["code"]]) %>%
+  purrr::map(\(x) list(type = x,
+                       nb_inputs = 1,
+                       multiple = FALSE,
+                       apply_to = "string"))
+
+operators <- c(code_type_operators,
+               list(
+                 list(
+                   type = "equals",
+                   nb_inputs = 1,
+                   multiple = FALSE,
+                   apply_to = "string"
+                 ),
+                 list(
+                   type = "from ICD-10",
+                   optgroup = "Map",
+                   nb_inputs = 1,
+                   multiple = FALSE,
+                   apply_to = "string"
+                 )
+               ))
