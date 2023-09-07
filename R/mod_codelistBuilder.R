@@ -523,6 +523,11 @@ codelistBuilderServer <- function(id) {
         get_available_map_from_code_types(available_maps = available_maps,
                                           to = input$code_type)
 
+      new_map_children_filter <- map_children_filter
+      new_map_children_filter$operators <-
+        get_available_map_from_code_types(available_maps = available_maps,
+                                          to = input$code_type)
+
       new_child_codes_filter <- child_codes_filter
       new_child_codes_filter$operators <- list(input$code_type)
 
@@ -533,6 +538,7 @@ codelistBuilderServer <- function(id) {
           new_codes_filter,
           new_child_codes_filter,
           new_map_codes_filter,
+          new_map_children_filter,
           new_saved_query_filter
         ),
         setRules = update_qb_operator_code_type(input$qb, input$code_type)
@@ -706,6 +712,7 @@ codelistBuilderServer <- function(id) {
           codes_filter,
           child_codes_filter,
           map_codes_filter,
+          map_children_filter,
           new_saved_query_filter
         ),
         setRules = get(
@@ -1111,6 +1118,7 @@ get_qbr_saved_queries <- function(x) {
              "child_codes" = NULL,
              "codes" = NULL,
              "saved_query" = x$value,
+             "map_children" = NULL,
              "map_codes" = NULL,
              stop("Unrecognised filter!"))
 
@@ -1150,6 +1158,13 @@ convert_rules_to_expr <- function(x) {
         x$value,
         from = x$operator
       ),
+      "map_children" = rlang::call2(
+        .fn = "MAP",
+        rlang::call2(
+          .fn = "CHILDREN",
+          x$value,
+          code_type = x$operator
+        )),
       stop("Unrecognised filter!")
     )
 
@@ -1274,10 +1289,20 @@ map_codes_filter <- list(
                                                 to = "read2")
 )
 
+map_children_filter <- list(
+  id = "map_children",
+  label = "Map children",
+  type = "string",
+  values = list(""),
+  operators = get_available_map_from_code_types(available_maps = available_maps,
+                                                to = "read2")
+)
+
 filters <- list(
   description_contains_filter,
   codes_filter,
   map_codes_filter,
+  map_children_filter,
   child_codes_filter,
   empty_saved_query_filter
 )
