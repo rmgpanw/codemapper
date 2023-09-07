@@ -2,9 +2,23 @@
 % Please edit documentation in R/clinical_codes.R
 \name{map_codes}
 \alias{map_codes}
+\alias{MAP}
 \title{Map clinical codes from one coding system to another}
 \usage{
 map_codes(
+  codes,
+  to = getOption("codemapper.map_to"),
+  from = getOption("codemapper.map_from"),
+  all_lkps_maps = NULL,
+  codes_only = FALSE,
+  standardise_output = TRUE,
+  unrecognised_codes = "error",
+  preferred_description_only = TRUE,
+  reverse_mapping = "error",
+  col_filters = default_col_filters()
+)
+
+MAP(
   codes,
   to = getOption("codemapper.map_to"),
   from = getOption("codemapper.map_from"),

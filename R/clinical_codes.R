@@ -734,6 +734,7 @@ get_relatives_sct <- function(codes = "269823000",
 #' @inheritParams get_child_codes
 #' @inheritParams lookup_codes
 #'
+#' @name map_codes
 #' @export
 #' @family Clinical code lookups and mappings
 #' @examples
@@ -755,7 +756,7 @@ map_codes <- function(codes,
                       standardise_output = TRUE,
                       unrecognised_codes = "error",
                       preferred_description_only = TRUE,
-                      reverse_mapping = "error",
+                      reverse_mapping = getOption("codemapper.reverse_mapping"),
                       col_filters = default_col_filters()) {
   # validate args
   check_codes(codes)
@@ -884,6 +885,10 @@ map_codes <- function(codes,
   }
 }
 
+#' @rdname map_codes
+#' @export
+MAP <- map_codes
+
 #' Get a 'from-to' mapping data frame
 #'
 #' Returns a data frame with 'from' and 'to' columns for a specified pair of
@@ -920,7 +925,7 @@ get_mapping_df <- function(to = getOption("codemapper.map_to"),
                            all_lkps_maps = NULL,
                            rename_from_to = NULL,
                            na.rm = TRUE,
-                           reverse_mapping = "error",
+                           reverse_mapping = getOption("codemapper.reverse_mapping"),
                            col_filters = default_col_filters()) {
   # validate args
 
@@ -2033,9 +2038,22 @@ check_codes <- function(codes) {
 check_mapping_args <- function(from,
                                to,
                                reverse_mapping = "error") {
+
+  if (identical(reverse_mapping, NULL)) {
+    reverse_mapping <- "error"
+  }
+
   match.arg(reverse_mapping,
             choices = c("error", "warning")
   )
+
+  if (identical(from, NULL)) {
+    from <- ""
+  }
+
+  if (identical(to, NULL)) {
+    to <- ""
+  }
 
   match.arg(
     arg = from,
@@ -2049,7 +2067,7 @@ check_mapping_args <- function(from,
   )
   # choices = CLINICAL_CODE_MAPPINGS_MAP$to)
 
-  assertthat::assert_that(!from == to,
+  assertthat::assert_that(!identical(from, to),
                           msg = "Error! `from` and `to` args cannot be the same"
   )
 
