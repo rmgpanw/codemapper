@@ -308,7 +308,15 @@ codelistBuilderServer <- function(id) {
 
     observeEvent(input$reset_qbr,
                  jqbr::updateQueryBuilder(inputId = "qb",
-                                    reset = TRUE))
+                                    setRules = list(condition = "AND",
+                                                 rules = list(
+                                                   list(
+                                                     id = "description",
+                                                     operator = "read2",
+                                                     value = "diab",
+                                                     description = "I'm a description"
+                                                   )
+                                                 ))))
 
 
     ## Run query ---------------------------------------------------------------
@@ -468,8 +476,6 @@ codelistBuilderServer <- function(id) {
     # Code type ---------------------------------------------------------------
 
     observe({
-      # print(!is.null(input$qb))
-      # browser()
       shinyjs::toggleState(ns("code_type"), condition = !is.null(input$qb), asis = TRUE)
       })
 
@@ -541,7 +547,8 @@ codelistBuilderServer <- function(id) {
           new_map_children_filter,
           new_saved_query_filter
         ),
-        setRules = update_qb_operator_code_type(input$qb, input$code_type)
+        setRules = update_qb_operator_code_type(input$qb, input$code_type),
+        destroy = TRUE
       )
     })
 
@@ -1214,7 +1221,11 @@ update_qb_operator_code_type <- function(x, code_type) {
       identical(names(x),
                 c("id", "field", "type", "input", "operator", "value"))) {
 
-    x$operator <- code_type
+    if (x$id %in% c("map_codes", "map_children")) {
+      x$operator <- NULL
+    } else {
+      x$operator <- code_type
+    }
 
     x
 
@@ -1285,17 +1296,14 @@ map_codes_filter <- list(
   id = "map_codes",
   label = "Map codes",
   type = "string",
-  operators = get_available_map_from_code_types(available_maps = available_maps,
-                                                to = "read2")
+  operators = list()
 )
 
 map_children_filter <- list(
   id = "map_children",
   label = "Map children",
   type = "string",
-  values = list(""),
-  operators = get_available_map_from_code_types(available_maps = available_maps,
-                                                to = "read2")
+  operators = list()
 )
 
 filters <- list(
