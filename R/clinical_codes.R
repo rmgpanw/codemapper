@@ -240,6 +240,13 @@ lookup_codes <- function(codes,
                          unrecognised_codes = getOption("codemapper.unrecognised_codes_lookup"),
                          col_filters = default_col_filters(),
                          .return_unrecognised_codes = FALSE) {
+
+  # TODO - create df and string methods; validate codes df
+  if (is.data.frame(codes)) {
+    code_type <- unique(codes$code_type)
+    codes <- codes$code
+  }
+
   # validate args
   check_codes(codes)
 
@@ -758,6 +765,13 @@ map_codes <- function(codes,
                       preferred_description_only = TRUE,
                       reverse_mapping = getOption("codemapper.reverse_mapping"),
                       col_filters = default_col_filters()) {
+
+  # TODO - create df and string methods; validate codes df
+  if (is.data.frame(codes)) {
+    from <- unique(codes$code_type)
+    codes <- codes$code
+  }
+
   # validate args
   check_codes(codes)
 
