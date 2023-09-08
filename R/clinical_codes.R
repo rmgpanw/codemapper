@@ -158,8 +158,13 @@ code_descriptions_like <- function(reg_expr,
   }
 
   ## then expand to include both primary and secondary descriptions
+  codes <- unique(result[[code_col]])
+
+  codes <- subset(codes,
+                  !is.na(codes))
+
   result <- lookup_codes(
-    codes = unique(result[[code_col]]),
+    codes = codes,
     code_type = code_type,
     all_lkps_maps = all_lkps_maps,
     preferred_description_only = preferred_description_only,
