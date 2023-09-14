@@ -1255,7 +1255,15 @@ default_col_filters <- function() {
     ),
     read_v2_icd10 = list(icd10_code_def = c("1", "15", "3", "5", "7", "8")),
     read_ctv3_read_v2 = list(IS_ASSURED = "1"),
-    read_v2_read_ctv3 = list(IS_ASSURED = "1")
+    read_v2_read_ctv3 = list(IS_ASSURED = "1"),
+    rcsctmap2 = list(
+      IS_ASSURED = "1",
+      MapStatus = "1"
+    ),
+    ctv3sctmap2 = list(
+      MAPSTATUS = "1",
+      IS_ASSURED = "1"
+    )
   )
 }
 

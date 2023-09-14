@@ -153,6 +153,8 @@ all_lkps_maps_to_db <- function(all_lkps_maps = build_all_lkps_maps(),
 #'   file (see [get_phecode_icd10_map()]).
 #' @param icd9_phecode_1_2 Optional: path to the phecode v1.2 to ICD10 mapping
 #'   file (see [get_phecode_icd9_map()]).
+#' @param snomed_ct_nhs_data_migration Optional: path to the unzipped [NHS Data
+#'   Migration](https://isd.digital.nhs.uk/trud/users/guest/filters/0/categories/9/items/9/releases).
 #'
 #' @return Returns a named list of data frames.
 #' @seealso [all_lkps_maps_to_db()]
@@ -177,7 +179,8 @@ build_all_lkps_maps <-
            phecode_1_2_lkp = get_phecode_definitions(),
            icd10_phecode_1_2 = get_phecode_icd10_map(),
            icd9_phecode_1_2 = get_phecode_icd9_map(),
-           snomed_ct_uk_monolith = NULL) {
+           snomed_ct_uk_monolith = NULL,
+           snomed_ct_nhs_data_migration = NULL) {
     # ukb resource 592 ----------------
 
     ## remove metadata footer rows and add row index column -------------------
@@ -348,6 +351,15 @@ build_all_lkps_maps <-
                              ".txt")
     }
 
+    ## SNOMED CT NHS Data Migration ------
+
+    if (!is.null(snomed_ct_nhs_data_migration)) {
+
+      nhs_data_migration_mapping_tables <-
+        read_snomed_ct_nhs_data_migration_mapping_tables(nhs_data_migration_dir = snomed_ct_nhs_data_migration)
+    }
+
+
     ## Phecode lookup ----------------
     if (!is.null(phecode_1_2_lkp)) {
       phecode_lkp <- readr::read_csv(phecode_1_2_lkp,
@@ -435,6 +447,16 @@ build_all_lkps_maps <-
             dplyr::filter(stringr::str_detect(.data[["mapTarget"]],
                                               "#",
                                               negate = TRUE))
+        )
+      )
+    }
+
+    if (!is.null(snomed_ct_nhs_data_migration)) {
+      all_lkps_maps <- c(
+        all_lkps_maps,
+        list(
+          ctv3sctmap2 = nhs_data_migration_mapping_tables$clinically_assured$ctv3sctmap2_uk_20200401000001.txt,
+          rcsctmap2 = nhs_data_migration_mapping_tables$clinically_assured$rcsctmap2_uk_20200401000001.txt
         )
       )
     }
@@ -1117,4 +1139,43 @@ read_snomed_ct_uk_monolith <- function(snomed_ct_uk_monolith_dir) {
       snomed_monolith_refset = snomed_monolith_refset
     )
   )
+}
+
+#' Read the NHS Data Migration release into R
+#'
+#' @param nhs_data_migration_dir path to the unzipped [NHS Data
+#'   Migration](https://isd.digital.nhs.uk/trud/users/guest/filters/0/categories/9/items/9/releases).
+#'
+#' @return A list.
+#' @noRd
+read_snomed_ct_nhs_data_migration_mapping_tables <- function(nhs_data_migration_dir) {
+  # mapping tables for Read 2 and Read 3 to SNOMED 'clinically assured'
+  file.path(nhs_data_migration_dir,
+            "Mapping Tables",
+            "Updated") %>%
+    list.files(full.names = TRUE) %>%
+    purrr::set_names(nm = \(x) fs::path_file(x) %>%
+                       tolower() %>%
+                       stringr::str_replace_all(" ", "_")) %>%
+    purrr::discard_at(c("documentation", "not_clinically_assured")) %>%
+    purrr::map(
+      ~ .x %>%
+        list.files(full.names = TRUE) %>%
+        subset(.,
+               fs::path_ext(.) == "txt") %>%
+        # only select these 2 tables
+        subset(
+          .,
+          fs::path_file(.) %in% c(
+            "ctv3sctmap2_uk_20200401000001.txt",
+            "rcsctmap2_uk_20200401000001.txt"
+          )
+        ) %>%
+        purrr::set_names(nm = fs::path_file) %>%
+        purrr::map(~ data.table::fread(
+          .x,
+          sep = "\t",
+          colClasses = "character"
+        ))
+    )
 }

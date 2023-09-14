@@ -9,11 +9,17 @@ SNOMED_CT_UK_MONOLITH <- ifelse(
   Sys.getenv("SNOMED_CT_UK_MONOLITH")
 )
 
+NHS_DATA_MIGRATION <- ifelse(
+  Sys.getenv("NHS_DATA_MIGRATION") == "",
+  NULL,
+  Sys.getenv("NHS_DATA_MIGRATION")
+)
+
 ALL_LKPS_MAPS_DB <- Sys.getenv("ALL_LKPS_MAPS_DB")
 
 # Build db ----------------------------------------------------------------
 
-build_all_lkps_maps(
+all_lkps_maps <- build_all_lkps_maps(
   all_lkps_maps = read_all_lkps_maps(),
   ukb_codings = ukbwranglr::get_ukb_codings(),
   bnf_dmd = get_nhsbsa_snomed_bnf(),
@@ -21,8 +27,11 @@ build_all_lkps_maps(
   phecode_1_2_lkp = get_phecode_definitions(),
   icd10_phecode_1_2 = get_phecode_icd10_map(),
   icd9_phecode_1_2 = get_phecode_icd9_map(),
-  snomed_ct_uk_monolith = SNOMED_CT_UK_MONOLITH
-) %>%
+  snomed_ct_uk_monolith = SNOMED_CT_UK_MONOLITH,
+  snomed_ct_nhs_data_migration = NHS_DATA_MIGRATION
+)
+
+all_lkps_maps |>
   all_lkps_maps_to_db(db_path = ALL_LKPS_MAPS_DB,
                       overwrite = TRUE)
 

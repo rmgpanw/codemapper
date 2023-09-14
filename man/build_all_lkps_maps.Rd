@@ -12,7 +12,8 @@ build_all_lkps_maps(
   phecode_1_2_lkp = get_phecode_definitions(),
   icd10_phecode_1_2 = get_phecode_icd10_map(),
   icd9_phecode_1_2 = get_phecode_icd9_map(),
-  snomed_ct_uk_monolith = NULL
+  snomed_ct_uk_monolith = NULL,
+  snomed_ct_nhs_data_migration = NULL
 )
 }
 \arguments{
@@ -39,6 +40,8 @@ file (see \code{\link[=get_phecode_icd10_map]{get_phecode_icd10_map()}}).}
 file (see \code{\link[=get_phecode_icd9_map]{get_phecode_icd9_map()}}).}
 
 \item{snomed_ct_uk_monolith}{Optional: path to the unzipped \href{https://isd.digital.nhs.uk/trud/users/guest/filters/2/categories/26/items/1799/releases}{SNOMED CT UK Monolith Edition}.}
+
+\item{snomed_ct_nhs_data_migration}{Optional: path to the unzipped \href{https://isd.digital.nhs.uk/trud/users/guest/filters/0/categories/9/items/9/releases}{NHS Data Migration}.}
 }
 \value{
 Returns a named list of data frames.

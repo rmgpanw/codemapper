@@ -32,7 +32,8 @@ ALL_LKPS_MAPS_TABLE_NAMES <- c(
   "read_ctv3_read_v2",
   "bnf_dmd",
   "opcs4_lkp",
-  "read_ctv3_sct",
+  "ctv3sctmap2",
+  "rcsctmap2",
   "phecode_lkp"
 )
 
@@ -93,11 +94,12 @@ CLINICAL_CODE_MAPPINGS_MAP <- tibble::tribble(
   "read3", "opcs4", "read_ctv3_opcs4", "read_code", "opcs4_code", NA, NA,
   "read3", "read2", "read_ctv3_read_v2", "READV3_CODE", "READV2_CODE", "TERMV2_TYPE", "P",
   "bnf", "dmd", "bnf_dmd", "bnf_code", "snomed_code", NA, NA,
-  "read3", "sct", "read_ctv3_sct", "CTV3_CONCEPTID", "SCT_CONCEPTID", NA, NA,
   "icd10", "phecode", "icd10_phecode", "ALT_CODE", "PHECODE", NA, NA,
   "icd9", "phecode", "icd9_phecode", "icd9", "phecode", NA, NA,
   "sct", "icd10", "sct_icd10", "referencedComponentId", "mapTarget", NA, NA,
-  "sct", "opcs4", "sct_opcs4", "referencedComponentId", "mapTarget", NA, NA
+  "sct", "opcs4", "sct_opcs4", "referencedComponentId", "mapTarget", NA, NA,
+  "read2", "sct", "rcsctmap2", "ReadCode", "ConceptId", NA, NA,
+  "read3", "sct", "ctv3sctmap2", "CTV3_CONCEPTID", "SCT_CONCEPTID", NA, NA,
 )
 
 # PUBLIC ------------------------------------------------------------------
