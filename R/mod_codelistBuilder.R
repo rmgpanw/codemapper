@@ -95,7 +95,7 @@ RunCodelistBuilder <- function(all_lkps_maps = NULL,
   )
 
   server <- function(input, output, sesion) {
-    codelistBuilderServer("builder")
+    codelistBuilderServer("builder", available_maps = available_maps)
   }
 
   withr::with_envvar(
@@ -186,7 +186,9 @@ codelistBuilderInput <- function(id, available_code_types, available_maps) {
         jqbr::queryBuilderInput(
           ns("qb"),
 
-          plugins = list("sortable" = NULL),
+          plugins = list("sortable" = NULL,
+                         "filter-description" = list("mode" = "bootbox"),
+                         "bt-tooltip-errors" = NULL),
 
           filters = filters,
 
@@ -202,7 +204,8 @@ codelistBuilderInput <- function(id, available_code_types, available_maps) {
                          )
                        )),
           conditions = c("AND", "OR", "NOT"),
-          return_value = "rules"
+          return_value = "rules",
+          display_errors = TRUE
         ),
 
         ### Summarise and run query -------------------------------------------------
@@ -282,7 +285,7 @@ codelistBuilderInput <- function(id, available_code_types, available_maps) {
 #' @return UI (html)
 #' @noRd
 #' @import shiny
-codelistBuilderServer <- function(id) {
+codelistBuilderServer <- function(id, available_maps) {
   ns <- NS(id)
 
   moduleServer(id, function(input, output, session) {
@@ -1268,42 +1271,48 @@ empty_saved_query_filter <- list(
   type = "string",
   input = "select",
   values = list(""),
-  operators = list("read2")
+  operators = list("read2"),
+  description = "I'm a description"
 )
 
 child_codes_filter <- list(
   id = "child_codes",
   label = "Children",
   type = "string",
-  operators = list("read2")
+  operators = list("read2"),
+  description = "I'm a description"
 )
 
 description_contains_filter <- list(
   id = "description",
   label = "Description",
   type = "string",
-  operators = list("read2")
+  operators = list("read2"),
+  description = "I'm a description"
 )
 
 codes_filter <- list(
   id = "codes",
   label = "Codes",
   type = "string",
-  operators = list("read2")
+  operators = list("read2"),
+  description = "I'm a description"
 )
 
 map_codes_filter <- list(
   id = "map_codes",
   label = "Map codes",
   type = "string",
-  operators = list()
+  operators = list(),
+  description = "I'm a description"
 )
 
 map_children_filter <- list(
   id = "map_children",
   label = "Map children",
   type = "string",
-  operators = list()
+  operators = list(),
+  description = "I'm a description"
 )
 
 filters <- list(
