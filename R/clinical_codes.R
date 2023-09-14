@@ -1278,6 +1278,9 @@ default_col_filters <- function() {
     ctv3sctmap2 = list(
       MAPSTATUS = "1",
       IS_ASSURED = "1"
+    ),
+    sct_description = list(
+      active = "1"
     )
   )
 }
