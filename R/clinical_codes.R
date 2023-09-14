@@ -293,6 +293,9 @@ lookup_codes <- function(codes,
   # determine relevant lookup sheet
   lkp_table <- get_lookup_sheet(code_type = code_type)
 
+  check_table_exists_in_all_lkps_maps(all_lkps_maps = all_lkps_maps,
+                                      table_name = lkp_table)
+
   # determine code column for lookup sheet
   code_col <- get_col_for_lookup_sheet(
     lookup_sheet = lkp_table,
@@ -547,6 +550,9 @@ get_children_sct <- function(codes,
   # determine relevant lookup sheet
   lkp_table <- get_lookup_sheet(code_type = "sct")
 
+  check_table_exists_in_all_lkps_maps(all_lkps_maps = all_lkps_maps,
+                                      table_name = lkp_table)
+
   # determine code column for lookup sheet
   code_col <- get_col_for_lookup_sheet(
     lookup_sheet = lkp_table,
@@ -681,6 +687,9 @@ get_relatives_sct <- function(codes = "269823000",
   #                         msg = paste0("Unrecognised relationship: '",
   #                                      relationship,
   #                                      "'"))
+
+  check_table_exists_in_all_lkps_maps(all_lkps_maps = all_lkps_maps,
+                                      table_name = "sct_relationship")
 
   # get related codes
   related_codes <-
@@ -829,6 +838,9 @@ map_codes <- function(codes,
   from_col <- mapping_params$from_col
   to_col <- mapping_params$to_col
   mapping_table <- mapping_params$mapping_table
+
+  check_table_exists_in_all_lkps_maps(all_lkps_maps = all_lkps_maps,
+                                      table_name = mapping_table)
 
   # determine relevant column indicating whether code description is preferred
   # (for code types with synonymous code descriptions like read 2 and read 3)
@@ -995,6 +1007,9 @@ get_mapping_df <- function(to = getOption("codemapper.map_to"),
       )
     }
   }
+
+  check_table_exists_in_all_lkps_maps(all_lkps_maps = all_lkps_maps,
+                                      table_name = mapping_table)
 
   # get just distinct combinations of from_col and to_col for mapping_table
   from_to_cols <- c(
@@ -2300,5 +2315,15 @@ check_codes_exist <- function(codes,
     missing_codes = missing_codes,
     table_name = table_name,
     code_type = code_type
+  )
+}
+
+check_table_exists_in_all_lkps_maps <- function(all_lkps_maps,
+                                                table_name) {
+  assertthat::assert_that(
+    table_name %in% names(all_lkps_maps),
+    msg = paste0("Required table ",
+                 table_name,
+                 " not found in `all_lkps_maps`")
   )
 }
