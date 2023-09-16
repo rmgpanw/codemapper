@@ -259,6 +259,8 @@ lookup_codes <- function(codes,
     codes <- codes_string_to_vector(codes)
   }
 
+  stopifnot(!is.null(code_type))
+
   match.arg(
     arg = code_type,
     choices = CODE_TYPE_TO_LKP_TABLE_MAP$code
@@ -629,8 +631,43 @@ get_children_sct <- function(codes,
 #' @export
 #'
 #' @return A data frame
-get_relatives_sct <- function(codes = "269823000",
-                              relationship = "116680003",
+#'
+#' @examples
+#' # get children codes for "269823000" ("Hemoglobin A1C - ...")
+#' get_relatives_sct(
+#'   codes = "269823000",
+#'   relationship = "116680003",
+#'   relationship_direction = "child"
+#'   ) %>%
+#'   lookup_codes("sct")
+#'
+#' # get parent codes
+#' get_relatives_sct(
+#'   codes = "269823000",
+#'   relationship = "116680003",
+#'   relationship_direction = "parent"
+#'   ) %>%
+#'   lookup_codes("sct")
+#'
+#' # get all codes for which "386868003" ("Bisoprolol (substance)") is an attribute. Note, includes "293967003" ("Allergy to bisoprolol (finding)")
+#' get_relatives_sct(
+#'   codes = "386868003",
+#'   relationship = NULL,
+#'   recursive = FALSE,
+#'   relationship_direction = "child"
+#'   ) %>%
+#'   lookup_codes("sct")
+#'
+#' # more results (i.e. bisoprolol-containing medications) are returned with `recursive = TRUE`
+#' get_relatives_sct(
+#'   codes = "386868003",
+#'   relationship = NULL,
+#'   recursive = FALSE,
+#'   relationship_direction = "child"
+#'   ) %>%
+#'   lookup_codes("sct")
+get_relatives_sct <- function(codes,
+                              relationship = NULL,
                               relationship_direction = "child",
                               recursive = TRUE,
                               active_only = FALSE,
@@ -642,7 +679,9 @@ get_relatives_sct <- function(codes = "269823000",
   # validate args
   check_codes(codes)
 
-  rlang::is_string(relationship)
+  if (!is.null(relationship)) {
+    stopifnot(rlang::is_string(relationship))
+  }
 
   match.arg(relationship_direction,
             choices = c("child", "parent"))
@@ -694,8 +733,12 @@ get_relatives_sct <- function(codes = "269823000",
   # get related codes
   related_codes <-
     all_lkps_maps$sct_relationship %>%
-    dplyr::filter(.data[[filter_col]] %in% !!codes,
-                  .data[["typeId"]] == !!relationship)
+    dplyr::filter(.data[[filter_col]] %in% !!codes)
+
+  if (!is.null(relationship)) {
+    related_codes <- related_codes %>%
+      dplyr::filter(.data[["typeId"]] == !!relationship)
+  }
 
   if (active_only) {
     related_codes <- related_codes %>%
