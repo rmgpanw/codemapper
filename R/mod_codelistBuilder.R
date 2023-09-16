@@ -331,12 +331,17 @@ codelistBuilderServer <- function(id, available_maps) {
       } else {
         query <- custom_qbr_translation(input$qb)
 
-        execute_query <- purrr::safely(\(x) withr::with_options(list(codemapper.code_type = input$code_type,
-                                                                     codemapper.map_to = input$code_type,
-                                                                     codemapper.reverse_mapping = "warning",
-                                                                     codemapper.unrecognised_codes_mapped = "warning",
-                                                                     codemapper.unrecognised_codes_lookup = "error"),
-                                                                eval(query, envir = saved_queries()$results)))
+        execute_query <-
+          purrr::safely(\(x) withr::with_options(
+            list(
+              codemapper.code_type = input$code_type,
+              codemapper.map_to = input$code_type,
+              codemapper.reverse_mapping = "warning",
+              codemapper.unrecognised_codes_mapped = "warning",
+              codemapper.unrecognised_codes_lookup = "error"
+            ),
+            eval(query, envir = saved_queries()$results)
+          ))
 
         x <- list(
           query = query,
@@ -345,10 +350,43 @@ codelistBuilderServer <- function(id, available_maps) {
           code_type = input$code_type
         )
 
-        if (!rlang::is_empty(x$result$error) || nrow(x$result$result) == 0) {
+        if (!rlang::is_empty(x$result$error) ||
+            nrow(x$result$result) == 0) {
+          # error, or empty result (no codes matching search criteria)
           x <- x$result
         } else {
+          # success
           x$result <- x$result$result
+
+          # get saved query dependencies (if any)
+          dependencies <- get_qbr_saved_queries(x$qb) %>%
+            unique()
+
+          # append dependencies
+          if ((length(dependencies) > 0) &
+              (nrow(saved_queries()$dag$edges) > 0)) {
+            dependencies <- dependencies %>%
+              purrr::set_names() %>%
+              purrr::map(
+                ~ find_node_dependencies(
+                  graph = dag_igraph(),
+                  node = .x,
+                  mode = "in",
+                  node_rm = FALSE
+                )
+              ) %>%
+              purrr::compact() %>%
+              purrr::reduce(c, .init = NULL) %>%
+              unique() %>%
+              c(dependencies)
+
+            dependencies <- saved_queries()$dag$nodes %>%
+              dplyr::filter(.data[["id"]] %in% !!dependencies) %>%
+              dplyr::arrange(.data[["order"]]) %>%
+              dplyr::pull(tidyselect::all_of("id"))
+          }
+          # ordered dependencies
+          x$dependencies <- dependencies
         }
       }
 
@@ -408,12 +446,11 @@ codelistBuilderServer <- function(id, available_maps) {
     output$result_query <- renderPrint({
       req(query_result_type() == "query_result")
 
-      dependencies <- get_qbr_saved_queries(query_result()$qb) %>%
-        unique()
+      dependencies <- query_result()$dependencies
 
       # first print code for any required dependencies
       if (length(dependencies) > 0) {
-        if (nrow(saved_queries()$dag$edges) == 0) {
+        if (length(dependencies) == 1) {
           dependencies %>%
             purrr::walk(
               ~ rlang::call2(
@@ -425,27 +462,7 @@ codelistBuilderServer <- function(id, available_maps) {
             )
 
         } else {
-          dependencies <- dependencies %>%
-            purrr::set_names() %>%
-            purrr::map(
-              ~ find_node_dependencies(
-                graph = dag_igraph(),
-                node = .x,
-                mode = "in",
-                node_rm = FALSE
-              )
-            ) %>%
-            purrr::compact() %>%
-            purrr::reduce(c, .init = NULL) %>%
-            unique() %>%
-            c(dependencies)
-
-          dependency_order <- saved_queries()$dag$nodes %>%
-            dplyr::filter(.data[["id"]] %in% !!dependencies) %>%
-            dplyr::arrange(.data[["order"]]) %>%
-            dplyr::pull(tidyselect::all_of("id"))
-
-          dependency_order %>%
+          dependencies %>%
             purrr::walk( ~ {
               print(
                 rlang::call2(
