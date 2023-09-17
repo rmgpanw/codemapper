@@ -363,30 +363,38 @@ codelistBuilderServer <- function(id, available_maps) {
             unique()
 
           # append dependencies
-          if ((length(dependencies) > 0) &
-              (nrow(saved_queries()$dag$edges) > 0)) {
-            dependencies <- dependencies %>%
-              purrr::set_names() %>%
-              purrr::map(
-                ~ find_node_dependencies(
-                  graph = dag_igraph(),
-                  node = .x,
-                  mode = "in",
-                  node_rm = FALSE
-                )
-              ) %>%
-              purrr::compact() %>%
-              purrr::reduce(c, .init = NULL) %>%
-              unique() %>%
-              c(dependencies)
+          if ((length(dependencies) > 0)) {
+            if (nrow(saved_queries()$dag$edges) > 0) {
+              dependencies <- dependencies %>%
+                purrr::set_names() %>%
+                purrr::map(
+                  ~ find_node_dependencies(
+                    graph = dag_igraph(),
+                    node = .x,
+                    mode = "in",
+                    node_rm = FALSE
+                  )
+                ) %>%
+                purrr::compact() %>%
+                purrr::reduce(c, .init = NULL) %>%
+                unique() %>%
+                c(dependencies)
 
-            dependencies <- saved_queries()$dag$nodes %>%
-              dplyr::filter(.data[["id"]] %in% !!dependencies) %>%
-              dplyr::arrange(.data[["order"]]) %>%
-              dplyr::pull(tidyselect::all_of("id"))
+              dependencies <- saved_queries()$dag$nodes %>%
+                dplyr::filter(.data[["id"]] %in% !!dependencies) %>%
+                dplyr::arrange(.data[["order"]]) %>%
+                dplyr::pull(tidyselect::all_of("id"))
+            }
+
+            # ordered dependencies
+            x$dependencies <- dependencies
+
+            # add indicator columns, showing which codes came from which query(/queries)
+            for (dep in dependencies) {
+              print(dep)
+              x$result[[dep]] <- dplyr::case_when(x$result$code %in% saved_queries()$results[[dep]]$code ~ 1)
+            }
           }
-          # ordered dependencies
-          x$dependencies <- dependencies
         }
       }
 
@@ -486,9 +494,10 @@ codelistBuilderServer <- function(id, available_maps) {
         "result.csv"
       },
       content = function(file) {
-        utils::write.csv(data.frame(result = query_result()$result),
+        utils::write.csv(query_result()$result,
                   file,
-                  row.names = FALSE)
+                  row.names = FALSE,
+                  na = "")
       }
     )
 
@@ -982,7 +991,7 @@ update_saved_queries <- function(query,
   # Save current query (results and metadata)
 
   ## results
-  current_query_result <- query_result()$result
+  current_query_result <- query_result()$result[ ,1:3] # save first 3 cols only
 
   new_saved_queries <- saved_queries()$results
 
