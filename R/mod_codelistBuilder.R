@@ -76,17 +76,20 @@ RunCodelistBuilder <- function(all_lkps_maps = NULL,
                edges = data.frame())
   ))
 
+  # reactive value to store saved look ups - to be shared between modules
+  saved_lookups <- reactiveVal(list())
+
   ui <- dashboardPage(
     skin = "purple",
-    dashboardHeader(title = "Codemapper"),
+    dashboardHeader(title = "Codeminer"),
     dashboardSidebar(sidebarMenu(
       menuItem(
         "Build",
         tabName = "builder_tab",
         icon = icon("pen")
       ),
-      menuItem("Compare", tabName = "compare_tab", icon = icon("hippo")),
-      menuItem("Map", tabName = "map_tab", icon = icon("circle-half-stroke"))
+      menuItem("Search", tabName = "lookup_tab", icon = icon("magnifying-glass")),
+      menuItem("Compare", tabName = "compare_tab", icon = icon("code-compare"))
     )),
     dashboardBody(
                   tabItems(
@@ -100,10 +103,14 @@ RunCodelistBuilder <- function(all_lkps_maps = NULL,
               h2("Compare codelists"),
               fluidPage(
                 compareCodelistsInput("compare_codelists",
-                                       saved_queries = saved_queries)
+                                      available_code_types = available_code_types)
               )),
-      tabItem(tabName = "map_tab",
-              h2("Map codes"))
+      tabItem(tabName = "lookup_tab",
+              h2("Look up codes"),
+              fluidPage(
+                lookupCodesInput("lookup_codes",
+                                 available_code_types = available_code_types)
+              ))
     ))
   )
 
@@ -111,7 +118,12 @@ RunCodelistBuilder <- function(all_lkps_maps = NULL,
     codelistBuilderServer("builder",
                           available_maps = available_maps,
                           saved_queries = saved_queries)
-    compareCodelistsServer("compare_codelists", saved_queries = saved_queries)
+
+    compareCodelistsServer("compare_codelists",
+                           saved_queries = saved_queries,
+                           saved_lookups = saved_lookups)
+
+    lookupCodesServer("lookup_codes", saved_lookups = saved_lookups)
   }
 
   withr::with_envvar(
@@ -941,28 +953,49 @@ codelistBuilderServer <-
   })
 }
 
-compareCodelistsInput <- function(id, saved_queries) {
+compareCodelistsInput <- function(id, available_code_types) {
   ns <- NS(id)
+
+  stopifnot(all(available_code_types %in% CODE_TYPE_TO_LKP_TABLE_MAP$code))
 
   tagList(
     shinyFeedback::useShinyFeedback(),
     shinyjs::useShinyjs(),
-    selectInput(ns("input_codelist1"), "Codelist 1", choices = NULL),
-    selectInput(ns("input_codelist2"), "Codelist 2", choices = NULL),
+    selectInput(ns("code_type"), "Code type", choices = CODE_TYPE_TO_LKP_TABLE_MAP %>%
+                  dplyr::filter(.data[["code"]] %in% !!available_code_types) %>%
+                  dplyr::select(tidyselect::all_of(c(
+                    "code_label", "code"
+                  ))) %>%
+                  tibble::deframe() %>%
+                  as.list()),
+    fluidRow(
+      column(6,
+             radioButtons(ns("input_codelist1_type"), "", choices = c("Query", "Look up")),
+             selectInput(ns("input_codelist1"), "Codelist 1", choices = NULL)),
+      column(6,
+             radioButtons(ns("input_codelist2_type"), "", choices = c("Query", "Look up")),
+             selectInput(ns("input_codelist2"), "Codelist 2", choices = NULL))
+    ),
     actionButton(ns("compare"), "Compare", class = "btn-lg btn-success"),
-    tableOutput(ns("compare_df_summary")),
-    reactable::reactableOutput(ns("compare_dfs"))
+    tableOutput(ns("compare_codelists_summary")),
+    reactable::reactableOutput(ns("compare_codelists"))
   )
 }
 
-compareCodelistsServer <- function(id, saved_queries) {
+compareCodelistsServer <- function(id, saved_queries, saved_lookups) {
   ns <- NS(id)
 
   moduleServer(id, function(input, output, session) {
 
     observe({
-      updateSelectInput(inputId = "input_codelist1", choices = names(saved_queries()$results))
-      updateSelectInput(inputId = "input_codelist2", choices = names(saved_queries()$results))
+      # update select codelist input based on code type and saved query/lookup
+      updateSelectInput(inputId = "input_codelist1", choices = switch(input$input_codelist1_type,
+                                                                      "Query" = as.list(saved_queries()$objects[[input$code_type]]),
+                                                                    "Look up" = as.list(names(saved_lookups()[[input$code_type]]))))
+
+      updateSelectInput(inputId = "input_codelist2", choices = switch(input$input_codelist2_type,
+                                                                      "Query" = as.list(saved_queries()$objects[[input$code_type]]),
+                                                                      "Look up" = as.list(names(saved_lookups()[[input$code_type]]))))
     })
 
     observe({
@@ -978,21 +1011,26 @@ compareCodelistsServer <- function(id, saved_queries) {
     codelist_comparison <-
       eventReactive(input$compare, ignoreInit = TRUE, valueExpr = {
 
-        df_1 <- input$input_codelist1
-        df_2 <- input$input_codelist2
+        df_1 <- switch(input$input_codelist1_type,
+                       "Query" = saved_queries()$results[[input$input_codelist1]],
+                       "Look up" = saved_lookups()[[input$code_type]][[input$input_codelist1]])
+
+        df_2 <- switch(input$input_codelist2_type,
+                       "Query" = saved_queries()$results[[input$input_codelist2]],
+                       "Look up" = saved_lookups()[[input$code_type]][[input$input_codelist2]])
 
         # combine codelists, and indicate which codes are shared/unique
         result <-
-          dplyr::bind_rows(saved_queries()$results[[df_1]], saved_queries()$results[[df_2]]) |>
+          dplyr::bind_rows(df_1, df_2) |>
           dplyr::distinct()
 
         result[["compare"]] <- dplyr::case_when(
-          (result[["code"]] %in% saved_queries()$results[[df_1]][["code"]]) &
-            (!result[["code"]] %in% saved_queries()$results[[df_2]][["code"]]) ~ df_1,
-          (result[["code"]] %in% saved_queries()$results[[df_2]][["code"]]) &
-            (!result[["code"]] %in% saved_queries()$results[[df_1]][["code"]]) ~ df_2,
-          (result[["code"]] %in% saved_queries()$results[[df_1]][["code"]]) &
-            (result[["code"]] %in% saved_queries()$results[[df_2]][["code"]]) ~ "Both",
+          (result[["code"]] %in% df_1[["code"]]) &
+            (!result[["code"]] %in% df_2[["code"]]) ~ input$input_codelist1,
+          (result[["code"]] %in% df_2[["code"]]) &
+            (!result[["code"]] %in% df_1[["code"]]) ~ input$input_codelist2,
+          (result[["code"]] %in% df_1[["code"]]) &
+            (result[["code"]] %in% df_2[["code"]]) ~ "Both",
           TRUE ~ "Error!"
         )
 
@@ -1004,7 +1042,7 @@ compareCodelistsServer <- function(id, saved_queries) {
         result
       })
 
-    output$compare_dfs <- reactable::renderReactable({
+    output$compare_codelists <- reactable::renderReactable({
       reactable::reactable(
         codelist_comparison(),
         filterable = TRUE,
@@ -1016,14 +1054,128 @@ compareCodelistsServer <- function(id, saved_queries) {
       )
     })
 
-    output$compare_df_summary <- renderTable({
-      table(codelist_comparison()$compare) %>%
-        as.data.frame() %>%
-        dplyr::rename(
-          "Codelist" = "Var1"
-        )
+    output$compare_codelists_summary <- renderTable({
+        codelist_comparison()$compare %>%
+          table() %>%
+          as.matrix() %>%
+          t() %>%
+          as.data.frame()
       })
 
+  })
+}
+
+lookupCodesInput <- function(id, available_code_types) {
+  ns <- NS(id)
+
+  tagList(
+    shinyjs::useShinyjs(),
+    fluidRow(
+     column(4,
+            selectInput(ns("code_type"), "Code type", choices = CODE_TYPE_TO_LKP_TABLE_MAP %>%
+                          dplyr::filter(.data[["code"]] %in% !!available_code_types) %>%
+                          dplyr::select(tidyselect::all_of(c(
+                            "code_label", "code"
+                          ))) %>%
+                          tibble::deframe() %>%
+                          as.list()),
+            textAreaInput(ns("codes_input"), "Input", resize = "vertical"),
+            actionButton(ns("look_up"), "Look up")),
+     column(8,
+            textInput(ns("save_as"), "Save as"),
+            shinyjs::disabled(actionButton(ns("save_recognised"), "Save")),
+            tabsetPanel(id = ns("codelist_tabs"),
+                        tabPanel("Recognised",
+                                 reactable::reactableOutput(ns("recognised_codes"))),
+                        tabPanel("Unrecognised",
+                                 reactable::reactableOutput(ns("unrecognised_codes")))))
+    )
+  )
+}
+
+lookupCodesServer <- function(id, saved_lookups = reactiveVal(list())) {
+  ns <- NS(id)
+
+  moduleServer(id, function(input, output, session) {
+
+    codes_input_cleaned <- reactive(
+      input$codes_input %>%
+        stringr::str_split_1("\n") %>%
+        stringr::str_trim(side = "both") %>%
+        subset(.,
+               . != "")
+    )
+
+    observe({
+      # require input to look up
+      shinyjs::toggleState(
+        ns("look_up"),
+        condition = isTruthy(codes_input_cleaned()),
+        asis = TRUE
+      )
+    })
+
+    codelist <- eventReactive(input$look_up, ignoreInit = TRUE, valueExpr = {
+
+      recognised <- lookup_codes(
+        codes = codes_input_cleaned(),
+        code_type = input$code_type,
+        preferred_description_only = TRUE,
+        standardise_output = TRUE,
+        unrecognised_codes = "warning"
+      )
+
+      unrecognised <- lookup_codes(
+        codes = codes_input_cleaned(),
+        code_type = input$code_type,
+        preferred_description_only = TRUE,
+        standardise_output = TRUE,
+        .return_unrecognised_codes = TRUE
+      )
+
+      list(
+        recognised = recognised,
+        unrecognised = unrecognised,
+        code_type = input$code_type
+      )
+    })
+
+    observe({
+      # require input to look up
+      shinyjs::toggleState(
+        ns("save_recognised"),
+        condition = (nrow(codelist()$recognised) > 0) & isTruthy(input$save_as),
+        asis = TRUE
+      )
+    })
+
+    output$recognised_codes <- reactable::renderReactable(reactable::reactable(
+      codelist()$recognised,
+      filterable = TRUE,
+      searchable = TRUE,
+      resizable = TRUE,
+      paginationType = "jump",
+      showPageSizeOptions = TRUE,
+      pageSizeOptions = c(10, 25, 50, 100, 200)
+    ))
+
+    output$unrecognised_codes <- reactable::renderReactable(reactable::reactable(
+      data.frame(Input = codelist()$unrecognised),
+      filterable = TRUE,
+      # searchable = TRUE,
+      resizable = TRUE,
+      paginationType = "jump",
+      showPageSizeOptions = TRUE,
+      pageSizeOptions = c(10, 25, 50, 100, 200)
+    ))
+
+    observeEvent(input$save_recognised, {
+      new_saved_lookups <- saved_lookups()
+
+      new_saved_lookups[[codelist()$code_type]][[input$save_as]] <- codelist()$recognised
+
+      saved_lookups(new_saved_lookups)
+    })
   })
 }
 
