@@ -89,7 +89,8 @@ RunCodelistBuilder <- function(all_lkps_maps = NULL,
         icon = icon("pen")
       ),
       menuItem("Search", tabName = "lookup_tab", icon = icon("magnifying-glass")),
-      menuItem("Compare", tabName = "compare_tab", icon = icon("code-compare"))
+      menuItem("Compare", tabName = "compare_tab", icon = icon("code-compare")),
+      menuItem("Bookmark", tabName = "bookmark_tab", icon = icon("bookmark"))
     )),
     dashboardBody(
                   tabItems(
@@ -110,6 +111,12 @@ RunCodelistBuilder <- function(all_lkps_maps = NULL,
               fluidPage(
                 lookupCodesInput("lookup_codes",
                                  available_code_types = available_code_types)
+              )),
+      tabItem(tabName = "bookmark_tab",
+              h2("Save/restore codelists"),
+              fluidPage(
+                downloadButton("download", label = "Save", icon = icon("bookmark")),
+                fileInput("upload", "Restore")
               ))
     ))
   )
@@ -124,6 +131,23 @@ RunCodelistBuilder <- function(all_lkps_maps = NULL,
                            saved_lookups = saved_lookups)
 
     lookupCodesServer("lookup_codes", saved_lookups = saved_lookups)
+
+    output$download <- downloadHandler(
+      filename = function() {
+        "codeminer.rds"
+      },
+      content = function(file) {
+        saveRDS(list(saved_queries = saved_queries,
+                     saved_lookups = saved_lookups),
+                file = file)
+      }
+    )
+
+    observeEvent(input$upload, {
+      new_bookmark <- readRDS(input$upload$datapath)
+      saved_queries(new_bookmark$saved_queries())
+      saved_lookups(new_bookmark$saved_lookups())
+    })
   }
 
   withr::with_envvar(
