@@ -67,6 +67,15 @@ RunCodelistBuilder <- function(all_lkps_maps = NULL,
                     "from" = tidyselect::all_of("to"))
   )
 
+  # reactive value to store saved queries - to be shared between modules
+  saved_queries <- reactiveVal(list(
+    objects = list(),
+    results = new.env(),
+    results_meta = new.env(),
+    dag = list(nodes = data.frame(),
+               edges = data.frame())
+  ))
+
   ui <- dashboardPage(
     skin = "purple",
     dashboardHeader(title = "Codemapper"),
@@ -95,7 +104,7 @@ RunCodelistBuilder <- function(all_lkps_maps = NULL,
   )
 
   server <- function(input, output, sesion) {
-    codelistBuilderServer("builder", available_maps = available_maps)
+    codelistBuilderServer("builder", available_maps = available_maps, saved_queries = saved_queries)
   }
 
   withr::with_envvar(
@@ -285,7 +294,17 @@ codelistBuilderInput <- function(id, available_code_types, available_maps) {
 #' @return UI (html)
 #' @noRd
 #' @import shiny
-codelistBuilderServer <- function(id, available_maps) {
+codelistBuilderServer <-
+  function(id,
+           available_maps,
+           saved_queries = reactiveVal(list(
+             objects = list(),
+             results = new.env(),
+             results_meta = new.env(),
+             dag = list(nodes = data.frame(),
+                        edges = data.frame())
+           ))) {
+
   ns <- NS(id)
 
   moduleServer(id, function(input, output, session) {
@@ -509,14 +528,6 @@ codelistBuilderServer <- function(id, available_maps) {
       })
 
     # Saved queries --------------------------------------------------------------
-
-    saved_queries <- reactiveVal(list(
-      objects = list(),
-      results = new.env(),
-      results_meta = new.env(),
-      dag = list(nodes = data.frame(),
-                 edges = data.frame())
-    ))
 
     dag_igraph <- eventReactive(saved_queries(), {
       if (nrow(saved_queries()$dag$nodes) > 0 &
