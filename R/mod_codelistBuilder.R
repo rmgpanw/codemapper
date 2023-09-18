@@ -130,7 +130,9 @@ RunCodelistBuilder <- function(all_lkps_maps = NULL,
                            saved_queries = saved_queries,
                            saved_lookups = saved_lookups)
 
-    lookupCodesServer("lookup_codes", saved_lookups = saved_lookups)
+    lookupCodesServer("lookup_codes",
+                      available_maps = available_maps,
+                      saved_lookups = saved_lookups)
 
     output$download <- downloadHandler(
       filename = function() {
@@ -1104,6 +1106,11 @@ lookupCodesInput <- function(id, available_code_types) {
                           tibble::deframe() %>%
                           as.list()),
             textAreaInput(ns("codes_input"), "Input", resize = "vertical"),
+            radioButtons(
+              ns("map_to"),
+              "Map to",
+              choices = "(Don't map)"
+            ),
             actionButton(ns("look_up"), "Look up")),
      column(8,
             textInput(ns("save_as"), "Save as"),
@@ -1117,7 +1124,7 @@ lookupCodesInput <- function(id, available_code_types) {
   )
 }
 
-lookupCodesServer <- function(id, saved_lookups = reactiveVal(list())) {
+lookupCodesServer <- function(id, available_maps, saved_lookups = reactiveVal(list())) {
   ns <- NS(id)
 
   moduleServer(id, function(input, output, session) {
@@ -1139,6 +1146,17 @@ lookupCodesServer <- function(id, saved_lookups = reactiveVal(list())) {
       )
     })
 
+    observe({
+      updateRadioButtons(
+        inputId = "map_to",
+        choices = c(
+          "(Don't map)",
+          get_available_map_from_code_types(available_maps = available_maps,
+                                            to = input$code_type)
+        )
+      )
+    })
+
     codelist <- eventReactive(input$look_up, ignoreInit = TRUE, valueExpr = {
 
       recognised <- lookup_codes(
@@ -1148,6 +1166,15 @@ lookupCodesServer <- function(id, saved_lookups = reactiveVal(list())) {
         standardise_output = TRUE,
         unrecognised_codes = "warning"
       )
+
+      if (input$map_to != "(Don't map)") {
+        recognised <- map_codes(
+          codes = recognised,
+          to = input$map_to,
+          unrecognised_codes = "warning",
+          reverse_mapping = "warning"
+        )
+      }
 
       unrecognised <- lookup_codes(
         codes = codes_input_cleaned(),
