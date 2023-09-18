@@ -97,14 +97,21 @@ RunCodelistBuilder <- function(all_lkps_maps = NULL,
                                      available_maps = available_maps)
               )),
       tabItem(tabName = "compare_tab",
-              h2("Compare codelists")),
+              h2("Compare codelists"),
+              fluidPage(
+                compareCodelistsInput("compare_codelists",
+                                       saved_queries = saved_queries)
+              )),
       tabItem(tabName = "map_tab",
               h2("Map codes"))
     ))
   )
 
   server <- function(input, output, sesion) {
-    codelistBuilderServer("builder", available_maps = available_maps, saved_queries = saved_queries)
+    codelistBuilderServer("builder",
+                          available_maps = available_maps,
+                          saved_queries = saved_queries)
+    compareCodelistsServer("compare_codelists", saved_queries = saved_queries)
   }
 
   withr::with_envvar(
@@ -934,6 +941,91 @@ codelistBuilderServer <-
   })
 }
 
+compareCodelistsInput <- function(id, saved_queries) {
+  ns <- NS(id)
+
+  tagList(
+    shinyFeedback::useShinyFeedback(),
+    shinyjs::useShinyjs(),
+    selectInput(ns("input_codelist1"), "Codelist 1", choices = NULL),
+    selectInput(ns("input_codelist2"), "Codelist 2", choices = NULL),
+    actionButton(ns("compare"), "Compare", class = "btn-lg btn-success"),
+    tableOutput(ns("compare_df_summary")),
+    reactable::reactableOutput(ns("compare_dfs"))
+  )
+}
+
+compareCodelistsServer <- function(id, saved_queries) {
+  ns <- NS(id)
+
+  moduleServer(id, function(input, output, session) {
+
+    observe({
+      updateSelectInput(inputId = "input_codelist1", choices = names(saved_queries()$results))
+      updateSelectInput(inputId = "input_codelist2", choices = names(saved_queries()$results))
+    })
+
+    observe({
+      # require 2 different codelists to be selected
+      shinyjs::toggleState(
+        ns("compare"),
+        condition = isTruthy(input$input_codelist1) &
+          isTruthy(input$input_codelist2) & (input$input_codelist1 != input$input_codelist2),
+        asis = TRUE
+      )
+    })
+
+    codelist_comparison <-
+      eventReactive(input$compare, ignoreInit = TRUE, valueExpr = {
+
+        df_1 <- input$input_codelist1
+        df_2 <- input$input_codelist2
+
+        # combine codelists, and indicate which codes are shared/unique
+        result <-
+          dplyr::bind_rows(saved_queries()$results[[df_1]], saved_queries()$results[[df_2]]) |>
+          dplyr::distinct()
+
+        result[["compare"]] <- dplyr::case_when(
+          (result[["code"]] %in% saved_queries()$results[[df_1]][["code"]]) &
+            (!result[["code"]] %in% saved_queries()$results[[df_2]][["code"]]) ~ df_1,
+          (result[["code"]] %in% saved_queries()$results[[df_2]][["code"]]) &
+            (!result[["code"]] %in% saved_queries()$results[[df_1]][["code"]]) ~ df_2,
+          (result[["code"]] %in% saved_queries()$results[[df_1]][["code"]]) &
+            (result[["code"]] %in% saved_queries()$results[[df_2]][["code"]]) ~ "Both",
+          TRUE ~ "Error!"
+        )
+
+        stopifnot(sum(result[["compare"]] == "Error!") == 0)
+
+        result$compare <-
+          factor(result$compare, levels = unique(c(result$compare, "Both")))
+
+        result
+      })
+
+    output$compare_dfs <- reactable::renderReactable({
+      reactable::reactable(
+        codelist_comparison(),
+        filterable = TRUE,
+        searchable = TRUE,
+        resizable = TRUE,
+        paginationType = "jump",
+        showPageSizeOptions = TRUE,
+        pageSizeOptions = c(10, 25, 50, 100, 200)
+      )
+    })
+
+    output$compare_df_summary <- renderTable({
+      table(codelist_comparison()$compare) %>%
+        as.data.frame() %>%
+        dplyr::rename(
+          "Codelist" = "Var1"
+        )
+      })
+
+  })
+}
 
 # PRIVATE -----------------------------------------------------------------
 
