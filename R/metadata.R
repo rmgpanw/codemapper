@@ -56,22 +56,22 @@ ALL_LKPS_MAPS_TABLE_NAMES <- c(
 # TODO - category col for tables?
 
 CODE_TYPE_TO_LKP_TABLE_MAP <- tibble::tribble(
-  ~code, ~code_label, ~lkp_table, ~code_col, ~description_col, ~preferred_synonym_col, ~preferred_code, ~grouping_col,
-  "bnf", "BNF", "bnf_lkp", "BNF_Code", "Description", NA, NA, "BNF_Chemical_Substance",
+  ~code, ~code_label, ~lkp_table, ~code_col, ~description_col, ~preferred_synonym_col, ~preferred_code, ~grouping_col, ~filter_cols,
+  "bnf", "BNF", "bnf_lkp", "BNF_Code", "Description", NA, NA, "BNF_Chemical_Substance", NA,
   # "dmd", "dmd_lkp", "concept_id", "term", NA, NA,
-  "dmd", "DMD", "bnf_dmd", "snomed_code", "dm_d_product_description", NA, NA, "dm_d_product_description",
-  "icd9", "ICD-9", "icd9_lkp", "ICD9", "DESCRIPTION_ICD9", NA, NA, "category",
-  "icd10", "ICD-10", "icd10_lkp", "ALT_CODE", "DESCRIPTION", NA, NA, "category",
-  "read2", "Read 2", "read_v2_lkp", "read_code", "term_description", "term_code", "00", NA,
-  "read2_drugs", "Read 2, drugs", "read_v2_drugs_lkp", "read_code", "term_description", NA, NA, NA,
-  "read3", "Read 3", "read_ctv3_lkp", "read_code", "term_description", "description_type", "P", NA,
-  "opcs4", "OPCS4", "opcs4_lkp", "opcs4_code", "description", NA, NA, "category",
-  "data_coding_3", "Self-reported cancer (dc-3)", "self_report_cancer", "data_coding_3", "description", NA, NA, "category",
-  "data_coding_4", "Self-reported medications (dc-4)", "self_report_medication", "data_coding_4", "description", NA, NA, "category",
-  "data_coding_5", "Self-reported operations (dc-5)", "self_report_operation", "data_coding_5", "description", NA, NA, "category",
-  "data_coding_6", "Self-reported non-cancer (dc-6)", "self_report_non_cancer", "data_coding_6", "description", NA, NA, "category",
-  "sct", "SNOMED CT", "sct_description", "conceptId", "term", "typeId", "900000000000003001", NA,
-  "phecode", "Phecode", "phecode_lkp", "phecode", "phenotype", NA, NA, "category"
+  "dmd", "DMD", "bnf_dmd", "snomed_code", "dm_d_product_description", NA, NA, "dm_d_product_description", NA,
+  "icd9", "ICD-9", "icd9_lkp", "ICD9", "DESCRIPTION_ICD9", NA, NA, "category", NA,
+  "icd10", "ICD-10", "icd10_lkp", "ALT_CODE", "DESCRIPTION", NA, NA, "category", NA,
+  "read2", "Read 2", "read_v2_lkp", "read_code", "term_description", "term_code", "00", NA, NA,
+  "read2_drugs", "Read 2, drugs", "read_v2_drugs_lkp", "read_code", "term_description", NA, NA, NA, NA,
+  "read3", "Read 3", "read_ctv3_lkp", "read_code", "term_description", "description_type", "P", NA, NA,
+  "opcs4", "OPCS4", "opcs4_lkp", "opcs4_code", "description", NA, NA, "category", NA,
+  "data_coding_3", "Self-reported cancer (dc-3)", "self_report_cancer", "data_coding_3", "description", NA, NA, "category", NA,
+  "data_coding_4", "Self-reported medications (dc-4)", "self_report_medication", "data_coding_4", "description", NA, NA, "category", NA,
+  "data_coding_5", "Self-reported operations (dc-5)", "self_report_operation", "data_coding_5", "description", NA, NA, "category", NA,
+  "data_coding_6", "Self-reported non-cancer (dc-6)", "self_report_non_cancer", "data_coding_6", "description", NA, NA, "category", NA,
+  "sct", "SNOMED CT", "sct_description", "conceptId", "term", "typeId", "900000000000003001", NA, list(list(active = "*1*")),
+  "phecode", "Phecode", "phecode_lkp", "phecode", "phenotype", NA, NA, "category", NA
 )
 
 # CLINICAL_CODE_MAPPINGS_MAP ----------------------------------------------
@@ -82,24 +82,24 @@ CODE_TYPE_TO_LKP_TABLE_MAP <- tibble::tribble(
 # 'from_col' and 'to_col': the columns to use when mapping
 # Note, `preferred_synonym_col` and `preferred_code` refer to `to_col`
 CLINICAL_CODE_MAPPINGS_MAP <- tibble::tribble(
-  ~from, ~to, ~mapping_table, ~from_col, ~to_col, ~preferred_synonym_col, ~preferred_code,
-  "icd9", "icd10", "icd9_icd10", "ICD9", "ICD10", NA, NA,
-  "read2_drugs", "bnf", "read_v2_drugs_bnf", "read_code", "bnf_code", NA, NA,
-  "read2", "icd9", "read_v2_icd9", "read_code", "icd9_code", NA, NA,
-  "read2", "icd10", "read_v2_icd10", "read_code", "icd10_code", NA, NA,
-  "read2", "opcs4", "read_v2_opcs4", "read_code", "opcs_4.2_code", NA, NA,
-  "read2", "read3", "read_v2_read_ctv3", "READV2_CODE", "READV3_CODE", "TERMV3_TYPE", "P",
-  "read3", "icd9", "read_ctv3_icd9", "read_code", "icd9_code", NA, NA,
-  "read3", "icd10", "read_ctv3_icd10", "read_code", "icd10_code", NA, NA,
-  "read3", "opcs4", "read_ctv3_opcs4", "read_code", "opcs4_code", NA, NA,
-  "read3", "read2", "read_ctv3_read_v2", "READV3_CODE", "READV2_CODE", "TERMV2_TYPE", "P",
-  "bnf", "dmd", "bnf_dmd", "bnf_code", "snomed_code", NA, NA,
-  "icd10", "phecode", "icd10_phecode", "ALT_CODE", "PHECODE", NA, NA,
-  "icd9", "phecode", "icd9_phecode", "icd9", "phecode", NA, NA,
-  "sct", "icd10", "sct_icd10", "referencedComponentId", "mapTarget", NA, NA,
-  "sct", "opcs4", "sct_opcs4", "referencedComponentId", "mapTarget", NA, NA,
-  "read2", "sct", "rcsctmap2", "ReadCode", "ConceptId", NA, NA,
-  "read3", "sct", "ctv3sctmap2", "CTV3_CONCEPTID", "SCT_CONCEPTID", NA, NA,
+  ~from, ~to, ~mapping_table, ~from_col, ~to_col, ~preferred_synonym_col, ~preferred_code, ~filter_cols,
+  "icd9", "icd10", "icd9_icd10", "ICD9", "ICD10", NA, NA, NA,
+  "read2_drugs", "bnf", "read_v2_drugs_bnf", "read_code", "bnf_code", NA, NA, NA,
+  "read2", "icd9", "read_v2_icd9", "read_code", "icd9_code", NA, NA, NA,
+  "read2", "icd10", "read_v2_icd10", "read_code", "icd10_code", NA, NA, list(list(icd10_code_def = c("*1*", "*15*", "*3*", "*5*", "*7*", "*8*", "2"))),
+  "read2", "opcs4", "read_v2_opcs4", "read_code", "opcs_4.2_code", NA, NA, NA,
+  "read2", "read3", "read_v2_read_ctv3", "READV2_CODE", "READV3_CODE", "TERMV3_TYPE", "P", list(list(IS_ASSURED = "*1*")),
+  "read3", "icd9", "read_ctv3_icd9", "read_code", "icd9_code", NA, NA, NA,
+  "read3", "icd10", "read_ctv3_icd10", "read_code", "icd10_code", NA, NA, list(list(mapping_status = c("*E*", "*G*", "*D*", "R", "A", "U"), refine_flag = c("*C*", "*P*", "M"), element_num = c("*0*", as.character(1:3)), block_num = c("*0*", as.character(1:14)))),
+  "read3", "opcs4", "read_ctv3_opcs4", "read_code", "opcs4_code", NA, NA, NA,
+  "read3", "read2", "read_ctv3_read_v2", "READV3_CODE", "READV2_CODE", "TERMV2_TYPE", "P", list(list(IS_ASSURED = "*1*")),
+  "bnf", "dmd", "bnf_dmd", "bnf_code", "snomed_code", NA, NA, NA,
+  "icd10", "phecode", "icd10_phecode", "ALT_CODE", "PHECODE", NA, NA, NA,
+  "icd9", "phecode", "icd9_phecode", "icd9", "phecode", NA, NA, NA,
+  "sct", "icd10", "sct_icd10", "referencedComponentId", "mapTarget", NA, NA, NA,
+  "sct", "opcs4", "sct_opcs4", "referencedComponentId", "mapTarget", NA, NA, NA,
+  "read2", "sct", "rcsctmap2", "ReadCode", "ConceptId", NA, NA, list(list(IS_ASSURED = "*1*", MapStatus = "*1*")),
+  "read3", "sct", "ctv3sctmap2", "CTV3_CONCEPTID", "SCT_CONCEPTID", NA, NA, list(list(IS_ASSURED = "*1*", MAPSTATUS = "*1*"))
 )
 
 # PUBLIC ------------------------------------------------------------------

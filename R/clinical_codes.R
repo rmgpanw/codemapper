@@ -1303,29 +1303,50 @@ reformat_icd10_codes <- function(icd10_codes,
 #' @family Clinical code lookups and mappings
 #' @examples
 #' default_col_filters()
-default_col_filters <- function() {
-  list(
-    read_ctv3_icd10 = list(
-      mapping_status = c("E", "G", "D"),
-      refine_flag = c("C", "P"),
-      element_num = c("0"),
-      block_num = c("0")
-    ),
-    read_v2_icd10 = list(icd10_code_def = c("1", "15", "3", "5", "7", "8")),
-    read_ctv3_read_v2 = list(IS_ASSURED = "1"),
-    read_v2_read_ctv3 = list(IS_ASSURED = "1"),
-    rcsctmap2 = list(
-      IS_ASSURED = "1",
-      MapStatus = "1"
-    ),
-    ctv3sctmap2 = list(
-      MAPSTATUS = "1",
-      IS_ASSURED = "1"
-    ),
-    sct_description = list(
-      active = "1"
-    )
+default_col_filters <- function(defaults_only = TRUE,
+                                selected_table = NULL) {
+
+  # validate args
+  stopifnot(is.logical(defaults_only))
+
+  stopifnot(
+    selected_table %in% CODE_TYPE_TO_LKP_TABLE_MAP$lkp_table |
+      selected_table %in% CLINICAL_CODE_MAPPINGS_MAP$mapping_table
   )
+
+  # get filter_cols
+  result <- list(lookup = CODE_TYPE_TO_LKP_TABLE_MAP %>%
+                   dplyr::rename("table" = "lkp_table"),
+                 map = CLINICAL_CODE_MAPPINGS_MAP %>%
+                   dplyr::rename("table" = "mapping_table")) %>%
+    dplyr::bind_rows(.id = "lookup_map") %>%
+    dplyr::select(tidyselect::all_of(c("table", "filter_cols"))) %>%
+    dplyr::filter(!is.na(.data[["filter_cols"]]))
+
+  result <- setNames(object = result$filter_cols,
+                     nm = result$table) %>%
+    purrr::map(\(x) x[[1]])
+
+  # get either all values, or default selections only for filter_cols
+  if (defaults_only) {
+    result <- result %>%
+      purrr::map(\(x) x %>%
+                   purrr::map(\(x) subset(x,
+                                     stringr::str_detect(x, "\\*"))))
+  }
+
+  # remove '*' (these are used to indicate default choices)
+  result <- result %>%
+    purrr::map(\(x) x %>%
+                 purrr::map(stringr::str_remove_all,
+                            pattern = "\\*"))
+
+  # select single table, if requested
+  if (!is.null(selected_table)) {
+    result <- result[[selected_table]]
+  }
+
+  result
 }
 
 # PRIVATE FUNCTIONS -------------------------------------------------------
