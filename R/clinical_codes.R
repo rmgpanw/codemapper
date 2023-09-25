@@ -1303,8 +1303,23 @@ reformat_icd10_codes <- function(icd10_codes,
 #' @family Clinical code lookups and mappings
 #' @examples
 #' default_col_filters()
-default_col_filters <- function(defaults_only = TRUE,
-                                selected_table = NULL) {
+default_col_filters <- function() {
+  get_col_filters(defaults_only = TRUE,
+                  selected_table = NULL)
+}
+
+
+# PRIVATE FUNCTIONS -------------------------------------------------------
+
+#' Extract column filters from metadata tables
+#'
+#' @param defaults_only Logical
+#' @param selected_table Optional. Name of lookup or mapping table
+#'
+#' @return List
+#' @noRd
+get_col_filters <- function(defaults_only = TRUE,
+                            selected_table = NULL) {
 
   # validate args
   stopifnot(is.logical(defaults_only))
@@ -1332,7 +1347,7 @@ default_col_filters <- function(defaults_only = TRUE,
     result <- result %>%
       purrr::map(\(x) x %>%
                    purrr::map(\(x) subset(x,
-                                     stringr::str_detect(x, "\\*"))))
+                                          stringr::str_detect(x, "\\*"))))
   }
 
   # remove '*' (these are used to indicate default choices)
@@ -1348,8 +1363,6 @@ default_col_filters <- function(defaults_only = TRUE,
 
   result
 }
-
-# PRIVATE FUNCTIONS -------------------------------------------------------
 
 #' Get codes that start with...
 #'
