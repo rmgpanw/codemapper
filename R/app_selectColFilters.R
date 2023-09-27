@@ -38,11 +38,17 @@ selectColFiltersInput <- function(id) {
       id = ns("col_filter_options")
     ),
     fluidRow(
+      column(6, actionButton(ns("update_selections"), "Update selections", class = "btn-lg btn-danger")),
+      column(6, actionButton(ns("cancel"), "Cancel", class = "btn-lg"))
+    ),
+    fluidRow(
       column(6, h1("Selected"),
              verbatimTextOutput(ns("selected"))),
       column(6, h1("All filters"),
              verbatimTextOutput(ns("all_filters")))
-    )
+    ),
+    h1("Confirmed selected"),
+    verbatimTextOutput(ns("confirmed_selected"))
   )
 }
 
@@ -83,8 +89,32 @@ selectColFiltersServer <- function(id) {
         })
     })
 
+    # confirm selected choices
+    confirmed_selected_filters <- eventReactive(input$update_selections, ignoreNULL = FALSE, ignoreInit = FALSE, valueExpr =  {
+      selected_filters()
+    })
+
+    output$confirmed_selected <- renderPrint(lobstr::tree(confirmed_selected_filters()))
+
+    # cancel selected choices (restore to most recently confirmed choices)
+    observeEvent(input$cancel, {
+      get_col_filters() %>%
+        purrr::iwalk(\(x, idx) {
+          tab <- idx
+
+          get_col_filters(defaults_only = FALSE,
+                          selected_table = idx) %>%
+            purrr::imap(\(x, idx)
+                        updateCheckboxGroupInput(
+                          inputId = paste(tab, idx, sep = "."),
+                          selected = confirmed_selected_filters()[[tab]][[idx]]
+                        )) %>%
+            purrr::set_names(NULL)
+        })
+    })
+
     # returns reactive
-    selected_filters
+    confirmed_selected_filters
   })
 }
 
