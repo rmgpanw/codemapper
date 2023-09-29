@@ -81,7 +81,7 @@ RunCodelistBuilder <- function(all_lkps_maps = NULL,
 
   ui <- dashboardPage(
     skin = "purple",
-    dashboardHeader(title = "Codeminer"),
+    dashboardHeader(title = "CODEMINER"),
     dashboardSidebar(sidebarMenu(
       menuItem(
         "Build",
@@ -312,6 +312,8 @@ codelistBuilderInput <- function(id, available_code_types, available_maps) {
             textOutput(ns("result_summary")),
             reactable::reactableOutput(ns("result")))
         )),
+
+        ### Saved queries -----------------------------------
       tabPanel("Saved queries",
         tabsetPanel(
           id = ns("tabs_dag"),
@@ -324,7 +326,14 @@ codelistBuilderInput <- function(id, available_code_types, available_maps) {
           tabPanel(title = "Edges",
                    tableOutput(ns("dag_edges")))
         )
-      ))
+      ),
+
+      ### Advanced settings ------------------------------------
+      tabPanel("Advanced settings", icon = icon("gears"),
+               selectColFiltersInput(ns("builder_advanced_settings"),
+                                     display_filters = FALSE))
+
+      )
       )
     )
   )
@@ -350,9 +359,15 @@ codelistBuilderServer <-
                         edges = data.frame())
            ))) {
 
-  ns <- NS(id)
-
   moduleServer(id, function(input, output, session) {
+
+    ns <- session$ns
+    ## Advanced settings -------------------------------------------------------
+
+    col_filters <- selectColFiltersServer("builder_advanced_settings")
+
+    observe({print(col_filters())
+            print(Sys.time())})
 
     ## Query -------------------------------------------------------------------
 
@@ -1009,9 +1024,9 @@ compareCodelistsInput <- function(id, available_code_types) {
 }
 
 compareCodelistsServer <- function(id, saved_queries, saved_lookups) {
-  ns <- NS(id)
 
   moduleServer(id, function(input, output, session) {
+    ns <- session$ns
 
     observe({
       # update select codelist input based on code type and saved query/lookup
@@ -1125,9 +1140,9 @@ lookupCodesInput <- function(id, available_code_types) {
 }
 
 lookupCodesServer <- function(id, available_maps, saved_lookups = reactiveVal(list())) {
-  ns <- NS(id)
 
   moduleServer(id, function(input, output, session) {
+  ns <- session$ns
 
     codes_input_cleaned <- reactive(
       input$codes_input %>%

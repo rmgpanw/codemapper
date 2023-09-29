@@ -33,15 +33,15 @@ selectColFiltersInput <- function(id, display_filters = FALSE) {
       ns("restore_defaults"),
       "Restore defaults",
       width = "100%",
-      class = "btn-info"
+      class = "btn-lg btn-info"
+    ),
+    fluidRow(
+      column(6, actionButton(ns("undo"), "Undo", width = "100%", class = "btn-lg")),
+      column(6, actionButton(ns("update_selections"), "Update", width = "100%", class = "btn-lg btn-danger"))
     ),
     navlistPanel(
       !!!purrr::set_names(ui_inputs, NULL),
       id = ns("col_filter_options")
-    ),
-    fluidRow(
-      column(6, actionButton(ns("update_selections"), "Update", class = "btn-lg btn-danger")),
-      column(6, actionButton(ns("undo"), "Undo", class = "btn-lg"))
     ))
 
   if (display_filters) {
@@ -73,9 +73,10 @@ selectColFiltersServer <-
 
   confirmed_selected_filters <- reactiveVal(default_filters)
 
-  ns <- NS(id)
-
   moduleServer(id, function(input, output, session) {
+
+    ns <- session$ns
+
     # get user-selected values
     selected_filters <- reactive({
       get_col_filters() %>%
