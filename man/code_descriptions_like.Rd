@@ -13,7 +13,7 @@ code_descriptions_like(
   codes_only = FALSE,
   preferred_description_only = TRUE,
   standardise_output = TRUE,
-  col_filters = default_col_filters()
+  col_filters = getOption("codemapper.col_filters")
 )
 
 DESCRIPTION(
@@ -24,7 +24,7 @@ DESCRIPTION(
   codes_only = FALSE,
   preferred_description_only = TRUE,
   standardise_output = TRUE,
-  col_filters = default_col_filters()
+  col_filters = getOption("codemapper.col_filters")
 )
 }
 \arguments{

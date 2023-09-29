@@ -11,7 +11,7 @@ get_mapping_df(
   rename_from_to = NULL,
   na.rm = TRUE,
   reverse_mapping = getOption("codemapper.reverse_mapping"),
-  col_filters = default_col_filters()
+  col_filters = getOption("codemapper.col_filters")
 )
 }
 \arguments{

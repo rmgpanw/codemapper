@@ -12,7 +12,7 @@ lookup_codes(
   preferred_description_only = TRUE,
   standardise_output = TRUE,
   unrecognised_codes = getOption("codemapper.unrecognised_codes_lookup"),
-  col_filters = default_col_filters(),
+  col_filters = getOption("codemapper.col_filters"),
   .return_unrecognised_codes = FALSE
 )
 
@@ -23,7 +23,7 @@ CODES(
   preferred_description_only = TRUE,
   standardise_output = TRUE,
   unrecognised_codes = getOption("codemapper.unrecognised_codes_lookup"),
-  col_filters = default_col_filters(),
+  col_filters = getOption("codemapper.col_filters"),
   .return_unrecognised_codes = FALSE
 )
 }

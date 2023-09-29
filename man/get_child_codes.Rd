@@ -13,7 +13,7 @@ get_child_codes(
   preferred_description_only = TRUE,
   standardise_output = TRUE,
   unrecognised_codes = "error",
-  col_filters = default_col_filters()
+  col_filters = getOption("codemapper.col_filters")
 )
 
 CHILDREN(
@@ -24,7 +24,7 @@ CHILDREN(
   preferred_description_only = TRUE,
   standardise_output = TRUE,
   unrecognised_codes = "error",
-  col_filters = default_col_filters()
+  col_filters = getOption("codemapper.col_filters")
 )
 }
 \arguments{

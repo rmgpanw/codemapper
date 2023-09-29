@@ -13,7 +13,7 @@ get_children_sct(
   all_lkps_maps = NULL,
   codes_only = FALSE,
   preferred_description_only = TRUE,
-  col_filters = default_col_filters()
+  col_filters = getOption("codemapper.col_filters")
 )
 }
 \arguments{

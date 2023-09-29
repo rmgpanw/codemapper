@@ -48,7 +48,7 @@ code_descriptions_like <- function(reg_expr,
                                    codes_only = FALSE,
                                    preferred_description_only = TRUE,
                                    standardise_output = TRUE,
-                                   col_filters = default_col_filters()) {
+                                   col_filters = getOption("codemapper.col_filters")) {
   # validate args
   assertthat::is.string(reg_expr)
 
@@ -243,7 +243,7 @@ lookup_codes <- function(codes,
                          preferred_description_only = TRUE,
                          standardise_output = TRUE,
                          unrecognised_codes = getOption("codemapper.unrecognised_codes_lookup"),
-                         col_filters = default_col_filters(),
+                         col_filters = getOption("codemapper.col_filters"),
                          .return_unrecognised_codes = FALSE) {
 
   # TODO - create df and string methods; validate codes df
@@ -417,7 +417,7 @@ get_child_codes <- function(codes,
                             preferred_description_only = TRUE,
                             standardise_output = TRUE,
                             unrecognised_codes = "error",
-                            col_filters = default_col_filters()) {
+                            col_filters = getOption("codemapper.col_filters")) {
 
   # check codes exist
   codes <- lookup_codes(
@@ -508,7 +508,7 @@ get_children_sct <- function(codes,
                              all_lkps_maps = NULL,
                              codes_only = FALSE,
                              preferred_description_only = TRUE,
-                             col_filters = default_col_filters()) {
+                             col_filters = getOption("codemapper.col_filters")) {
 
   # get child codes
   out_codes <- get_relatives_sct(
@@ -649,7 +649,8 @@ get_children_sct <- function(codes,
 #'   ) %>%
 #'   lookup_codes("sct")
 #'
-#' # get all codes for which "386868003" ("Bisoprolol (substance)") is an attribute. Note, includes "293967003" ("Allergy to bisoprolol (finding)")
+#' # get all codes for which "386868003" ("Bisoprolol (substance)") is an attribute.
+#' # Note, includes "293967003" ("Allergy to bisoprolol (finding)")
 #' get_relatives_sct(
 #'   codes = "386868003",
 #'   relationship = NULL,
@@ -821,7 +822,7 @@ map_codes <- function(codes,
                       unrecognised_codes = getOption("codemapper.unrecognised_codes_mapped"),
                       preferred_description_only = TRUE,
                       reverse_mapping = getOption("codemapper.reverse_mapping"),
-                      col_filters = default_col_filters()) {
+                      col_filters = getOption("codemapper.col_filters")) {
 
   # TODO - create df and string methods; validate codes df
   if (is.data.frame(codes)) {
@@ -1000,7 +1001,7 @@ get_mapping_df <- function(to = getOption("codemapper.map_to"),
                            rename_from_to = NULL,
                            na.rm = TRUE,
                            reverse_mapping = getOption("codemapper.reverse_mapping"),
-                           col_filters = default_col_filters()) {
+                           col_filters = getOption("codemapper.col_filters")) {
   # validate args
 
   # get mapping sheet, from and to cols check mapping args and get required
@@ -1338,8 +1339,8 @@ get_col_filters <- function(defaults_only = TRUE,
     dplyr::select(tidyselect::all_of(c("table", "filter_cols"))) %>%
     dplyr::filter(!is.na(.data[["filter_cols"]]))
 
-  result <- setNames(object = result$filter_cols,
-                     nm = result$table) %>%
+  result <- rlang::set_names(result$filter_cols,
+                             nm = result$table) %>%
     purrr::map(\(x) x[[1]])
 
   # get either all values, or default selections only for filter_cols
@@ -1380,7 +1381,7 @@ codes_starting_with <- function(codes,
                                 codes_only = FALSE,
                                 preferred_description_only = TRUE,
                                 standardise_output = TRUE,
-                                col_filters = default_col_filters(),
+                                col_filters = getOption("codemapper.col_filters"),
                                 escape_dot = FALSE) {
   # validate args
   match.arg(
@@ -1776,7 +1777,7 @@ filter_cols <- function(df,
   }
 
   col_filters_item_types <- col_filters %>%
-    purrr::map_lgl(is.vector)
+    purrr::map_lgl(\(x) is.vector(x) || is.null(x))
 
   assertthat::assert_that(sum(!col_filters_item_types) == 0,
                           msg = "Each item in `col_filters` must be a vector"
@@ -1808,27 +1809,29 @@ filter_cols <- function(df,
   for (i in names(col_filters)) {
     col_filter_values <- col_filters[[i]]
 
-    # check that type matches
-    df_col_class <- class(df[[i]])
-    col_filter_values_class <- class(col_filter_values)
-    assertthat::assert_that(
-      df_col_class %in% col_filter_values_class,
-      msg = paste0(
-        "Cannot filter column ",
-        i,
-        " in ",
-        df_name,
-        " as classes do not match. Column `",
-        i,
-        "`` is class ",
-        df_col_class,
-        ", but filter values specified by `col_filters` are of class ",
-        col_filter_values_class
+    if (!is.null(col_filter_values)) {
+      # check that type matches
+      df_col_class <- class(df[[i]])
+      col_filter_values_class <- class(col_filter_values)
+      assertthat::assert_that(
+        df_col_class %in% col_filter_values_class,
+        msg = paste0(
+          "Cannot filter column ",
+          i,
+          " in ",
+          df_name,
+          " as classes do not match. Column `",
+          i,
+          "`` is class ",
+          df_col_class,
+          ", but filter values specified by `col_filters` are of class ",
+          col_filter_values_class
+        )
       )
-    )
 
-    df <- df %>%
-      dplyr::filter(.data[[i]] %in% !!col_filter_values)
+      df <- df %>%
+        dplyr::filter(.data[[i]] %in% !!col_filter_values)
+    }
   }
 
   # return result

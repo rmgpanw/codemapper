@@ -5,8 +5,8 @@
 \title{Get related SNOMED codes}
 \usage{
 get_relatives_sct(
-  codes = "269823000",
-  relationship = "116680003",
+  codes,
+  relationship = NULL,
   relationship_direction = "child",
   recursive = TRUE,
   active_only = FALSE,
@@ -43,6 +43,42 @@ A data frame
 }
 \description{
 Low level function for querying related SNOMED codes.
+}
+\examples{
+# get children codes for "269823000" ("Hemoglobin A1C - ...")
+get_relatives_sct(
+  codes = "269823000",
+  relationship = "116680003",
+  relationship_direction = "child"
+  ) \%>\%
+  lookup_codes("sct")
+
+# get parent codes
+get_relatives_sct(
+  codes = "269823000",
+  relationship = "116680003",
+  relationship_direction = "parent"
+  ) \%>\%
+  lookup_codes("sct")
+
+# get all codes for which "386868003" ("Bisoprolol (substance)") is an attribute.
+# Note, includes "293967003" ("Allergy to bisoprolol (finding)")
+get_relatives_sct(
+  codes = "386868003",
+  relationship = NULL,
+  recursive = FALSE,
+  relationship_direction = "child"
+  ) \%>\%
+  lookup_codes("sct")
+
+# more results (i.e. bisoprolol-containing medications) are returned with `recursive = TRUE`
+get_relatives_sct(
+  codes = "386868003",
+  relationship = NULL,
+  recursive = FALSE,
+  relationship_direction = "child"
+  ) \%>\%
+  lookup_codes("sct")
 }
 \seealso{
 Other Clinical code lookups and mappings: 

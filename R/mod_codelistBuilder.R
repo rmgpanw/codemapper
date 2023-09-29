@@ -15,7 +15,6 @@
 #' @return `NULL`
 #' @export
 #' @import shiny
-#' @import shinydashboard
 #'
 #' @examples
 #' \dontrun{
@@ -79,40 +78,40 @@ RunCodelistBuilder <- function(all_lkps_maps = NULL,
   # reactive value to store saved look ups - to be shared between modules
   saved_lookups <- reactiveVal(list())
 
-  ui <- dashboardPage(
+  ui <- shinydashboard::dashboardPage(
     skin = "purple",
-    dashboardHeader(title = "CODEMINER"),
-    dashboardSidebar(sidebarMenu(
-      menuItem(
+    shinydashboard::dashboardHeader(title = "CODEMINER"),
+    shinydashboard::dashboardSidebar(shinydashboard::sidebarMenu(
+      shinydashboard::menuItem(
         "Build",
         tabName = "builder_tab",
         icon = icon("pen")
       ),
-      menuItem("Search", tabName = "lookup_tab", icon = icon("magnifying-glass")),
-      menuItem("Compare", tabName = "compare_tab", icon = icon("code-compare")),
-      menuItem("Bookmark", tabName = "bookmark_tab", icon = icon("bookmark"))
+      shinydashboard::menuItem("Search", tabName = "lookup_tab", icon = icon("magnifying-glass")),
+      shinydashboard::menuItem("Compare", tabName = "compare_tab", icon = icon("code-compare")),
+      shinydashboard::menuItem("Bookmark", tabName = "bookmark_tab", icon = icon("bookmark"))
     )),
-    dashboardBody(
-                  tabItems(
-      tabItem(tabName = "builder_tab",
+    shinydashboard::dashboardBody(
+      shinydashboard::tabItems(
+        shinydashboard::tabItem(tabName = "builder_tab",
               fluidPage(
                 codelistBuilderInput("builder",
                                      available_code_types = available_code_types,
                                      available_maps = available_maps)
               )),
-      tabItem(tabName = "compare_tab",
+        shinydashboard::tabItem(tabName = "compare_tab",
               h2("Compare codelists"),
               fluidPage(
                 compareCodelistsInput("compare_codelists",
                                       available_code_types = available_code_types)
               )),
-      tabItem(tabName = "lookup_tab",
+        shinydashboard::tabItem(tabName = "lookup_tab",
               h2("Look up codes"),
               fluidPage(
                 lookupCodesInput("lookup_codes",
                                  available_code_types = available_code_types)
               )),
-      tabItem(tabName = "bookmark_tab",
+        shinydashboard::tabItem(tabName = "bookmark_tab",
               h2("Save/restore codelists"),
               fluidPage(
                 downloadButton("download", label = "Save", icon = icon("bookmark")),
@@ -235,6 +234,7 @@ codelistBuilderInput <- function(id, available_code_types, available_maps) {
       mainPanel = mainPanel(
         tabsetPanel(id = ns("mainpanel"),
                    tabPanel("Build query",
+                            icon = icon("pen"),
 
         ### Query builder input -----------------------------------------------------
         jqbr::queryBuilderInput(
@@ -417,7 +417,8 @@ codelistBuilderServer <-
               codemapper.map_to = input$code_type,
               codemapper.reverse_mapping = "warning",
               codemapper.unrecognised_codes_mapped = "warning",
-              codemapper.unrecognised_codes_lookup = "error"
+              codemapper.unrecognised_codes_lookup = "error",
+              codemapper.col_filters = col_filters()
             ),
             eval(query, envir = saved_queries()$results)
           ))

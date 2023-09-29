@@ -15,7 +15,7 @@ map_codes(
   unrecognised_codes = getOption("codemapper.unrecognised_codes_mapped"),
   preferred_description_only = TRUE,
   reverse_mapping = getOption("codemapper.reverse_mapping"),
-  col_filters = default_col_filters()
+  col_filters = getOption("codemapper.col_filters")
 )
 
 MAP(
@@ -28,7 +28,7 @@ MAP(
   unrecognised_codes = getOption("codemapper.unrecognised_codes_mapped"),
   preferred_description_only = TRUE,
   reverse_mapping = getOption("codemapper.reverse_mapping"),
-  col_filters = default_col_filters()
+  col_filters = getOption("codemapper.col_filters")
 )
 }
 \arguments{
