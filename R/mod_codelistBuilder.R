@@ -1,4 +1,5 @@
 
+
 # PUBLIC ------------------------------------------------------------------
 
 ## App ---------------------------------------------------------------------
@@ -31,7 +32,6 @@
 RunCodelistBuilder <- function(all_lkps_maps = NULL,
                                options = list(launch.browser = TRUE),
                                ...) {
-
   # Requires a data base file, the path to which will be made available as an
   # environmental variable
   if (is.null(all_lkps_maps)) {
@@ -46,8 +46,8 @@ RunCodelistBuilder <- function(all_lkps_maps = NULL,
   }
 
   # connect to database file path if `all_lkps_maps` is a string, or `NULL`
-    con <- check_all_lkps_maps_path(all_lkps_maps)
-    on.exit(DBI::dbDisconnect(con, shutdown = TRUE))
+  con <- check_all_lkps_maps_path(all_lkps_maps)
+  on.exit(DBI::dbDisconnect(con, shutdown = TRUE))
 
   # determine which lookup tables are available
   available_code_types <- CODE_TYPE_TO_LKP_TABLE_MAP %>%
@@ -62,8 +62,10 @@ RunCodelistBuilder <- function(all_lkps_maps = NULL,
   available_maps <- dplyr::bind_rows(
     available_maps,
     available_maps %>%
-      dplyr::rename("to" = tidyselect::all_of("from"),
-                    "from" = tidyselect::all_of("to"))
+      dplyr::rename(
+        "to" = tidyselect::all_of("from"),
+        "from" = tidyselect::all_of("to")
+      )
   )
 
   # reactive value to store saved queries - to be shared between modules
@@ -81,43 +83,62 @@ RunCodelistBuilder <- function(all_lkps_maps = NULL,
   ui <- shinydashboard::dashboardPage(
     skin = "purple",
     shinydashboard::dashboardHeader(title = "CODEMINER"),
-    shinydashboard::dashboardSidebar(shinydashboard::sidebarMenu(
-      shinydashboard::menuItem(
-        "Build",
-        tabName = "builder_tab",
-        icon = icon("pen")
-      ),
-      shinydashboard::menuItem("Search", tabName = "lookup_tab", icon = icon("magnifying-glass")),
-      shinydashboard::menuItem("Compare", tabName = "compare_tab", icon = icon("code-compare")),
-      shinydashboard::menuItem("Bookmark", tabName = "bookmark_tab", icon = icon("bookmark"))
-    )),
+    shinydashboard::dashboardSidebar(
+      shinydashboard::sidebarMenu(
+        shinydashboard::menuItem("Build",
+                                 tabName = "builder_tab",
+                                 icon = icon("pen")),
+        shinydashboard::menuItem(
+          "Search",
+          tabName = "lookup_tab",
+          icon = icon("magnifying-glass")
+        ),
+        shinydashboard::menuItem(
+          "Compare",
+          tabName = "compare_tab",
+          icon = icon("code-compare")
+        ),
+        shinydashboard::menuItem(
+          "Bookmark",
+          tabName = "bookmark_tab",
+          icon = icon("bookmark")
+        )
+      )
+    ),
     shinydashboard::dashboardBody(
       shinydashboard::tabItems(
         shinydashboard::tabItem(tabName = "builder_tab",
-              fluidPage(
-                codelistBuilderInput("builder",
-                                     available_code_types = available_code_types,
-                                     available_maps = available_maps)
-              )),
-        shinydashboard::tabItem(tabName = "compare_tab",
-              h2("Compare codelists"),
-              fluidPage(
-                compareCodelistsInput("compare_codelists",
-                                      available_code_types = available_code_types)
-              )),
+                                fluidPage(
+                                  codelistBuilderInput(
+                                    "builder",
+                                    available_code_types = available_code_types,
+                                    available_maps = available_maps
+                                  )
+                                )),
+        shinydashboard::tabItem(
+          tabName = "compare_tab",
+          h2("Compare codelists"),
+          fluidPage(
+            compareCodelistsInput("compare_codelists",
+                                  available_code_types = available_code_types)
+          )
+        ),
         shinydashboard::tabItem(tabName = "lookup_tab",
-              h2("Look up codes"),
-              fluidPage(
-                lookupCodesInput("lookup_codes",
-                                 available_code_types = available_code_types)
-              )),
-        shinydashboard::tabItem(tabName = "bookmark_tab",
-              h2("Save/restore codelists"),
-              fluidPage(
-                downloadButton("download", label = "Save", icon = icon("bookmark")),
-                fileInput("upload", "Restore")
-              ))
-    ))
+                                h2("Look up codes"),
+                                fluidPage(
+                                  lookupCodesInput("lookup_codes",
+                                                   available_code_types = available_code_types)
+                                )),
+        shinydashboard::tabItem(
+          tabName = "bookmark_tab",
+          h2("Save/restore codelists"),
+          fluidPage(
+            downloadButton("download", label = "Save", icon = icon("bookmark")),
+            fileInput("upload", "Restore")
+          )
+        )
+      )
+    )
   )
 
   server <- function(input, output, sesion) {
@@ -170,172 +191,194 @@ RunCodelistBuilder <- function(all_lkps_maps = NULL,
 #' @return UI (html)
 #' @noRd
 #' @import shiny
-codelistBuilderInput <- function(id, available_code_types, available_maps) {
-  stopifnot(all(available_code_types %in% CODE_TYPE_TO_LKP_TABLE_MAP$code))
+codelistBuilderInput <-
+  function(id, available_code_types, available_maps) {
+    stopifnot(all(available_code_types %in% CODE_TYPE_TO_LKP_TABLE_MAP$code))
 
-  ns <- NS(id)
+    ns <- NS(id)
 
-  tagList(
-    shinyFeedback::useShinyFeedback(),
-    shinyjs::useShinyjs(),
-    jqbr::useQueryBuilder(),
+    tagList(
+      shinyFeedback::useShinyFeedback(),
+      shinyjs::useShinyjs(),
+      jqbr::useQueryBuilder(),
 
-        tabsetPanel(id = ns("mainpanel"),
-                   tabPanel("Build query",
-                            icon = icon("pen"),
+      tabsetPanel(
+        id = ns("mainpanel"),
+        tabPanel(
+          "Build query",
+          icon = icon("pen"),
 
-                            ## Side bar -------------------------------
-                            sidebarLayout(
-                              sidebarPanel = sidebarPanel(
-                                width = 2,
-                                actionButton(ns("reset_qbr"), "Reset"),
-                                tabsetPanel(
-                                  id = ns("tabs_select_code_type"),
-                                  type = "hidden",
-                                  tabPanelBody(
-                                    value = "tab_select_code_type_show",
-                                    radioButtons(
-                                      ns("code_type"),
-                                      "Code type",
-                                      choices = CODE_TYPE_TO_LKP_TABLE_MAP %>%
-                                        dplyr::filter(.data[["code"]] %in% !!available_code_types) %>%
-                                        dplyr::select(tidyselect::all_of(c(
-                                          "code_label", "code"
-                                        ))) %>%
-                                        tibble::deframe() %>%
-                                        as.list()
-                                    )
-                                  ),
-                                  tabPanelBody(value = "tab_select_code_type_hide",
-                                               textOutput(ns("currently_updating_query")),
-                                               actionButton(ns("cancel_query_update"), "Cancel query update"))),
-                                tabsetPanel(
-                                  id = ns("tabs_load_saved_query"),
-                                  type = "hidden",
-                                  tabPanelBody(value = "tab_load_saved_query_hide"),
-                                  tabPanelBody(
-                                    value = "tab_load_saved_query_show",
-                                    actionButton(ns("btn_qb_load_saved_query"), "Load/update query"),
-                                    ### Saved queries -----------------------------------------------------------
-
-                                    selectizeInput(ns("saved_queries_checkboxes"), "Remove saved queries", choices = list("None"), multiple = TRUE),
-                                    tabsetPanel(
-                                      id = ns("tabs_remove_saved_queries"),
-                                      type = "hidden",
-                                      tabPanelBody(value = "tab_remove_saved_queries_hide"),
-                                      tabPanelBody(
-                                        value = "tab_remove_saved_queries_show",
-                                        actionButton(ns("remove_saved_queries"), "Remove")
-                                      )
-                                    )
-                                  )
-                                )
-                                # )
-                                # )
-                              ),
-
-                            ## Main panel ------------------------------------
-                            mainPanel = mainPanel(
-        ### Query builder input -----------------------------------------------------
-        jqbr::queryBuilderInput(
-          ns("qb"),
-
-          plugins = list("sortable" = NULL,
-                         "filter-description" = list("mode" = "bootbox"),
-                         "bt-tooltip-errors" = NULL),
-
-          filters = filters,
-
-          operators = operators,
-
-          rules = list(condition = "AND",
-                       rules = list(
-                         list(
-                           id = "description",
-                           operator = "read2",
-                           value = "diab",
-                           description = "I'm a description"
-                         )
-                       )),
-          conditions = c("AND", "OR", "NOT"),
-          return_value = "rules",
-          display_errors = TRUE
-        ),
-
-        ### Summarise and run query -------------------------------------------------
-
-        verbatimTextOutput(ns("current_query")),
-        actionButton(ns("run"), "Run query", class = "btn-lg btn-success"),
-
-
-        ### Query results -----------------------------------------------------------
-
-        h1("Result"),
-        tabsetPanel(
-          id = ns("query_result_tabs"),
-          type = "hidden",
-          tabPanelBody(value = "initial"),
-          tabPanelBody(value = "query_result_empty_or_invalid",
-                       verbatimTextOutput(ns("result_empty_or_invalid_message"))),
-          tabPanelBody(value = "empty_query",
-                       p("Please enter a query")),
-          tabPanelBody(
-            value = "query_result",
-            verbatimTextOutput(ns("result_query")),
-            downloadButton(ns("download")),
-            tabsetPanel(
-              id = ns("tabs_save_or_update_query"),
-              type = "hidden",
-              tabPanelBody(
-                value = "tab_save_query_input_show",
-                textInput(
-                  ns("save_query_name"),
-                  "Save as",
-                  value = "",
-                  placeholder = "Use capitals"
-                ),
-                tabsetPanel(
-                  id = ns("tabs_show_save_query_button"),
-                  type = "hidden",
-                  tabPanelBody(value = "tab_save_query_button_hide"),
-                  tabPanelBody(
-                    value = "tab_save_query_button_show",
-                    actionButton(ns("save_query"), "Save")
+          ## Side bar -------------------------------
+          sidebarLayout(
+            sidebarPanel = sidebarPanel(
+              width = 2,
+              actionButton(ns("reset_qbr"), "Reset"),
+              tabsetPanel(
+                id = ns("tabs_select_code_type"),
+                type = "hidden",
+                tabPanelBody(
+                  value = "tab_select_code_type_show",
+                  radioButtons(
+                    ns("code_type"),
+                    "Code type",
+                    choices = CODE_TYPE_TO_LKP_TABLE_MAP %>%
+                      dplyr::filter(.data[["code"]] %in% !!available_code_types) %>%
+                      dplyr::select(tidyselect::all_of(c(
+                        "code_label", "code"
+                      ))) %>%
+                      tibble::deframe() %>%
+                      as.list()
                   )
+                ),
+                tabPanelBody(
+                  value = "tab_select_code_type_hide",
+                  textOutput(ns("currently_updating_query")),
+                  actionButton(ns("cancel_query_update"), "Cancel query update")
                 )
               ),
-              tabPanelBody(
-                value = "tab_update_query_button_show",
-                actionButton(ns("btn_save_updated_query"), "Update", class = "btn-lg btn-danger")
+              tabsetPanel(
+                id = ns("tabs_load_saved_query"),
+                type = "hidden",
+                tabPanelBody(value = "tab_load_saved_query_hide"),
+                tabPanelBody(
+                  value = "tab_load_saved_query_show",
+                  actionButton(ns("btn_qb_load_saved_query"), "Load/update query"),
+                  ### Saved queries -----------------------------------------------------------
+
+                  selectizeInput(
+                    ns("saved_queries_checkboxes"),
+                    "Remove saved queries",
+                    choices = list("None"),
+                    multiple = TRUE
+                  ),
+                  tabsetPanel(
+                    id = ns("tabs_remove_saved_queries"),
+                    type = "hidden",
+                    tabPanelBody(value = "tab_remove_saved_queries_hide"),
+                    tabPanelBody(value = "tab_remove_saved_queries_show",
+                                 actionButton(ns(
+                                   "remove_saved_queries"
+                                 ), "Remove"))
+                  )
+                )
               )
+              # )
+              # )
             ),
-            textOutput(ns("result_summary")),
-            reactable::reactableOutput(ns("result")))
-        )))),
+
+            ## Main panel ------------------------------------
+            mainPanel = mainPanel(
+              ### Query builder input -----------------------------------------------------
+              jqbr::queryBuilderInput(
+                ns("qb"),
+
+                plugins = list(
+                  "sortable" = NULL,
+                  "filter-description" = list("mode" = "bootbox"),
+                  "bt-tooltip-errors" = NULL
+                ),
+
+                filters = filters,
+
+                operators = operators,
+
+                rules = list(condition = "AND",
+                             rules = list(
+                               list(
+                                 id = "description",
+                                 operator = "read2",
+                                 value = "diab",
+                                 description = "I'm a description"
+                               )
+                             )),
+                conditions = c("AND", "OR", "NOT"),
+                return_value = "rules",
+                display_errors = TRUE
+              ),
+
+              ### Summarise and run query -------------------------------------------------
+
+              verbatimTextOutput(ns("current_query")),
+              actionButton(ns("run"), "Run query", class = "btn-lg btn-success"),
+
+
+              ### Query results -----------------------------------------------------------
+
+              h1("Result"),
+              tabsetPanel(
+                id = ns("query_result_tabs"),
+                type = "hidden",
+                tabPanelBody(value = "initial"),
+                tabPanelBody(value = "query_result_empty_or_invalid",
+                             verbatimTextOutput(
+                               ns("result_empty_or_invalid_message")
+                             )),
+                tabPanelBody(value = "empty_query",
+                             p("Please enter a query")),
+                tabPanelBody(
+                  value = "query_result",
+                  verbatimTextOutput(ns("result_query")),
+                  downloadButton(ns("download")),
+                  tabsetPanel(
+                    id = ns("tabs_save_or_update_query"),
+                    type = "hidden",
+                    tabPanelBody(
+                      value = "tab_save_query_input_show",
+                      textInput(
+                        ns("save_query_name"),
+                        "Save as",
+                        value = "",
+                        placeholder = "Use capitals"
+                      ),
+                      tabsetPanel(
+                        id = ns("tabs_show_save_query_button"),
+                        type = "hidden",
+                        tabPanelBody(value = "tab_save_query_button_hide"),
+                        tabPanelBody(value = "tab_save_query_button_show",
+                                     actionButton(ns("save_query"), "Save"))
+                      )
+                    ),
+                    tabPanelBody(
+                      value = "tab_update_query_button_show",
+                      actionButton(ns("btn_save_updated_query"), "Update", class = "btn-lg btn-danger")
+                    )
+                  ),
+                  textOutput(ns("result_summary")),
+                  reactable::reactableOutput(ns("result"))
+                )
+              )
+            )
+          )
+        ),
 
         ### Saved queries -----------------------------------
-      tabPanel("Saved queries", icon = icon("cart-shopping"),
-        tabsetPanel(
-          id = ns("tabs_dag"),
-          tabPanel(title = "DAG",
-                   visNetwork::visNetworkOutput(NS(
-                     id, "dag_visnetwork"
-                   ))),
-          tabPanel(title = "Nodes",
-                   tableOutput(ns("dag_nodes"))),
-          tabPanel(title = "Edges",
-                   tableOutput(ns("dag_edges")))
+        tabPanel(
+          "Saved queries",
+          icon = icon("cart-shopping"),
+          tabsetPanel(
+            id = ns("tabs_dag"),
+            tabPanel(title = "DAG",
+                     visNetwork::visNetworkOutput(NS(
+                       id, "dag_visnetwork"
+                     ))),
+            tabPanel(title = "Nodes",
+                     tableOutput(ns("dag_nodes"))),
+            tabPanel(title = "Edges",
+                     tableOutput(ns("dag_edges")))
+          )
+        ),
+
+        ### Advanced settings ------------------------------------
+        tabPanel(
+          "Advanced settings",
+          icon = icon("gears"),
+          selectColFiltersInput(ns("builder_advanced_settings"),
+                                display_filters = FALSE)
         )
-      ),
-
-      ### Advanced settings ------------------------------------
-      tabPanel("Advanced settings", icon = icon("gears"),
-               selectColFiltersInput(ns("builder_advanced_settings"),
-                                     display_filters = FALSE))
 
       )
-      )
-}
+    )
+  }
 
 
 #' UI for codelistBuilder shiny module
@@ -356,642 +399,662 @@ codelistBuilderServer <-
              dag = list(nodes = data.frame(),
                         edges = data.frame())
            ))) {
+    moduleServer(id, function(input, output, session) {
+      ns <- session$ns
+      ## Advanced settings -------------------------------------------------------
 
-  moduleServer(id, function(input, output, session) {
+      col_filters <-
+        selectColFiltersServer("builder_advanced_settings")
 
-    ns <- session$ns
-    ## Advanced settings -------------------------------------------------------
+      observe({
+        print(col_filters())
+        print(Sys.time())
+      })
 
-    col_filters <- selectColFiltersServer("builder_advanced_settings")
+      ## Query -------------------------------------------------------------------
 
-    observe({print(col_filters())
-            print(Sys.time())})
-
-    ## Query -------------------------------------------------------------------
-
-    output$current_query <- renderPrint({
-      if (is.null(input$qb)) {
-        cat("<Enter query>")
-      } else {
-        custom_qbr_translation(input$qb) %>%
-          rlang::expr_deparse() %>%
-          cat()
-      }
-    })
-
-    # observe({
-    #   lobstr::tree(input$qb)
-    # })
-
-
-    ## Reset query builder -----------------------------------------------------
-
-    observeEvent(input$reset_qbr,
-                 jqbr::updateQueryBuilder(inputId = "qb",
-                                    setRules = list(condition = "AND",
-                                                 rules = list(
-                                                   list(
-                                                     id = "description",
-                                                     operator = "read2",
-                                                     value = "diab",
-                                                     description = "I'm a description"
-                                                   )
-                                                 ))))
-
-
-    ## Run query ---------------------------------------------------------------
-
-    query_result <- eventReactive(input$run, {
-      # `FALSE` if no query input; `NA` if no results returned by query
-      if (is.null(input$qb)) {
-        x <- FALSE
-      } else {
-        query <- custom_qbr_translation(input$qb)
-
-        execute_query <-
-          purrr::safely(\(x) withr::with_options(
-            list(
-              codemapper.code_type = input$code_type,
-              codemapper.map_to = input$code_type,
-              codemapper.reverse_mapping = "warning",
-              codemapper.unrecognised_codes_mapped = "warning",
-              codemapper.unrecognised_codes_lookup = "error",
-              codemapper.col_filters = col_filters()
-            ),
-            eval(query, envir = saved_queries()$results)
-          ))
-
-        x <- list(
-          query = query,
-          result = execute_query(),
-          qb = input$qb,
-          code_type = input$code_type
-        )
-
-        if (!rlang::is_empty(x$result$error) ||
-            nrow(x$result$result) == 0) {
-          # error, or empty result (no codes matching search criteria)
-          x <- x$result
+      output$current_query <- renderPrint({
+        if (is.null(input$qb)) {
+          cat("<Enter query>")
         } else {
-          # success
-          x$result <- x$result$result
+          custom_qbr_translation(input$qb) %>%
+            rlang::expr_deparse() %>%
+            cat()
+        }
+      })
 
-          # get saved query dependencies (if any)
-          dependencies <- get_qbr_saved_queries(x$qb) %>%
-            unique()
+      # observe({
+      #   lobstr::tree(input$qb)
+      # })
 
-          # append dependencies
-          if ((length(dependencies) > 0)) {
-            if (nrow(saved_queries()$dag$edges) > 0) {
-              dependencies <- dependencies %>%
-                purrr::set_names() %>%
-                purrr::map(
-                  ~ find_node_dependencies(
-                    graph = dag_igraph(),
-                    node = .x,
-                    mode = "in",
-                    node_rm = FALSE
-                  )
-                ) %>%
-                purrr::compact() %>%
-                purrr::reduce(c, .init = NULL) %>%
-                unique() %>%
-                c(dependencies)
 
-              dependencies <- saved_queries()$dag$nodes %>%
-                dplyr::filter(.data[["id"]] %in% !!dependencies) %>%
-                dplyr::arrange(.data[["order"]]) %>%
-                dplyr::pull(tidyselect::all_of("id"))
-            }
+      ## Reset query builder -----------------------------------------------------
 
-            # ordered dependencies
-            x$dependencies <- dependencies
+      observeEvent(input$reset_qbr,
+                   jqbr::updateQueryBuilder(
+                     inputId = "qb",
+                     setRules = list(condition = "AND",
+                                     rules = list(
+                                       list(
+                                         id = "description",
+                                         operator = "read2",
+                                         value = "diab",
+                                         description = "I'm a description"
+                                       )
+                                     ))
+                   ))
 
-            # add indicator columns, showing which codes came from which query(/queries)
-            for (dep in dependencies) {
-              print(dep)
-              x$result[[dep]] <- dplyr::case_when(x$result$code %in% saved_queries()$results[[dep]]$code ~ 1)
+
+      ## Run query ---------------------------------------------------------------
+
+      query_result <- eventReactive(input$run, {
+        # `FALSE` if no query input; `NA` if no results returned by query
+        if (is.null(input$qb)) {
+          x <- FALSE
+        } else {
+          query <- custom_qbr_translation(input$qb)
+
+          execute_query <-
+            purrr::safely(\(x) withr::with_options(
+              list(
+                codemapper.code_type = input$code_type,
+                codemapper.map_to = input$code_type,
+                codemapper.reverse_mapping = "warning",
+                codemapper.unrecognised_codes_mapped = "warning",
+                codemapper.unrecognised_codes_lookup = "error",
+                codemapper.col_filters = col_filters()
+              ),
+              eval(query, envir = saved_queries()$results)
+            ))
+
+          x <- list(
+            query = query,
+            result = execute_query(),
+            qb = input$qb,
+            code_type = input$code_type
+          )
+
+          if (!rlang::is_empty(x$result$error) ||
+              nrow(x$result$result) == 0) {
+            # error, or empty result (no codes matching search criteria)
+            x <- x$result
+          } else {
+            # success
+            x$result <- x$result$result
+
+            # get saved query dependencies (if any)
+            dependencies <- get_qbr_saved_queries(x$qb) %>%
+              unique()
+
+            # append dependencies
+            if ((length(dependencies) > 0)) {
+              if (nrow(saved_queries()$dag$edges) > 0) {
+                dependencies <- dependencies %>%
+                  purrr::set_names() %>%
+                  purrr::map(
+                    ~ find_node_dependencies(
+                      graph = dag_igraph(),
+                      node = .x,
+                      mode = "in",
+                      node_rm = FALSE
+                    )
+                  ) %>%
+                  purrr::compact() %>%
+                  purrr::reduce(c, .init = NULL) %>%
+                  unique() %>%
+                  c(dependencies)
+
+                dependencies <- saved_queries()$dag$nodes %>%
+                  dplyr::filter(.data[["id"]] %in% !!dependencies) %>%
+                  dplyr::arrange(.data[["order"]]) %>%
+                  dplyr::pull(tidyselect::all_of("id"))
+              }
+
+              # ordered dependencies
+              x$dependencies <- dependencies
+
+              # add indicator columns, showing which codes came from which query(/queries)
+              for (dep in dependencies) {
+                print(dep)
+                x$result[[dep]] <-
+                  dplyr::case_when(x$result$code %in% saved_queries()$results[[dep]]$code ~ 1)
+              }
             }
           }
         }
-      }
 
-      x
-    })
+        x
+      })
 
-    query_result_type <- eventReactive(query_result(), {
-      if (identical(query_result(), FALSE)) {
-        x <- "empty_query"
-      } else if (identical(names(query_result()), c("result", "error"))) {
-        x <- "query_result_empty_or_invalid"
-      } else {
-        x <- "query_result"
-      }
-
-      x
-    })
-
-    observeEvent(query_result_type(), {
-      updateTabsetPanel(inputId = "query_result_tabs", selected = query_result_type())
-    })
-
-    output$result_empty_or_invalid_message <- renderText({
-      req(query_result_type() == "query_result_empty_or_invalid")
-
-      if (!rlang::is_empty(query_result()$error)) {
-        validate(paste0("Error! ", query_result()$error$message))
-      }
-
-      "No codes found matching search criteria"
-    })
-
-    output$result_summary <- renderText({
-      req(query_result_type() == "query_result")
-
-      result <- paste0("N results: ",
-                       nrow(query_result()$result),
-                       ".")
-
-      message(result)
-
-      print(result)
-    })
-
-    output$result <- reactable::renderReactable({
-      req(query_result_type() == "query_result")
-
-      reactable::reactable(query_result()$result,
-                           filterable = TRUE,
-                           searchable = TRUE,
-                           resizable = TRUE,
-                           paginationType = "jump",
-                           showPageSizeOptions = TRUE,
-                           pageSizeOptions = c(10, 25, 50, 100, 200))
-    })
-
-    output$result_query <- renderPrint({
-      req(query_result_type() == "query_result")
-
-      dependencies <- query_result()$dependencies
-
-      # first print code for any required dependencies
-      if (length(dependencies) > 0) {
-        if (length(dependencies) == 1) {
-          dependencies %>%
-            purrr::walk(
-              ~ rlang::call2(
-                .fn = "=",
-                rlang::sym(.x),
-                saved_queries()$results_meta[[.x]]$query
-              ) %>%
-                print()
-            )
-
+      query_result_type <- eventReactive(query_result(), {
+        if (identical(query_result(), FALSE)) {
+          x <- "empty_query"
+        } else if (identical(names(query_result()), c("result", "error"))) {
+          x <- "query_result_empty_or_invalid"
         } else {
-          dependencies %>%
-            purrr::walk( ~ {
-              print(
-                rlang::call2(
+          x <- "query_result"
+        }
+
+        x
+      })
+
+      observeEvent(query_result_type(), {
+        updateTabsetPanel(inputId = "query_result_tabs", selected = query_result_type())
+      })
+
+      output$result_empty_or_invalid_message <- renderText({
+        req(query_result_type() == "query_result_empty_or_invalid")
+
+        if (!rlang::is_empty(query_result()$error)) {
+          validate(paste0("Error! ", query_result()$error$message))
+        }
+
+        "No codes found matching search criteria"
+      })
+
+      output$result_summary <- renderText({
+        req(query_result_type() == "query_result")
+
+        result <- paste0("N results: ",
+                         nrow(query_result()$result),
+                         ".")
+
+        message(result)
+
+        print(result)
+      })
+
+      output$result <- reactable::renderReactable({
+        req(query_result_type() == "query_result")
+
+        reactable::reactable(
+          query_result()$result,
+          filterable = TRUE,
+          searchable = TRUE,
+          resizable = TRUE,
+          paginationType = "jump",
+          showPageSizeOptions = TRUE,
+          pageSizeOptions = c(10, 25, 50, 100, 200)
+        )
+      })
+
+      output$result_query <- renderPrint({
+        req(query_result_type() == "query_result")
+
+        dependencies <- query_result()$dependencies
+
+        # first print code for any required dependencies
+        if (length(dependencies) > 0) {
+          if (length(dependencies) == 1) {
+            dependencies %>%
+              purrr::walk(
+                ~ rlang::call2(
                   .fn = "=",
                   rlang::sym(.x),
                   saved_queries()$results_meta[[.x]]$query
-                )
+                ) %>%
+                  print()
               )
-            })
+
+          } else {
+            dependencies %>%
+              purrr::walk(~ {
+                print(
+                  rlang::call2(
+                    .fn = "=",
+                    rlang::sym(.x),
+                    saved_queries()$results_meta[[.x]]$query
+                  )
+                )
+              })
+          }
         }
-      }
 
-      # then print final query
-      print(query_result()$query)
-    })
-
-    # Download query ----------------------------------------------------------
-
-    output$download <- downloadHandler(
-      filename = function() {
-        "result.csv"
-      },
-      content = function(file) {
-        utils::write.csv(query_result()$result,
-                  file,
-                  row.names = FALSE,
-                  na = "")
-      }
-    )
-
-
-    # Code type ---------------------------------------------------------------
-
-    observe({
-      shinyjs::toggleState(ns("code_type"), condition = !is.null(input$qb), asis = TRUE)
+        # then print final query
+        print(query_result()$query)
       })
 
-    # Saved queries --------------------------------------------------------------
+      # Download query ----------------------------------------------------------
 
-    dag_igraph <- eventReactive(saved_queries(), {
-      if (nrow(saved_queries()$dag$nodes) > 0 &
-          nrow(saved_queries()$dag$edges) > 0) {
-        # ascertain dependencies using igraph package
-        dag <-
-          igraph::graph_from_data_frame(
-            d = saved_queries()$dag$edges,
-            directed = TRUE,
-            vertices = saved_queries()$dag$nodes
+      output$download <- downloadHandler(
+        filename = function() {
+          "result.csv"
+        },
+        content = function(file) {
+          utils::write.csv(query_result()$result,
+                           file,
+                           row.names = FALSE,
+                           na = "")
+        }
+      )
+
+
+      # Code type ---------------------------------------------------------------
+
+      observe({
+        shinyjs::toggleState(ns("code_type"),
+                             condition = !is.null(input$qb),
+                             asis = TRUE)
+      })
+
+      # Saved queries --------------------------------------------------------------
+
+      dag_igraph <- eventReactive(saved_queries(), {
+        if (nrow(saved_queries()$dag$nodes) > 0 &
+            nrow(saved_queries()$dag$edges) > 0) {
+          # ascertain dependencies using igraph package
+          dag <-
+            igraph::graph_from_data_frame(
+              d = saved_queries()$dag$edges,
+              directed = TRUE,
+              vertices = saved_queries()$dag$nodes
+            )
+        } else {
+          dag <- NULL
+        }
+
+        dag
+      })
+
+      # update query builder in response to any of (i) code type change (ii)
+      # updated list of saved queries (iii) finish updating a saved query (either
+      # cancel or save the update)
+      observeEvent(
+        list(
+          input$code_type,
+          saved_queries(),
+          input$btn_save_updated_query,
+          input$cancel_query_update
+        ),
+        {
+          # update qbr saved query filter
+          new_saved_query_filter <- empty_saved_query_filter
+
+          new_saved_query_filter$values <-
+            as.list(saved_queries()$objects[[input$code_type]])
+
+          new_saved_query_filter$operators <- list(input$code_type)
+
+          new_description_contains_filter <- description_contains_filter
+          new_description_contains_filter$operators <-
+            list(input$code_type)
+
+          new_codes_filter <- codes_filter
+          new_codes_filter$operators <- list(input$code_type)
+
+          new_map_codes_filter <- map_codes_filter
+          new_map_codes_filter$operators <-
+            get_available_map_from_code_types(available_maps = available_maps,
+                                              to = input$code_type)
+
+          new_map_children_filter <- map_children_filter
+          new_map_children_filter$operators <-
+            get_available_map_from_code_types(available_maps = available_maps,
+                                              to = input$code_type)
+
+          new_child_codes_filter <- child_codes_filter
+          new_child_codes_filter$operators <- list(input$code_type)
+
+          jqbr::updateQueryBuilder(
+            inputId = "qb",
+            setFilters = list(
+              new_description_contains_filter,
+              new_codes_filter,
+              new_child_codes_filter,
+              new_map_codes_filter,
+              new_map_children_filter,
+              new_saved_query_filter
+            ),
+            setRules = update_qb_operator_code_type(input$qb, input$code_type),
+            destroy = TRUE
           )
-      } else {
-        dag <- NULL
-      }
-
-      dag
-    })
-
-    # update query builder in response to any of (i) code type change (ii)
-    # updated list of saved queries (iii) finish updating a saved query (either
-    # cancel or save the update)
-    observeEvent(list(input$code_type, saved_queries(), input$btn_save_updated_query, input$cancel_query_update), {
-      # update qbr saved query filter
-      new_saved_query_filter <- empty_saved_query_filter
-
-      new_saved_query_filter$values <-
-        as.list(saved_queries()$objects[[input$code_type]])
-
-      new_saved_query_filter$operators <- list(input$code_type)
-
-      new_description_contains_filter <- description_contains_filter
-      new_description_contains_filter$operators <- list(input$code_type)
-
-      new_codes_filter <- codes_filter
-      new_codes_filter$operators <- list(input$code_type)
-
-      new_map_codes_filter <- map_codes_filter
-      new_map_codes_filter$operators <-
-        get_available_map_from_code_types(available_maps = available_maps,
-                                          to = input$code_type)
-
-      new_map_children_filter <- map_children_filter
-      new_map_children_filter$operators <-
-        get_available_map_from_code_types(available_maps = available_maps,
-                                          to = input$code_type)
-
-      new_child_codes_filter <- child_codes_filter
-      new_child_codes_filter$operators <- list(input$code_type)
-
-      jqbr::updateQueryBuilder(
-        inputId = "qb",
-        setFilters = list(
-          new_description_contains_filter,
-          new_codes_filter,
-          new_child_codes_filter,
-          new_map_codes_filter,
-          new_map_children_filter,
-          new_saved_query_filter
-        ),
-        setRules = update_qb_operator_code_type(input$qb, input$code_type),
-        destroy = TRUE
+        }
       )
-    })
 
-    ### Save current query ------------------------------------------------------
+      ### Save current query ------------------------------------------------------
 
-    # show 'save query' button only if a query name has been entered
-    observeEvent(input$save_query_name, {
+      # show 'save query' button only if a query name has been entered
+      observeEvent(input$save_query_name, {
+        duplicate_query_name <-
+          (input$save_query_name %in% saved_queries()$objects[[input$code_type]]) &
+          (input$save_query_name != "")
 
-      duplicate_query_name <-
-        (input$save_query_name %in% saved_queries()$objects[[input$code_type]]) &
-        (input$save_query_name != "")
+        shinyFeedback::feedbackWarning("save_query_name",
+                                       duplicate_query_name,
+                                       "Query with this name already exists")
+        req(!duplicate_query_name)
 
-      shinyFeedback::feedbackWarning("save_query_name",
-                                     duplicate_query_name,
-                                     "Query with this name already exists")
-      req(!duplicate_query_name)
+        tab <-
+          ifelse(
+            shiny::isTruthy(input$save_query_name) & !duplicate_query_name,
+            "tab_save_query_button_show",
+            "tab_save_query_button_hide"
+          )
 
-      tab <-
-        ifelse(
-          shiny::isTruthy(input$save_query_name) & !duplicate_query_name,
-          "tab_save_query_button_show",
-          "tab_save_query_button_hide"
-        )
+        updateTabsetPanel(inputId = "tabs_show_save_query_button", selected = tab)
+      })
 
-      updateTabsetPanel(inputId = "tabs_show_save_query_button", selected = tab)
-    })
-
-    # click save query button
-    observeEvent(input$save_query,
-                 label = "add_to_saved_queries",
-                 handlerExpr = {
-                   update_saved_queries(
-                     query = input$save_query_name,
-                     query_result = query_result,
-                     saved_queries = saved_queries,
-                     code_type = query_result()$code_type
-                   )
-
-                   # reset query name input
-                   updateTextInput(inputId = "save_query_name",
-                                   value = "")
-                 })
-
-
-    ### Show saved queries ------------------------------------------------------
-
-    observe(label = "update_saved_queries_checkboxes",
-            x = {
-              # update saved queries check boxes
-              updateSelectizeInput(inputId = "saved_queries_checkboxes",
-                                   choices = saved_queries()$objects)
-            })
-
-    # update qbr load_query input tab and options
-    observeEvent(
-      eventExpr = saved_queries(),
-      label = "update_qbr_load_query_input",
-      ignoreInit = TRUE,
-      handlerExpr = {
-        tab <- ifelse(
-          shiny::isTruthy(names(saved_queries()$objects)),
-          "tab_load_saved_query_show",
-          "tab_load_saved_query_hide"
-        )
-
-        updateTabsetPanel(inputId = "tabs_load_saved_query", selected = tab)
-      }
-    )
-
-    ### Load/update saved queries -----------------------------------------------
-
-    observeEvent(input$btn_qb_load_saved_query,
-                 ignoreInit = TRUE,
-                 handlerExpr = {
-                   showModal(
-                     modalDialog(
-                       selectInput(
-                         ns("select_qb_load_saved_query"),
-                         label = "Select saved query",
-                         choices = saved_queries()$objects,
-                         multiple = FALSE,
-                       ),
-                       title = "Load or modify existing query?",
-                       footer = tagList(
-                         actionButton(ns("btn_cancel_query_load_update"), "Cancel"),
-                         actionButton(ns("btn_load_query"), "Load", class = "btn-lg btn-success"),
-                         actionButton(ns("btn_update_query"), "Update", class = "btn btn-danger")
-                       )
+      # click save query button
+      observeEvent(input$save_query,
+                   label = "add_to_saved_queries",
+                   handlerExpr = {
+                     update_saved_queries(
+                       query = input$save_query_name,
+                       query_result = query_result,
+                       saved_queries = saved_queries,
+                       code_type = query_result()$code_type
                      )
-                   )
-                 })
 
-    observeEvent(input$btn_load_query, {
-      selected_saved_query <- input$select_qb_load_saved_query
-
-      updateRadioButtons(inputId = "code_type",
-                         selected = saved_queries()$dag$nodes %>%
-                           dplyr::filter(.data[["id"]] == !!selected_saved_query) %>%
-                           dplyr::pull(.data[["group"]]))
-
-      jqbr::updateQueryBuilder(
-        inputId = "qb",
-        setRules = get(
-          selected_saved_query,
-          envir = saved_queries()$results_meta
-        )$qb
-      )
-      removeModal()
-      showNotification(paste0("Loaded ", selected_saved_query))
-    })
-
-    observeEvent(input$btn_cancel_query_load_update, {
-      removeModal()
-    })
-
-    output$currently_updating_query <- renderText({
-      req(input$select_qb_load_saved_query)
-      paste0(
-        "Updating saved query: ",
-        input$select_qb_load_saved_query,
-        " (",
-        input$code_type,
-        ")"
-      )
-    })
-
-    observeEvent(input$btn_update_query, {
-
-      selected_saved_query <- input$select_qb_load_saved_query
+                     # reset query name input
+                     updateTextInput(inputId = "save_query_name",
+                                     value = "")
+                   })
 
 
-      available_saved_queries <- as.list(saved_queries()$objects[[input$code_type]]) %>%
-        purrr::discard(\(x) x == selected_saved_query) %>%
-        as.character()
+      ### Show saved queries ------------------------------------------------------
 
-      # ensure saved query filter only shows upstream dependencies for selected
-      # query
-      if (!is.null(dag_igraph())) {
-        dependencies <- find_node_dependencies(graph = dag_igraph(),
-                                               node = selected_saved_query,
-                                               mode = "in")
+      observe(label = "update_saved_queries_checkboxes",
+              x = {
+                # update saved queries check boxes
+                updateSelectizeInput(inputId = "saved_queries_checkboxes",
+                                     choices = saved_queries()$objects)
+              })
 
-        available_saved_queries <- subset(available_saved_queries,
-                                          !available_saved_queries %in% dependencies)
-      }
+      # update qbr load_query input tab and options
+      observeEvent(
+        eventExpr = saved_queries(),
+        label = "update_qbr_load_query_input",
+        ignoreInit = TRUE,
+        handlerExpr = {
+          tab <- ifelse(
+            shiny::isTruthy(names(saved_queries()$objects)),
+            "tab_load_saved_query_show",
+            "tab_load_saved_query_hide"
+          )
 
-      # new filter
-      new_saved_query_filter <- empty_saved_query_filter
-
-      if (length(available_saved_queries) > 0) {
-        new_saved_query_filter$values <-
-          as.list(available_saved_queries)
-      }
-
-      # finally
-      updateRadioButtons(inputId = "code_type",
-                         selected = saved_queries()$dag$nodes %>%
-                           dplyr::filter(.data[["id"]] == !!selected_saved_query) %>%
-                           dplyr::pull(.data[["group"]]))
-
-      updateTabsetPanel(inputId = "tabs_select_code_type",
-                        selected = "tab_select_code_type_hide")
-
-      jqbr::updateQueryBuilder(
-        inputId = "qb",
-        setFilters = list(
-          description_contains_filter,
-          codes_filter,
-          child_codes_filter,
-          map_codes_filter,
-          map_children_filter,
-          new_saved_query_filter
-        ),
-        setRules = get(
-          input$select_qb_load_saved_query,
-          envir = saved_queries()$results_meta
-        )$qb
+          updateTabsetPanel(inputId = "tabs_load_saved_query", selected = tab)
+        }
       )
 
-      updateTabsetPanel(inputId = "query_result_tabs", selected = "empty_query")
+      ### Load/update saved queries -----------------------------------------------
 
-      updateTabsetPanel(inputId = "tabs_save_or_update_query", selected = "tab_update_query_button_show")
-
-      removeModal()
-
-      showNotification(paste0("Updating ", input$select_qb_load_saved_query))
-    })
-
-    observeEvent(input$btn_save_updated_query, {
-      # update saved queries
-      update_saved_queries(
-        query = input$select_qb_load_saved_query,
-        query_result = query_result,
-        saved_queries = saved_queries,
-        code_type = input$code_type
-      )
-
-      updateTabsetPanel(inputId = "query_result_tabs", selected = "empty_query")
-
-      updateTabsetPanel(inputId = "tabs_save_or_update_query", selected = "tab_save_query_input_show")
-
-      updateTabsetPanel(inputId = "tabs_select_code_type",
-                        selected = "tab_select_code_type_show")
-    })
-
-    observeEvent(input$cancel_query_update,
-                 {
-                   updateTabsetPanel(inputId = "query_result_tabs", selected = "empty_query")
-
-                   updateTabsetPanel(inputId = "tabs_save_or_update_query", selected = "tab_save_query_input_show")
-
-                   updateTabsetPanel(inputId = "tabs_select_code_type",
-                                     selected = "tab_select_code_type_show")
-                 })
-
-    ### Remove saved queries ----------------------------------------------------
-
-    observe(label = "show_hide_tabs_remove_saved_queries",
-            x = {
-              tab <- ifelse(
-                shiny::isTruthy(input$saved_queries_checkboxes),
-                "tab_remove_saved_queries_show",
-                "tab_remove_saved_queries_hide"
-              )
-              updateTabsetPanel(inputId = "tabs_remove_saved_queries", selected = tab)
-            })
-
-    updated_dag <- eventReactive(input$remove_saved_queries,
-                                 label = "determine_which_saved_queries_to_remove",
-                                 valueExpr = {
-                                   # determine dependencies
-                                   if (!is.null(dag_igraph())) {
-                                     # ascertain dependencies using igraph package
-                                     dependencies <-
-                                       input$saved_queries_checkboxes %>%
-                                       purrr::set_names() %>%
-                                       purrr::map( ~ find_node_dependencies(graph = dag_igraph(),
-                                                                            node = .x)) %>%
-                                       purrr::compact()
-
-                                     nodes_to_remove <-
-                                       c(
-                                         input$saved_queries_checkboxes,
-                                         purrr::reduce(dependencies, c, .init = NULL)
-                                       ) %>%
-                                       unique()
-
-                                     # finally
-                                     new_dependencies <- list(
-                                       nodes = saved_queries()$dag$nodes %>%
-                                         dplyr::filter(!.data[["id"]] %in% nodes_to_remove),
-                                       edges = saved_queries()$dag$edges %>%
-                                         dplyr::filter(
-                                           !.data[["to"]] %in% nodes_to_remove,!.data[["from"]] %in% nodes_to_remove
-                                         )
-                                     )
-                                   } else {
-                                     nodes_to_remove <- input$saved_queries_checkboxes
-                                     new_dependencies <- list(nodes = saved_queries()$dag$nodes %>%
-                                                                dplyr::filter(!.data[["id"]] %in% nodes_to_remove),
-                                                              edges = data.frame())
-                                     dependencies <- list()
-                                   }
-
-                                   # return updated DAG
-                                   list(
-                                     new_dependencies = new_dependencies,
-                                     nodes_to_remove = nodes_to_remove,
-                                     dependencies = dependencies
-                                   )
-                                 })
-
-    observeEvent(updated_dag(), label = "remove_from_saved_queries",
-                 handlerExpr = {
-                   # confirm dialog box if removing selected queries will also
-                   # impact other queries
-                   if (!rlang::is_empty(updated_dag()$dependencies)) {
-                     modal_confirm <- modalDialog(
-                       paste0(
-                         "The following saved queries will also be deleted: ",
-                         paste(
-                           subset(
-                             updated_dag()$nodes_to_remove,
-                             !updated_dag()$nodes_to_remove %in% input$saved_queries_checkboxes
-                           ),
-                           sep = "",
-                           collapse = ", "
+      observeEvent(input$btn_qb_load_saved_query,
+                   ignoreInit = TRUE,
+                   handlerExpr = {
+                     showModal(
+                       modalDialog(
+                         selectInput(
+                           ns("select_qb_load_saved_query"),
+                           label = "Select saved query",
+                           choices = saved_queries()$objects,
+                           multiple = FALSE,
                          ),
-                         "."
-                       ),
-                       title = "Dependencies detected for selected queries",
-                       footer = tagList(
-                         actionButton(ns("cancel"), "Cancel"),
-                         actionButton(ns("ok"), "Delete", class = "btn btn-danger")
+                         title = "Load or modify existing query?",
+                         footer = tagList(
+                           actionButton(ns("btn_cancel_query_load_update"), "Cancel"),
+                           actionButton(ns("btn_load_query"), "Load", class = "btn-lg btn-success"),
+                           actionButton(ns("btn_update_query"), "Update", class = "btn btn-danger")
+                         )
                        )
                      )
+                   })
 
-                     showModal(modal_confirm)
-                   } else {
-                     # otherwise, simply remove selected queries
-                     remove_saved_queries(updated_dag = updated_dag,
-                                          saved_queries = saved_queries)
-                   }
-                 })
+      observeEvent(input$btn_load_query, {
+        selected_saved_query <- input$select_qb_load_saved_query
 
-    observeEvent(input$ok, {
-      remove_saved_queries(updated_dag = updated_dag,
-                           saved_queries = saved_queries)
-      showNotification("Saved queries deleted")
-      removeModal()
-    })
+        updateRadioButtons(
+          inputId = "code_type",
+          selected = saved_queries()$dag$nodes %>%
+            dplyr::filter(.data[["id"]] == !!selected_saved_query) %>%
+            dplyr::pull(.data[["group"]])
+        )
 
-    observeEvent(input$cancel, {
-      removeModal()
-    })
+        jqbr::updateQueryBuilder(
+          inputId = "qb",
+          setRules = get(selected_saved_query,
+                         envir = saved_queries()$results_meta)$qb
+        )
+        removeModal()
+        showNotification(paste0("Loaded ", selected_saved_query))
+      })
+
+      observeEvent(input$btn_cancel_query_load_update, {
+        removeModal()
+      })
+
+      output$currently_updating_query <- renderText({
+        req(input$select_qb_load_saved_query)
+        paste0(
+          "Updating saved query: ",
+          input$select_qb_load_saved_query,
+          " (",
+          input$code_type,
+          ")"
+        )
+      })
+
+      observeEvent(input$btn_update_query, {
+        selected_saved_query <- input$select_qb_load_saved_query
 
 
-    ### Render DAG -----------------------------------------------------------
+        available_saved_queries <-
+          as.list(saved_queries()$objects[[input$code_type]]) %>%
+          purrr::discard(\(x) x == selected_saved_query) %>%
+          as.character()
 
-    output$dag_visnetwork <-
-      visNetwork::renderVisNetwork(
-        visNetwork::visNetwork(
-          nodes = saved_queries()$dag$nodes,
-          edges = saved_queries()$dag$edges,
-          width = "100%"
-        ) |>
-          visNetwork::visEdges(arrows = "to") |>
-          visNetwork::visNodes(shadow = list(enabled = TRUE, size = 10)) |>
-          visNetwork::visHierarchicalLayout(direction = "LR",
-                                            sortMethod = "directed") |>
-          visNetwork::visInteraction(
-            zoomView = TRUE,
-            dragView = TRUE,
-            dragNodes = TRUE
+        # ensure saved query filter only shows upstream dependencies for selected
+        # query
+        if (!is.null(dag_igraph())) {
+          dependencies <- find_node_dependencies(graph = dag_igraph(),
+                                                 node = selected_saved_query,
+                                                 mode = "in")
+
+          available_saved_queries <- subset(available_saved_queries,!available_saved_queries %in% dependencies)
+        }
+
+        # new filter
+        new_saved_query_filter <- empty_saved_query_filter
+
+        if (length(available_saved_queries) > 0) {
+          new_saved_query_filter$values <-
+            as.list(available_saved_queries)
+        }
+
+        # finally
+        updateRadioButtons(
+          inputId = "code_type",
+          selected = saved_queries()$dag$nodes %>%
+            dplyr::filter(.data[["id"]] == !!selected_saved_query) %>%
+            dplyr::pull(.data[["group"]])
+        )
+
+        updateTabsetPanel(inputId = "tabs_select_code_type",
+                          selected = "tab_select_code_type_hide")
+
+        jqbr::updateQueryBuilder(
+          inputId = "qb",
+          setFilters = list(
+            description_contains_filter,
+            codes_filter,
+            child_codes_filter,
+            map_codes_filter,
+            map_children_filter,
+            new_saved_query_filter
+          ),
+          setRules = get(
+            input$select_qb_load_saved_query,
+            envir = saved_queries()$results_meta
+          )$qb
+        )
+
+        updateTabsetPanel(inputId = "query_result_tabs", selected = "empty_query")
+
+        updateTabsetPanel(inputId = "tabs_save_or_update_query", selected = "tab_update_query_button_show")
+
+        removeModal()
+
+        showNotification(paste0("Updating ", input$select_qb_load_saved_query))
+      })
+
+      observeEvent(input$btn_save_updated_query, {
+        # update saved queries
+        update_saved_queries(
+          query = input$select_qb_load_saved_query,
+          query_result = query_result,
+          saved_queries = saved_queries,
+          code_type = input$code_type
+        )
+
+        updateTabsetPanel(inputId = "query_result_tabs", selected = "empty_query")
+
+        updateTabsetPanel(inputId = "tabs_save_or_update_query", selected = "tab_save_query_input_show")
+
+        updateTabsetPanel(inputId = "tabs_select_code_type",
+                          selected = "tab_select_code_type_show")
+      })
+
+      observeEvent(input$cancel_query_update,
+                   {
+                     updateTabsetPanel(inputId = "query_result_tabs", selected = "empty_query")
+
+                     updateTabsetPanel(inputId = "tabs_save_or_update_query", selected = "tab_save_query_input_show")
+
+                     updateTabsetPanel(inputId = "tabs_select_code_type",
+                                       selected = "tab_select_code_type_show")
+                   })
+
+      ### Remove saved queries ----------------------------------------------------
+
+      observe(label = "show_hide_tabs_remove_saved_queries",
+              x = {
+                tab <- ifelse(
+                  shiny::isTruthy(input$saved_queries_checkboxes),
+                  "tab_remove_saved_queries_show",
+                  "tab_remove_saved_queries_hide"
+                )
+                updateTabsetPanel(inputId = "tabs_remove_saved_queries", selected = tab)
+              })
+
+      updated_dag <- eventReactive(input$remove_saved_queries,
+                                   label = "determine_which_saved_queries_to_remove",
+                                   valueExpr = {
+                                     # determine dependencies
+                                     if (!is.null(dag_igraph())) {
+                                       # ascertain dependencies using igraph package
+                                       dependencies <-
+                                         input$saved_queries_checkboxes %>%
+                                         purrr::set_names() %>%
+                                         purrr::map(~ find_node_dependencies(graph = dag_igraph(),
+                                                                             node = .x)) %>%
+                                         purrr::compact()
+
+                                       nodes_to_remove <-
+                                         c(
+                                           input$saved_queries_checkboxes,
+                                           purrr::reduce(dependencies, c, .init = NULL)
+                                         ) %>%
+                                         unique()
+
+                                       # finally
+                                       new_dependencies <- list(
+                                         nodes = saved_queries()$dag$nodes %>%
+                                           dplyr::filter(!.data[["id"]] %in% nodes_to_remove),
+                                         edges = saved_queries()$dag$edges %>%
+                                           dplyr::filter(
+                                             !.data[["to"]] %in% nodes_to_remove,
+                                             !.data[["from"]] %in% nodes_to_remove
+                                           )
+                                       )
+                                     } else {
+                                       nodes_to_remove <- input$saved_queries_checkboxes
+                                       new_dependencies <-
+                                         list(
+                                           nodes = saved_queries()$dag$nodes %>%
+                                             dplyr::filter(!.data[["id"]] %in% nodes_to_remove),
+                                           edges = data.frame()
+                                         )
+                                       dependencies <- list()
+                                     }
+
+                                     # return updated DAG
+                                     list(
+                                       new_dependencies = new_dependencies,
+                                       nodes_to_remove = nodes_to_remove,
+                                       dependencies = dependencies
+                                     )
+                                   })
+
+      observeEvent(updated_dag(), label = "remove_from_saved_queries",
+                   handlerExpr = {
+                     # confirm dialog box if removing selected queries will also
+                     # impact other queries
+                     if (!rlang::is_empty(updated_dag()$dependencies)) {
+                       modal_confirm <- modalDialog(
+                         paste0(
+                           "The following saved queries will also be deleted: ",
+                           paste(
+                             subset(
+                               updated_dag()$nodes_to_remove,!updated_dag()$nodes_to_remove %in% input$saved_queries_checkboxes
+                             ),
+                             sep = "",
+                             collapse = ", "
+                           ),
+                           "."
+                         ),
+                         title = "Dependencies detected for selected queries",
+                         footer = tagList(
+                           actionButton(ns("cancel"), "Cancel"),
+                           actionButton(ns("ok"), "Delete", class = "btn btn-danger")
+                         )
+                       )
+
+                       showModal(modal_confirm)
+                     } else {
+                       # otherwise, simply remove selected queries
+                       remove_saved_queries(updated_dag = updated_dag,
+                                            saved_queries = saved_queries)
+                     }
+                   })
+
+      observeEvent(input$ok, {
+        remove_saved_queries(updated_dag = updated_dag,
+                             saved_queries = saved_queries)
+        showNotification("Saved queries deleted")
+        removeModal()
+      })
+
+      observeEvent(input$cancel, {
+        removeModal()
+      })
+
+
+      ### Render DAG -----------------------------------------------------------
+
+      output$dag_visnetwork <-
+        visNetwork::renderVisNetwork(
+          visNetwork::visNetwork(
+            nodes = saved_queries()$dag$nodes,
+            edges = saved_queries()$dag$edges,
+            width = "100%"
           ) |>
-          visNetwork::visGroups() |>
-          visNetwork::visLegend() |>
-          visNetwork::visOptions(selectedBy = list(variable = "group"))
-      )
+            visNetwork::visEdges(arrows = "to") |>
+            visNetwork::visNodes(shadow = list(enabled = TRUE, size = 10)) |>
+            visNetwork::visHierarchicalLayout(direction = "LR",
+                                              sortMethod = "directed") |>
+            visNetwork::visInteraction(
+              zoomView = TRUE,
+              dragView = TRUE,
+              dragNodes = TRUE
+            ) |>
+            visNetwork::visGroups() |>
+            visNetwork::visLegend() |>
+            visNetwork::visOptions(selectedBy = list(variable = "group"))
+        )
 
-    output$dag_nodes <- renderTable(saved_queries()$dag$nodes)
-    output$dag_edges <- renderTable(saved_queries()$dag$edges)
-  })
-}
+      output$dag_nodes <- renderTable(saved_queries()$dag$nodes)
+      output$dag_edges <- renderTable(saved_queries()$dag$edges)
+    })
+  }
 
 compareCodelistsInput <- function(id, available_code_types) {
   ns <- NS(id)
@@ -1001,20 +1064,28 @@ compareCodelistsInput <- function(id, available_code_types) {
   tagList(
     shinyFeedback::useShinyFeedback(),
     shinyjs::useShinyjs(),
-    selectInput(ns("code_type"), "Code type", choices = CODE_TYPE_TO_LKP_TABLE_MAP %>%
-                  dplyr::filter(.data[["code"]] %in% !!available_code_types) %>%
-                  dplyr::select(tidyselect::all_of(c(
-                    "code_label", "code"
-                  ))) %>%
-                  tibble::deframe() %>%
-                  as.list()),
+    selectInput(
+      ns("code_type"),
+      "Code type",
+      choices = CODE_TYPE_TO_LKP_TABLE_MAP %>%
+        dplyr::filter(.data[["code"]] %in% !!available_code_types) %>%
+        dplyr::select(tidyselect::all_of(c(
+          "code_label", "code"
+        ))) %>%
+        tibble::deframe() %>%
+        as.list()
+    ),
     fluidRow(
-      column(6,
-             radioButtons(ns("input_codelist1_type"), "", choices = c("Query", "Look up")),
-             selectInput(ns("input_codelist1"), "Codelist 1", choices = NULL)),
-      column(6,
-             radioButtons(ns("input_codelist2_type"), "", choices = c("Query", "Look up")),
-             selectInput(ns("input_codelist2"), "Codelist 2", choices = NULL))
+      column(
+        6,
+        radioButtons(ns("input_codelist1_type"), "", choices = c("Query", "Look up")),
+        selectInput(ns("input_codelist1"), "Codelist 1", choices = NULL)
+      ),
+      column(
+        6,
+        radioButtons(ns("input_codelist2_type"), "", choices = c("Query", "Look up")),
+        selectInput(ns("input_codelist2"), "Codelist 2", choices = NULL)
+      )
     ),
     actionButton(ns("compare"), "Compare", class = "btn-lg btn-success"),
     tableOutput(ns("compare_codelists_summary")),
@@ -1022,79 +1093,89 @@ compareCodelistsInput <- function(id, available_code_types) {
   )
 }
 
-compareCodelistsServer <- function(id, saved_queries, saved_lookups) {
+compareCodelistsServer <-
+  function(id, saved_queries, saved_lookups) {
+    moduleServer(id, function(input, output, session) {
+      ns <- session$ns
 
-  moduleServer(id, function(input, output, session) {
-    ns <- session$ns
+      observe({
+        # update select codelist input based on code type and saved query/lookup
+        updateSelectInput(inputId = "input_codelist1", choices = switch(
+          input$input_codelist1_type,
+          "Query" = as.list(saved_queries()$objects[[input$code_type]]),
+          "Look up" = as.list(names(saved_lookups()[[input$code_type]]))
+        ))
 
-    observe({
-      # update select codelist input based on code type and saved query/lookup
-      updateSelectInput(inputId = "input_codelist1", choices = switch(input$input_codelist1_type,
-                                                                      "Query" = as.list(saved_queries()$objects[[input$code_type]]),
-                                                                    "Look up" = as.list(names(saved_lookups()[[input$code_type]]))))
-
-      updateSelectInput(inputId = "input_codelist2", choices = switch(input$input_codelist2_type,
-                                                                      "Query" = as.list(saved_queries()$objects[[input$code_type]]),
-                                                                      "Look up" = as.list(names(saved_lookups()[[input$code_type]]))))
-    })
-
-    observe({
-      # require 2 different codelists to be selected
-      shinyjs::toggleState(
-        ns("compare"),
-        condition = isTruthy(input$input_codelist1) &
-          isTruthy(input$input_codelist2) & (input$input_codelist1 != input$input_codelist2),
-        asis = TRUE
-      )
-    })
-
-    codelist_comparison <-
-      eventReactive(input$compare, ignoreInit = TRUE, valueExpr = {
-
-        df_1 <- switch(input$input_codelist1_type,
-                       "Query" = saved_queries()$results[[input$input_codelist1]],
-                       "Look up" = saved_lookups()[[input$code_type]][[input$input_codelist1]])
-
-        df_2 <- switch(input$input_codelist2_type,
-                       "Query" = saved_queries()$results[[input$input_codelist2]],
-                       "Look up" = saved_lookups()[[input$code_type]][[input$input_codelist2]])
-
-        # combine codelists, and indicate which codes are shared/unique
-        result <-
-          dplyr::bind_rows(df_1, df_2) |>
-          dplyr::distinct()
-
-        result[["compare"]] <- dplyr::case_when(
-          (result[["code"]] %in% df_1[["code"]]) &
-            (!result[["code"]] %in% df_2[["code"]]) ~ input$input_codelist1,
-          (result[["code"]] %in% df_2[["code"]]) &
-            (!result[["code"]] %in% df_1[["code"]]) ~ input$input_codelist2,
-          (result[["code"]] %in% df_1[["code"]]) &
-            (result[["code"]] %in% df_2[["code"]]) ~ "Both",
-          TRUE ~ "Error!"
-        )
-
-        stopifnot(sum(result[["compare"]] == "Error!") == 0)
-
-        result$compare <-
-          factor(result$compare, levels = unique(c(result$compare, "Both")))
-
-        result
+        updateSelectInput(inputId = "input_codelist2", choices = switch(
+          input$input_codelist2_type,
+          "Query" = as.list(saved_queries()$objects[[input$code_type]]),
+          "Look up" = as.list(names(saved_lookups()[[input$code_type]]))
+        ))
       })
 
-    output$compare_codelists <- reactable::renderReactable({
-      reactable::reactable(
-        codelist_comparison(),
-        filterable = TRUE,
-        searchable = TRUE,
-        resizable = TRUE,
-        paginationType = "jump",
-        showPageSizeOptions = TRUE,
-        pageSizeOptions = c(10, 25, 50, 100, 200)
-      )
-    })
+      observe({
+        # require 2 different codelists to be selected
+        shinyjs::toggleState(
+          ns("compare"),
+          condition = isTruthy(input$input_codelist1) &
+            isTruthy(input$input_codelist2) &
+            (input$input_codelist1 != input$input_codelist2),
+          asis = TRUE
+        )
+      })
 
-    output$compare_codelists_summary <- renderTable({
+      codelist_comparison <-
+        eventReactive(input$compare,
+                      ignoreInit = TRUE,
+                      valueExpr = {
+                        df_1 <- switch(
+                          input$input_codelist1_type,
+                          "Query" = saved_queries()$results[[input$input_codelist1]],
+                          "Look up" = saved_lookups()[[input$code_type]][[input$input_codelist1]]
+                        )
+
+                        df_2 <- switch(
+                          input$input_codelist2_type,
+                          "Query" = saved_queries()$results[[input$input_codelist2]],
+                          "Look up" = saved_lookups()[[input$code_type]][[input$input_codelist2]]
+                        )
+
+                        # combine codelists, and indicate which codes are shared/unique
+                        result <-
+                          dplyr::bind_rows(df_1, df_2) |>
+                          dplyr::distinct()
+
+                        result[["compare"]] <- dplyr::case_when(
+                          (result[["code"]] %in% df_1[["code"]]) &
+                            (!result[["code"]] %in% df_2[["code"]]) ~ input$input_codelist1,
+                          (result[["code"]] %in% df_2[["code"]]) &
+                            (!result[["code"]] %in% df_1[["code"]]) ~ input$input_codelist2,
+                          (result[["code"]] %in% df_1[["code"]]) &
+                            (result[["code"]] %in% df_2[["code"]]) ~ "Both",
+                          TRUE ~ "Error!"
+                        )
+
+                        stopifnot(sum(result[["compare"]] == "Error!") == 0)
+
+                        result$compare <-
+                          factor(result$compare, levels = unique(c(result$compare, "Both")))
+
+                        result
+                      })
+
+      output$compare_codelists <- reactable::renderReactable({
+        reactable::reactable(
+          codelist_comparison(),
+          filterable = TRUE,
+          searchable = TRUE,
+          resizable = TRUE,
+          paginationType = "jump",
+          showPageSizeOptions = TRUE,
+          pageSizeOptions = c(10, 25, 50, 100, 200)
+        )
+      })
+
+      output$compare_codelists_summary <- renderTable({
         codelist_comparison()$compare %>%
           table() %>%
           as.matrix() %>%
@@ -1102,147 +1183,169 @@ compareCodelistsServer <- function(id, saved_queries, saved_lookups) {
           as.data.frame()
       })
 
-  })
-}
+    })
+  }
 
 lookupCodesInput <- function(id, available_code_types) {
   ns <- NS(id)
 
-  tagList(
-    shinyjs::useShinyjs(),
-    fluidRow(
-     column(4,
-            selectInput(ns("code_type"), "Code type", choices = CODE_TYPE_TO_LKP_TABLE_MAP %>%
-                          dplyr::filter(.data[["code"]] %in% !!available_code_types) %>%
-                          dplyr::select(tidyselect::all_of(c(
-                            "code_label", "code"
-                          ))) %>%
-                          tibble::deframe() %>%
-                          as.list()),
-            textAreaInput(ns("codes_input"), "Input", resize = "vertical"),
-            radioButtons(
-              ns("map_to"),
-              "Map to",
-              choices = "(Don't map)"
+  tagList(shinyjs::useShinyjs(),
+          fluidRow(
+            column(
+              4,
+              selectInput(
+                ns("code_type"),
+                "Code type",
+                choices = CODE_TYPE_TO_LKP_TABLE_MAP %>%
+                  dplyr::filter(.data[["code"]] %in% !!available_code_types) %>%
+                  dplyr::select(tidyselect::all_of(c(
+                    "code_label", "code"
+                  ))) %>%
+                  tibble::deframe() %>%
+                  as.list()
+              ),
+              textAreaInput(ns("codes_input"), "Input", resize = "vertical"),
+              radioButtons(ns("map_to"),
+                           "Map to",
+                           choices = "(Don't map)"),
+              actionButton(ns("look_up"), "Look up")
             ),
-            actionButton(ns("look_up"), "Look up")),
-     column(8,
-            textInput(ns("save_as"), "Save as"),
-            shinyjs::disabled(actionButton(ns("save_recognised"), "Save")),
-            tabsetPanel(id = ns("codelist_tabs"),
-                        tabPanel("Recognised",
-                                 reactable::reactableOutput(ns("recognised_codes"))),
-                        tabPanel("Unrecognised",
-                                 reactable::reactableOutput(ns("unrecognised_codes")))))
-    )
-  )
+            column(
+              8,
+              textInput(ns("save_as"), "Save as"),
+              shinyjs::disabled(actionButton(ns(
+                "save_recognised"
+              ), "Save")),
+              tabsetPanel(
+                id = ns("codelist_tabs"),
+                tabPanel("Recognised",
+                         reactable::reactableOutput(ns(
+                           "recognised_codes"
+                         ))),
+                tabPanel("Unrecognised",
+                         reactable::reactableOutput(ns(
+                           "unrecognised_codes"
+                         )))
+              )
+            )
+          ))
 }
 
-lookupCodesServer <- function(id, available_maps, saved_lookups = reactiveVal(list())) {
+lookupCodesServer <-
+  function(id,
+           available_maps,
+           saved_lookups = reactiveVal(list())) {
+    moduleServer(id, function(input, output, session) {
+      ns <- session$ns
 
-  moduleServer(id, function(input, output, session) {
-  ns <- session$ns
-
-    codes_input_cleaned <- reactive(
-      input$codes_input %>%
-        stringr::str_split_1("\n") %>%
-        stringr::str_trim(side = "both") %>%
-        subset(.,
-               . != "")
-    )
-
-    observe({
-      # require input to look up
-      shinyjs::toggleState(
-        ns("look_up"),
-        condition = isTruthy(codes_input_cleaned()),
-        asis = TRUE
+      codes_input_cleaned <- reactive(
+        input$codes_input %>%
+          stringr::str_split_1("\n") %>%
+          stringr::str_trim(side = "both") %>%
+          subset(.,
+                 . != "")
       )
-    })
 
-    observe({
-      updateRadioButtons(
-        inputId = "map_to",
-        choices = c(
-          "(Don't map)",
-          get_available_map_from_code_types(available_maps = available_maps,
-                                            to = input$code_type)
+      observe({
+        # require input to look up
+        shinyjs::toggleState(ns("look_up"),
+                             condition = isTruthy(codes_input_cleaned()),
+                             asis = TRUE)
+      })
+
+      observe({
+        updateRadioButtons(
+          inputId = "map_to",
+          choices = c(
+            "(Don't map)",
+            get_available_map_from_code_types(available_maps = available_maps,
+                                              to = input$code_type)
+          )
         )
-      )
-    })
+      })
 
-    codelist <- eventReactive(input$look_up, ignoreInit = TRUE, valueExpr = {
+      codelist <-
+        eventReactive(input$look_up,
+                      ignoreInit = TRUE,
+                      valueExpr = {
+                        recognised <- lookup_codes(
+                          codes = codes_input_cleaned(),
+                          code_type = input$code_type,
+                          preferred_description_only = TRUE,
+                          standardise_output = TRUE,
+                          unrecognised_codes = "warning"
+                        )
 
-      recognised <- lookup_codes(
-        codes = codes_input_cleaned(),
-        code_type = input$code_type,
-        preferred_description_only = TRUE,
-        standardise_output = TRUE,
-        unrecognised_codes = "warning"
-      )
+                        if (input$map_to != "(Don't map)") {
+                          recognised <- map_codes(
+                            codes = recognised,
+                            to = input$map_to,
+                            unrecognised_codes = "warning",
+                            reverse_mapping = "warning"
+                          )
+                        }
 
-      if (input$map_to != "(Don't map)") {
-        recognised <- map_codes(
-          codes = recognised,
-          to = input$map_to,
-          unrecognised_codes = "warning",
-          reverse_mapping = "warning"
+                        unrecognised <- lookup_codes(
+                          codes = codes_input_cleaned(),
+                          code_type = input$code_type,
+                          preferred_description_only = TRUE,
+                          standardise_output = TRUE,
+                          .return_unrecognised_codes = TRUE
+                        )
+
+                        list(
+                          recognised = recognised,
+                          unrecognised = unrecognised,
+                          code_type = input$code_type
+                        )
+                      })
+
+      observe({
+        # require input to look up
+        shinyjs::toggleState(
+          ns("save_recognised"),
+          condition = (nrow(codelist()$recognised) > 0) &
+            isTruthy(input$save_as),
+          asis = TRUE
         )
-      }
+      })
 
-      unrecognised <- lookup_codes(
-        codes = codes_input_cleaned(),
-        code_type = input$code_type,
-        preferred_description_only = TRUE,
-        standardise_output = TRUE,
-        .return_unrecognised_codes = TRUE
-      )
+      output$recognised_codes <-
+        reactable::renderReactable(
+          reactable::reactable(
+            codelist()$recognised,
+            filterable = TRUE,
+            searchable = TRUE,
+            resizable = TRUE,
+            paginationType = "jump",
+            showPageSizeOptions = TRUE,
+            pageSizeOptions = c(10, 25, 50, 100, 200)
+          )
+        )
 
-      list(
-        recognised = recognised,
-        unrecognised = unrecognised,
-        code_type = input$code_type
-      )
+      output$unrecognised_codes <-
+        reactable::renderReactable(
+          reactable::reactable(
+            data.frame(Input = codelist()$unrecognised),
+            filterable = TRUE,
+            # searchable = TRUE,
+            resizable = TRUE,
+            paginationType = "jump",
+            showPageSizeOptions = TRUE,
+            pageSizeOptions = c(10, 25, 50, 100, 200)
+          )
+        )
+
+      observeEvent(input$save_recognised, {
+        new_saved_lookups <- saved_lookups()
+
+        new_saved_lookups[[codelist()$code_type]][[input$save_as]] <-
+          codelist()$recognised
+
+        saved_lookups(new_saved_lookups)
+      })
     })
-
-    observe({
-      # require input to look up
-      shinyjs::toggleState(
-        ns("save_recognised"),
-        condition = (nrow(codelist()$recognised) > 0) & isTruthy(input$save_as),
-        asis = TRUE
-      )
-    })
-
-    output$recognised_codes <- reactable::renderReactable(reactable::reactable(
-      codelist()$recognised,
-      filterable = TRUE,
-      searchable = TRUE,
-      resizable = TRUE,
-      paginationType = "jump",
-      showPageSizeOptions = TRUE,
-      pageSizeOptions = c(10, 25, 50, 100, 200)
-    ))
-
-    output$unrecognised_codes <- reactable::renderReactable(reactable::reactable(
-      data.frame(Input = codelist()$unrecognised),
-      filterable = TRUE,
-      # searchable = TRUE,
-      resizable = TRUE,
-      paginationType = "jump",
-      showPageSizeOptions = TRUE,
-      pageSizeOptions = c(10, 25, 50, 100, 200)
-    ))
-
-    observeEvent(input$save_recognised, {
-      new_saved_lookups <- saved_lookups()
-
-      new_saved_lookups[[codelist()$code_type]][[input$save_as]] <- codelist()$recognised
-
-      saved_lookups(new_saved_lookups)
-    })
-  })
-}
+  }
 
 # PRIVATE -----------------------------------------------------------------
 
@@ -1269,14 +1372,14 @@ find_node_dependencies <- function(graph,
   result <- igraph::all_simple_paths(graph = graph,
                                      from = node,
                                      mode = mode) %>%
-    purrr::map(~ as.list(.x) %>%
-                 purrr::imap(~ .y)) %>%
+    purrr::map( ~ as.list(.x) %>%
+                  purrr::imap( ~ .y)) %>%
     purrr::flatten() %>%
     as.character() %>%
     unique()
 
   if (node_rm) {
-    result <- subset(result, !result == node)
+    result <- subset(result,!result == node)
   }
 
   result
@@ -1311,7 +1414,8 @@ update_saved_queries <- function(query,
   # Save current query (results and metadata)
 
   ## results
-  current_query_result <- query_result()$result[ ,1:3] # save first 3 cols only
+  current_query_result <-
+    query_result()$result[, 1:3] # save first 3 cols only
 
   new_saved_queries <- saved_queries()$results
 
@@ -1341,7 +1445,8 @@ update_saved_queries <- function(query,
                       .keep_all = TRUE)
   }
 
-  edges <- data.frame(from = get_qbr_saved_queries(query_result()$qb))
+  edges <-
+    data.frame(from = get_qbr_saved_queries(query_result()$qb))
 
   # determine DAG order - add to `nodes` df
   if (nrow(edges) > 0) {
@@ -1361,7 +1466,7 @@ update_saved_queries <- function(query,
     dep_order <- igraph::topo_sort(graph = dag_igraph,
                                    mode = "out") %>%
       as.list() %>%
-      purrr::imap(~ .y) %>%
+      purrr::imap( ~ .y) %>%
       as.character()
 
     dep_order <- data.frame(id = dep_order)
@@ -1374,7 +1479,6 @@ update_saved_queries <- function(query,
 
     # if existing query, update downstream dependencies
     if (existing_query) {
-
       upstream_deps <- find_node_dependencies(
         graph = dag_igraph,
         node = query,
@@ -1383,8 +1487,11 @@ update_saved_queries <- function(query,
       )
 
       for (x in upstream_deps) {
-        updated_result <- withr::with_options(list(codemapper.code_type = code_type),
-                                              eval(get(x = x, envir = saved_queries()$results_meta)$query))
+        updated_result <-
+          withr::with_options(list(codemapper.code_type = code_type),
+                              eval(get(
+                                x = x, envir = saved_queries()$results_meta
+                              )$query))
 
         assign(x, updated_result, envir = new_saved_queries)
       }
@@ -1395,10 +1502,8 @@ update_saved_queries <- function(query,
     edges <- saved_queries()$dag$edges
   }
 
-  new_dependencies <- list(
-    nodes = nodes,
-    edges = edges
-  )
+  new_dependencies <- list(nodes = nodes,
+                           edges = edges)
 
   # finally
   saved_queries(
@@ -1444,7 +1549,8 @@ remove_saved_queries <- function(updated_dag,
 
   ## finally
   if (isTruthy(updated_dag()$new_dependencies$nodes$group)) {
-    new_objects <- get_objects_from_nodes(updated_dag()$new_dependencies$nodes)
+    new_objects <-
+      get_objects_from_nodes(updated_dag()$new_dependencies$nodes)
   } else {
     new_objects <- list("None")
   }
@@ -1469,14 +1575,16 @@ get_qbr_saved_queries <- function(x) {
     if (is.list(x) &
         identical(names(x),
                   c("id", "field", "type", "input", "operator", "value"))) {
-      switch(x$id,
-             "description" = NULL,
-             "child_codes" = NULL,
-             "codes" = NULL,
-             "saved_query" = x$value,
-             "map_children" = NULL,
-             "map_codes" = NULL,
-             stop("Unrecognised filter!"))
+      switch(
+        x$id,
+        "description" = NULL,
+        "child_codes" = NULL,
+        "codes" = NULL,
+        "saved_query" = x$value,
+        "map_children" = NULL,
+        "map_codes" = NULL,
+        stop("Unrecognised filter!")
+      )
 
     } else if (is.list(x)) {
       purrr::map(x, get_qbr_saved_queries)
@@ -1493,34 +1601,24 @@ convert_rules_to_expr <- function(x) {
   if (is.list(x) &
       identical(names(x),
                 c("id", "field", "type", "input", "operator", "value"))) {
-
     switch(
       x$id,
-      "description" = rlang::call2(
-        .fn = "DESCRIPTION",
-        x$value
-      ),
+      "description" = rlang::call2(.fn = "DESCRIPTION",
+                                   x$value),
       "saved_query" = as.symbol(x$value),
-      "child_codes" = rlang::call2(
-        .fn = "CHILDREN",
-        x$value
-      ),
-      "codes" = rlang::call2(
-        .fn = "CODES",
-        x$value
-      ),
-      "map_codes" = rlang::call2(
-        .fn = "MAP",
-        x$value,
-        from = x$operator
-      ),
+      "child_codes" = rlang::call2(.fn = "CHILDREN",
+                                   x$value),
+      "codes" = rlang::call2(.fn = "CODES",
+                             x$value),
+      "map_codes" = rlang::call2(.fn = "MAP",
+                                 x$value,
+                                 from = x$operator),
       "map_children" = rlang::call2(
         .fn = "MAP",
-        rlang::call2(
-          .fn = "CHILDREN",
-          x$value,
-          code_type = x$operator
-        )),
+        rlang::call2(.fn = "CHILDREN",
+                     x$value,
+                     code_type = x$operator)
+      ),
       stop("Unrecognised filter!")
     )
 
@@ -1537,16 +1635,18 @@ convert_rules_to_expr <- function(x) {
 apply_setops <- function(x) {
   if (is.list(x) &
       "rules" %in% names(x)) {
-    setop <- switch(x$condition,
-                    AND = "%AND%",
-                    OR = "%OR%",
-                    NOT = "%NOT%",
-                    ... = stop("Invalid operator"))
+    setop <- switch(
+      x$condition,
+      AND = "%AND%",
+      OR = "%OR%",
+      NOT = "%NOT%",
+      ... = stop("Invalid operator")
+    )
 
     x$rules %>%
-      purrr::reduce(~ rlang::call2(.fn = setop,
-                                   apply_setops(.x),
-                                   apply_setops(.y)))
+      purrr::reduce( ~ rlang::call2(.fn = setop,
+                                    apply_setops(.x),
+                                    apply_setops(.y)))
   } else if (is.list(x)) {
     # stop("Invalid input")
     x[[1]]
@@ -1569,7 +1669,6 @@ update_qb_operator_code_type <- function(x, code_type) {
   if (is.list(x) &
       identical(names(x),
                 c("id", "field", "type", "input", "operator", "value"))) {
-
     if (x$id %in% c("map_codes", "map_children")) {
       x$operator <- NULL
     } else {
@@ -1595,10 +1694,10 @@ get_objects_from_nodes <- function(nodes) {
   nodes$group %>%
     unique() %>%
     purrr::set_names() %>%
-    purrr::map(~ nodes %>%
-                 dplyr::filter(.data[["group"]] == !!.x) %>%
-                 dplyr::pull(.data[["id"]]) %>%
-                 as.list())
+    purrr::map( ~ nodes %>%
+                  dplyr::filter(.data[["group"]] == !!.x) %>%
+                  dplyr::pull(.data[["id"]]) %>%
+                  as.list())
 }
 
 get_available_map_from_code_types <- function(available_maps, to) {
@@ -1672,10 +1771,12 @@ filters <- list(
 
 code_type_operators <- CODE_TYPE_TO_LKP_TABLE_MAP %>%
   dplyr::pull(.data[["code"]]) %>%
-  purrr::map(\(x) list(type = x,
-                       nb_inputs = 1,
-                       multiple = FALSE,
-                       apply_to = "string"))
+  purrr::map(\(x) list(
+    type = x,
+    nb_inputs = 1,
+    multiple = FALSE,
+    apply_to = "string"
+  ))
 
 operators <- c(code_type_operators,
                list(
