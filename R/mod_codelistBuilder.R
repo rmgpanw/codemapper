@@ -180,62 +180,62 @@ codelistBuilderInput <- function(id, available_code_types, available_maps) {
     shinyjs::useShinyjs(),
     jqbr::useQueryBuilder(),
 
-    ## Side bar -------------------------------
-    sidebarLayout(
-      sidebarPanel = sidebarPanel(
-        width = 2,
-        actionButton(ns("reset_qbr"), "Reset"),
-        tabsetPanel(
-          id = ns("tabs_select_code_type"),
-          type = "hidden",
-          tabPanelBody(
-            value = "tab_select_code_type_show",
-            radioButtons(
-              ns("code_type"),
-              "Code type",
-              choices = CODE_TYPE_TO_LKP_TABLE_MAP %>%
-                dplyr::filter(.data[["code"]] %in% !!available_code_types) %>%
-                dplyr::select(tidyselect::all_of(c(
-                  "code_label", "code"
-                ))) %>%
-                tibble::deframe() %>%
-                as.list()
-            )
-          ),
-          tabPanelBody(value = "tab_select_code_type_hide",
-                       textOutput(ns("currently_updating_query")),
-                       actionButton(ns("cancel_query_update"), "Cancel query update"))),
-        tabsetPanel(
-          id = ns("tabs_load_saved_query"),
-          type = "hidden",
-          tabPanelBody(value = "tab_load_saved_query_hide"),
-          tabPanelBody(
-            value = "tab_load_saved_query_show",
-            actionButton(ns("btn_qb_load_saved_query"), "Load/update query"),
-            ### Saved queries -----------------------------------------------------------
-
-            selectizeInput(ns("saved_queries_checkboxes"), "Remove saved queries", choices = list("None"), multiple = TRUE),
-            tabsetPanel(
-              id = ns("tabs_remove_saved_queries"),
-              type = "hidden",
-              tabPanelBody(value = "tab_remove_saved_queries_hide"),
-              tabPanelBody(
-                value = "tab_remove_saved_queries_show",
-                actionButton(ns("remove_saved_queries"), "Remove")
-              )
-            )
-          )
-        )
-        # )
-        # )
-      ),
-
-      ## Main panel ------------------------------------
-      mainPanel = mainPanel(
         tabsetPanel(id = ns("mainpanel"),
                    tabPanel("Build query",
                             icon = icon("pen"),
 
+                            ## Side bar -------------------------------
+                            sidebarLayout(
+                              sidebarPanel = sidebarPanel(
+                                width = 2,
+                                actionButton(ns("reset_qbr"), "Reset"),
+                                tabsetPanel(
+                                  id = ns("tabs_select_code_type"),
+                                  type = "hidden",
+                                  tabPanelBody(
+                                    value = "tab_select_code_type_show",
+                                    radioButtons(
+                                      ns("code_type"),
+                                      "Code type",
+                                      choices = CODE_TYPE_TO_LKP_TABLE_MAP %>%
+                                        dplyr::filter(.data[["code"]] %in% !!available_code_types) %>%
+                                        dplyr::select(tidyselect::all_of(c(
+                                          "code_label", "code"
+                                        ))) %>%
+                                        tibble::deframe() %>%
+                                        as.list()
+                                    )
+                                  ),
+                                  tabPanelBody(value = "tab_select_code_type_hide",
+                                               textOutput(ns("currently_updating_query")),
+                                               actionButton(ns("cancel_query_update"), "Cancel query update"))),
+                                tabsetPanel(
+                                  id = ns("tabs_load_saved_query"),
+                                  type = "hidden",
+                                  tabPanelBody(value = "tab_load_saved_query_hide"),
+                                  tabPanelBody(
+                                    value = "tab_load_saved_query_show",
+                                    actionButton(ns("btn_qb_load_saved_query"), "Load/update query"),
+                                    ### Saved queries -----------------------------------------------------------
+
+                                    selectizeInput(ns("saved_queries_checkboxes"), "Remove saved queries", choices = list("None"), multiple = TRUE),
+                                    tabsetPanel(
+                                      id = ns("tabs_remove_saved_queries"),
+                                      type = "hidden",
+                                      tabPanelBody(value = "tab_remove_saved_queries_hide"),
+                                      tabPanelBody(
+                                        value = "tab_remove_saved_queries_show",
+                                        actionButton(ns("remove_saved_queries"), "Remove")
+                                      )
+                                    )
+                                  )
+                                )
+                                # )
+                                # )
+                              ),
+
+                            ## Main panel ------------------------------------
+                            mainPanel = mainPanel(
         ### Query builder input -----------------------------------------------------
         jqbr::queryBuilderInput(
           ns("qb"),
@@ -311,10 +311,10 @@ codelistBuilderInput <- function(id, available_code_types, available_maps) {
             ),
             textOutput(ns("result_summary")),
             reactable::reactableOutput(ns("result")))
-        )),
+        )))),
 
         ### Saved queries -----------------------------------
-      tabPanel("Saved queries",
+      tabPanel("Saved queries", icon = icon("cart-shopping"),
         tabsetPanel(
           id = ns("tabs_dag"),
           tabPanel(title = "DAG",
@@ -335,8 +335,6 @@ codelistBuilderInput <- function(id, available_code_types, available_maps) {
 
       )
       )
-    )
-  )
 }
 
 
