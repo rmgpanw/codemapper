@@ -318,7 +318,7 @@ codelistBuilderInput <-
                 tabPanelBody(
                   value = "query_result",
                   verbatimTextOutput(ns("result_query")),
-                  downloadButton(ns("download")),
+                  downloadButton(ns("download"), label = "Download report"),
                   tabsetPanel(
                     id = ns("tabs_save_or_update_query"),
                     type = "hidden",
@@ -344,6 +344,7 @@ codelistBuilderInput <-
                     )
                   ),
                   textOutput(ns("result_summary")),
+                  csvDownloadButton(ns("result"), filename = paste0(Sys.Date(), "_", "codelist.csv")),
                   reactable::reactableOutput(ns("result"))
                 )
               )
@@ -567,15 +568,7 @@ codelistBuilderServer <-
       output$result <- reactable::renderReactable({
         req(query_result_type() == "query_result")
 
-        reactable::reactable(
-          query_result()$result,
-          filterable = TRUE,
-          searchable = TRUE,
-          resizable = TRUE,
-          paginationType = "jump",
-          showPageSizeOptions = TRUE,
-          pageSizeOptions = c(10, 25, 50, 100, 200)
-        )
+        app_reactable(query_result()$result)
       })
 
       output$result_query <- renderPrint({
@@ -1089,6 +1082,7 @@ compareCodelistsInput <- function(id, available_code_types) {
     ),
     actionButton(ns("compare"), "Compare", class = "btn-lg btn-success"),
     tableOutput(ns("compare_codelists_summary")),
+    csvDownloadButton(ns("compare_codelists"), filename = paste0(Sys.Date(), "_", "codelist_comparison.csv")),
     reactable::reactableOutput(ns("compare_codelists"))
   )
 }
@@ -1164,15 +1158,7 @@ compareCodelistsServer <-
                       })
 
       output$compare_codelists <- reactable::renderReactable({
-        reactable::reactable(
-          codelist_comparison(),
-          filterable = TRUE,
-          searchable = TRUE,
-          resizable = TRUE,
-          paginationType = "jump",
-          showPageSizeOptions = TRUE,
-          pageSizeOptions = c(10, 25, 50, 100, 200)
-        )
+          app_reactable(codelist_comparison())
       })
 
       output$compare_codelists_summary <- renderTable({
@@ -1219,10 +1205,12 @@ lookupCodesInput <- function(id, available_code_types) {
               tabsetPanel(
                 id = ns("codelist_tabs"),
                 tabPanel("Recognised",
+                         csvDownloadButton(ns("recognised_codes"), filename = paste0(Sys.Date(), "_", "recognised_codes.csv")),
                          reactable::reactableOutput(ns(
                            "recognised_codes"
                          ))),
                 tabPanel("Unrecognised",
+                         csvDownloadButton(ns("unrecognised_codes"), filename = paste0(Sys.Date(), "_", "unrecognised_codes.csv")),
                          reactable::reactableOutput(ns(
                            "unrecognised_codes"
                          )))
@@ -1312,28 +1300,12 @@ lookupCodesServer <-
 
       output$recognised_codes <-
         reactable::renderReactable(
-          reactable::reactable(
-            codelist()$recognised,
-            filterable = TRUE,
-            searchable = TRUE,
-            resizable = TRUE,
-            paginationType = "jump",
-            showPageSizeOptions = TRUE,
-            pageSizeOptions = c(10, 25, 50, 100, 200)
-          )
+          app_reactable(codelist()$recognised)
         )
 
       output$unrecognised_codes <-
         reactable::renderReactable(
-          reactable::reactable(
-            data.frame(Input = codelist()$unrecognised),
-            filterable = TRUE,
-            # searchable = TRUE,
-            resizable = TRUE,
-            paginationType = "jump",
-            showPageSizeOptions = TRUE,
-            pageSizeOptions = c(10, 25, 50, 100, 200)
-          )
+            app_reactable(data.frame(Input = codelist()$unrecognised))
         )
 
       observeEvent(input$save_recognised, {
@@ -1794,3 +1766,27 @@ operators <- c(code_type_operators,
                    apply_to = "string"
                  )
                ))
+
+## reactable ---------------------------------------------------------------
+
+csvDownloadButton <-
+  function(id,
+           filename = paste0(Sys.date(), "_", "codelist.csv"),
+           label = "Download as CSV") {
+    tags$button(
+      tagList(icon("download"), label),
+      onclick = sprintf("Reactable.downloadDataCSV('%s', '%s')", id, filename)
+    )
+  }
+
+app_reactable <- function(df) {
+  reactable::reactable(
+    df,
+    filterable = TRUE,
+    searchable = TRUE,
+    resizable = TRUE,
+    paginationType = "jump",
+    showPageSizeOptions = TRUE,
+    pageSizeOptions = c(10, 25, 50, 100, 200)
+  )
+}
