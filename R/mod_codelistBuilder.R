@@ -455,21 +455,24 @@ codelistBuilderServer <-
         } else {
           query <- custom_qbr_translation(input$qb)
 
+          query_options <- rlang::expr(list(
+            codemapper.code_type = !!input$code_type,
+            codemapper.map_to = !!input$code_type,
+            codemapper.reverse_mapping = "warning",
+            codemapper.unrecognised_codes_mapped = "warning",
+            codemapper.unrecognised_codes_lookup = "error",
+            codemapper.col_filters = !!col_filters()
+          ))
+
           execute_query <-
             purrr::safely(\(x) withr::with_options(
-              list(
-                codemapper.code_type = input$code_type,
-                codemapper.map_to = input$code_type,
-                codemapper.reverse_mapping = "warning",
-                codemapper.unrecognised_codes_mapped = "warning",
-                codemapper.unrecognised_codes_lookup = "error",
-                codemapper.col_filters = col_filters()
-              ),
+              eval(query_options),
               eval(query, envir = saved_queries()$results)
             ))
 
           x <- list(
             query = query,
+            query_options = query_options,
             result = execute_query(),
             qb = input$qb,
             code_type = input$code_type
@@ -513,6 +516,38 @@ codelistBuilderServer <-
 
               # ordered dependencies
               x$dependencies <- dependencies
+            }
+
+            # code to generate query result
+            query_code <- list(rlang::call2(.fn = "=",
+                                            rlang::sym("RESULT"),
+                                            query))
+
+            if (length(dependencies) > 0) {
+              if (length(dependencies) == 1) {
+                query_code_deps <- dependencies %>%
+                  purrr::map(
+                    ~ rlang::call2(
+                      .fn = "=",
+                      rlang::sym(.x),
+                      saved_queries()$results_meta[[.x]]$query
+                    )
+                  )
+
+              } else {
+                query_code_deps <- dependencies %>%
+                  purrr::map(~ {
+                    rlang::call2(
+                      .fn = "=",
+                      rlang::sym(.x),
+                      saved_queries()$results_meta[[.x]]$query
+                    )
+                  })
+              }
+
+              # then append final query
+              query_code <- c(query_code_deps,
+                              query_code)
 
               # add indicator columns, showing which codes came from which query(/queries)
               for (dep in dependencies) {
@@ -521,6 +556,8 @@ codelistBuilderServer <-
                   dplyr::case_when(x$result$code %in% saved_queries()$results[[dep]]$code ~ 1)
               }
             }
+
+            x$query_code <- query_code
           }
         }
 
@@ -574,50 +611,97 @@ codelistBuilderServer <-
       output$result_query <- renderPrint({
         req(query_result_type() == "query_result")
 
-        dependencies <- query_result()$dependencies
-
-        # first print code for any required dependencies
-        if (length(dependencies) > 0) {
-          if (length(dependencies) == 1) {
-            dependencies %>%
-              purrr::walk(
-                ~ rlang::call2(
-                  .fn = "=",
-                  rlang::sym(.x),
-                  saved_queries()$results_meta[[.x]]$query
-                ) %>%
-                  print()
-              )
-
-          } else {
-            dependencies %>%
-              purrr::walk(~ {
-                print(
-                  rlang::call2(
-                    .fn = "=",
-                    rlang::sym(.x),
-                    saved_queries()$results_meta[[.x]]$query
-                  )
-                )
-              })
-          }
-        }
-
-        # then print final query
-        print(query_result()$query)
+        query_result()$query_code %>%
+          purrr::walk(print)
       })
 
       # Download query ----------------------------------------------------------
 
       output$download <- downloadHandler(
         filename = function() {
-          "result.csv"
+          paste0(Sys.Date(), "_", "codelist.html")
         },
         content = function(file) {
-          utils::write.csv(query_result()$result,
-                           file,
-                           row.names = FALSE,
-                           na = "")
+
+          # See also https://stackoverflow.com/a/74948301
+
+          # setup
+          TEMPFILE_NAME <- tempfile()
+          TEMPFILE_QMD <- paste0(TEMPFILE_NAME, ".qmd")
+          TEMPFILE_HTML <- paste0(TEMPFILE_NAME, ".html")
+
+          # write qmd report
+          report_template <-
+            '---
+title: "{TITLE}"
+subtitle: "{SUBTITLE}"
+author: Me
+date: today
+date-format: medium
+format:
+  html:
+    code-fold: true
+    embed-resources: true
+    code-tools:
+      source: true
+      toggle: true
+      caption: Code
+---
+
+```{{r}}
+library(codemapper)
+library(htmltools)
+
+options({QUERY_OPTIONS})
+```
+# Query
+
+```{{r}}
+#| code-fold: false
+{QUERY_CODE}
+```
+
+# Codelist
+
+```{{r}}
+
+htmltools::browsable(
+  tagList(
+    tags$button(
+      tagList(fontawesome::fa("download"), "Download as CSV"),
+      onclick = "{ONCLICK}"
+    ),
+
+    reactable::reactable(
+      RESULT,
+      filterable = TRUE,
+      searchable = TRUE,
+      resizable = TRUE,
+      paginationType = "jump",
+      showPageSizeOptions = TRUE,
+      pageSizeOptions = c(10, 25, 50, 100, 200),
+      elementId = "codelist-download"
+    )
+  )
+)
+```
+'
+
+          report_template |>
+            stringr::str_glue(
+              TITLE = "My codelist",
+              SUBTITLE = "My codelist subtitle",
+              QUERY_OPTIONS = rlang::expr_text(query_result()$query_options),
+              QUERY_CODE = paste(query_result()$query_code, sep = "", collapse = "\n"),
+              ONCLICK = "Reactable.downloadDataCSV('codelist-download', 'codelist.csv')"
+            ) |>
+            print() |>
+            writeLines(con = TEMPFILE_QMD)
+
+          # render report
+          quarto::quarto_render(TEMPFILE_QMD, execute_dir = ".")
+
+          file.copy(TEMPFILE_HTML, file)
         }
       )
 
