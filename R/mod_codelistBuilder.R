@@ -1318,6 +1318,7 @@ lookupCodesInput <- function(id, available_code_types) {
             selectInput(ns("select_saved_lookup"), "Saved lookup", choices = NULL),
             actionButton(ns("select_saved_lookup_button"), "Select"),
             actionButton(ns("remove_lookup"), "Remove"),
+            csvDownloadButton(ns("saved_lookup_reactable"), filename = paste0(Sys.Date(), "_", "codelist.csv")),
             reactable::reactableOutput(ns("saved_lookup_reactable"))
           ),
           tabPanel(
