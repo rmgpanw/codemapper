@@ -124,7 +124,6 @@ RunCodelistBuilder <- function(all_lkps_maps = NULL,
           )
         ),
         shinydashboard::tabItem(tabName = "lookup_tab",
-                                h2("Look up codes"),
                                 fluidPage(
                                   lookupCodesInput("lookup_codes",
                                                    available_code_types = available_code_types)
@@ -355,7 +354,7 @@ codelistBuilderInput <-
         ### Saved queries -----------------------------------
         tabPanel(
           "Saved queries",
-          icon = icon("cart-shopping"),
+          icon = icon("diagram-project"),
           tabsetPanel(
             id = ns("tabs_dag"),
             tabPanel(title = "DAG",
@@ -405,12 +404,13 @@ codelistBuilderServer <-
       ## Advanced settings -------------------------------------------------------
 
       col_filters <-
-        selectColFiltersServer("builder_advanced_settings")
+        selectColFiltersServer("builder_advanced_settings", confirmation_modal = TRUE)
 
-      observe({
-        print(col_filters())
-        print(Sys.time())
-      })
+      # TODO - update all saved queries when col_filters() updates
+
+      # observeEvent(col_filters(), {
+      #   saved_queries
+      # })
 
       ## Query -------------------------------------------------------------------
 
@@ -1260,7 +1260,9 @@ lookupCodesInput <- function(id, available_code_types) {
   ns <- NS(id)
 
   tagList(shinyjs::useShinyjs(),
-          fluidRow(
+          tabsetPanel(id = ns("mainpanel"),
+                      tabPanel(title = "Search", icon = icon("magnifying-glass"),
+                               fluidRow(
             column(
               4,
               selectInput(
@@ -1300,7 +1302,11 @@ lookupCodesInput <- function(id, available_code_types) {
                          )))
               )
             )
-          ))
+          )),
+          tabPanel("Advanced settings",
+                   icon = icon("gears"),
+                   selectColFiltersInput(ns("lookup_advanced_settings"),
+                                         display_filters = FALSE))))
 }
 
 lookupCodesServer <-
@@ -1309,6 +1315,9 @@ lookupCodesServer <-
            saved_lookups = reactiveVal(list())) {
     moduleServer(id, function(input, output, session) {
       ns <- session$ns
+
+      col_filters <-
+        selectColFiltersServer("lookup_advanced_settings", confirmation_modal = FALSE)
 
       codes_input_cleaned <- reactive(
         input$codes_input %>%
@@ -1345,7 +1354,8 @@ lookupCodesServer <-
                           code_type = input$code_type,
                           preferred_description_only = TRUE,
                           standardise_output = TRUE,
-                          unrecognised_codes = "warning"
+                          unrecognised_codes = "warning",
+                          col_filters = col_filters()
                         )
 
                         if (input$map_to != "(Don't map)") {
@@ -1353,7 +1363,8 @@ lookupCodesServer <-
                             codes = recognised,
                             to = input$map_to,
                             unrecognised_codes = "warning",
-                            reverse_mapping = "warning"
+                            reverse_mapping = "warning",
+                            col_filters = col_filters()
                           )
                         }
 
@@ -1362,7 +1373,8 @@ lookupCodesServer <-
                           code_type = input$code_type,
                           preferred_description_only = TRUE,
                           standardise_output = TRUE,
-                          .return_unrecognised_codes = TRUE
+                          .return_unrecognised_codes = TRUE,
+                          col_filters = col_filters()
                         )
 
                         list(

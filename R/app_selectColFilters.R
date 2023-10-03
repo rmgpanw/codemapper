@@ -69,7 +69,8 @@ selectColFiltersInput <- function(id, display_filters = FALSE) {
 
 selectColFiltersServer <-
   function(id,
-           default_filters = get_col_filters(defaults_only = TRUE)) {
+           default_filters = get_col_filters(defaults_only = TRUE),
+           confirmation_modal = TRUE) {
 
   confirmed_selected_filters <- reactiveVal(default_filters)
 
@@ -115,6 +116,7 @@ selectColFiltersServer <-
 
     # confirm selected choices
     observeEvent(input$update_selections, {
+      if (confirmation_modal) {
       showModal(
         modalDialog(
           "This will update all saved queries. Are you sure you want to continue?",
@@ -124,7 +126,9 @@ selectColFiltersServer <-
             actionButton(ns("confirm_proceed"), "Proceed", class = "btn btn-danger")
           )
         )
-      )
+      ) } else {
+        confirmed_selected_filters(selected_filters())
+      }
     })
 
     observeEvent(input$confirm_cancel, {
@@ -175,11 +179,11 @@ selectColFiltersServer <-
 }
 
 # for testing
-selectColFiltersApp <- function() {
-  ui <- fluidPage(selectColFiltersInput("col_filters", display_filters = TRUE))
+selectColFiltersApp <- function(display_filters = TRUE, confirmation_modal = TRUE) {
+  ui <- fluidPage(selectColFiltersInput("col_filters", display_filters = display_filters))
 
   server <- function(input, output, session) {
-    selectColFiltersServer("col_filters")
+    selectColFiltersServer("col_filters", confirmation_modal = confirmation_modal)
   }
 
   shinyApp(ui, server)
