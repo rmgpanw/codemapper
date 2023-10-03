@@ -801,7 +801,7 @@ htmltools::browsable(
       # show 'save query' button only if a query name has been entered
       observeEvent(input$save_query_name, {
         duplicate_query_name <-
-          (input$save_query_name %in% saved_queries()$objects[[input$code_type]]) &
+          (input$save_query_name %in% saved_queries()$dag$nodes$id) &
           (input$save_query_name != "")
 
         shinyFeedback::feedbackWarning("save_query_name",
