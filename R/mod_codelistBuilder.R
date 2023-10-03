@@ -119,8 +119,7 @@ RunCodelistBuilder <- function(all_lkps_maps = NULL,
           tabName = "compare_tab",
           h2("Compare codelists"),
           fluidPage(
-            compareCodelistsInput("compare_codelists",
-                                  available_code_types = available_code_types)
+            compareCodelistsInput("compare_codelists")
           )
         ),
         shinydashboard::tabItem(tabName = "lookup_tab",
@@ -1133,10 +1132,8 @@ htmltools::browsable(
     })
   }
 
-compareCodelistsInput <- function(id, available_code_types) {
+compareCodelistsInput <- function(id) {
   ns <- NS(id)
-
-  stopifnot(all(available_code_types %in% CODE_TYPE_TO_LKP_TABLE_MAP$code))
 
   tagList(
     shinyFeedback::useShinyFeedback(),
@@ -1144,13 +1141,7 @@ compareCodelistsInput <- function(id, available_code_types) {
     selectInput(
       ns("code_type"),
       "Code type",
-      choices = CODE_TYPE_TO_LKP_TABLE_MAP %>%
-        dplyr::filter(.data[["code"]] %in% !!available_code_types) %>%
-        dplyr::select(tidyselect::all_of(c(
-          "code_label", "code"
-        ))) %>%
-        tibble::deframe() %>%
-        as.list()
+      choices = ""
     ),
     fluidRow(
       column(
@@ -1175,6 +1166,23 @@ compareCodelistsServer <-
   function(id, saved_queries, saved_lookups) {
     moduleServer(id, function(input, output, session) {
       ns <- session$ns
+
+      observe({
+        available_code_types <- unique(c(names(saved_queries()$objects)), names(saved_lookups()))
+
+        selected <- input$code_type
+
+        updateSelectInput(inputId = "code_type",
+                          choices = CODE_TYPE_TO_LKP_TABLE_MAP %>%
+                            dplyr::filter(.data[["code"]] %in% !!available_code_types) %>%
+                            dplyr::select(tidyselect::all_of(c(
+                              "code_label", "code"
+                            ))) %>%
+                            tibble::deframe() %>%
+                            as.list(),
+                          selected = selected
+                          )
+      })
 
       observe({
         # update select codelist input based on code type and saved query/lookup
