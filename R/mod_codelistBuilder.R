@@ -1303,6 +1303,12 @@ lookupCodesInput <- function(id, available_code_types) {
               )
             )
           )),
+          tabPanel("Saved lookups",
+                   icon = icon("table-list"),
+                   selectInput(ns("select_saved_lookup_code_type"), "Code type", choices = NULL),
+                   selectInput(ns("select_saved_lookup"), "Saved lookup", choices = NULL),
+                   actionButton(ns("select_saved_lookup_button"), "Select"),
+                   reactable::reactableOutput(ns("saved_lookup_reactable"))),
           tabPanel("Advanced settings",
                    icon = icon("gears"),
                    selectColFiltersInput(ns("lookup_advanced_settings"),
@@ -1416,6 +1422,38 @@ lookupCodesServer <-
 
         saved_lookups(new_saved_lookups)
       })
+
+      # view saved lookups tab
+      observe({
+        updateSelectInput(inputId = "select_saved_lookup_code_type",
+                          choices = names(saved_lookups()))
+      })
+
+      observe({
+        updateSelectInput(inputId = "select_saved_lookup",
+                          choices = names(saved_lookups()[[input$select_saved_lookup_code_type]]))
+      })
+
+      selected_lookup <- eventReactive(input$select_saved_lookup_button, {
+
+        req(isTruthy(input$select_saved_lookup_code_type))
+        req(isTruthy(input$select_saved_lookup))
+
+        saved_lookups()[[input$select_saved_lookup_code_type]][[input$select_saved_lookup]]
+      })
+
+      observe(
+        shinyjs::toggle(
+          id = ns("select_saved_lookup_button"),
+          condition = isTruthy(input$select_saved_lookup_code_type) &
+            isTruthy(input$select_saved_lookup),
+          asis = TRUE
+        )
+      )
+
+      output$saved_lookup_reactable <- reactable::renderReactable({
+        app_reactable(selected_lookup())
+        })
     })
   }
 
