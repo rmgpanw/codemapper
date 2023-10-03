@@ -444,7 +444,8 @@ codelistBuilderServer <-
               query = x,
               query_result = reactive(query_result),
               saved_queries = saved_queries,
-              code_type = params$group
+              code_type = params$group,
+              query_options = query_options
             )
           }
 
@@ -849,7 +850,8 @@ htmltools::browsable(
                        query = input$save_query_name,
                        query_result = query_result,
                        saved_queries = saved_queries,
-                       code_type = query_result()$code_type
+                       code_type = query_result()$code_type,
+                       query_options = query_options
                      )
 
                      # reset query name input
@@ -1009,7 +1011,8 @@ htmltools::browsable(
           query = input$select_qb_load_saved_query,
           query_result = query_result,
           saved_queries = saved_queries,
-          code_type = input$code_type
+          code_type = input$code_type,
+          query_options = query_options
         )
 
         updateTabsetPanel(inputId = "query_result_tabs", selected = "empty_query")
@@ -1601,6 +1604,7 @@ find_node_dependencies <- function(graph,
 #'
 #' @param query_result Reactive.
 #' @param saved_queries Reactive.
+#' @param query_options Reactive
 #' @param query character
 #' @param code_type character
 #'
@@ -1609,9 +1613,11 @@ find_node_dependencies <- function(graph,
 update_saved_queries <- function(query,
                                  query_result,
                                  code_type,
-                                 saved_queries) {
+                                 saved_queries,
+                                 query_options) {
   stopifnot(is.reactive(query_result))
   stopifnot(is.reactive(saved_queries))
+  stopifnot(is.reactive(query_options))
 
   # Determine whether query is new or already exists in saved_queries
   existing_query <- query %in% saved_queries()$objects[[code_type]]
@@ -1653,17 +1659,21 @@ update_saved_queries <- function(query,
   edges <-
     data.frame(from = get_qbr_saved_queries(query_result()$qb))
 
+  if (nrow(edges) > 0) {
+  edges$to <- query
+  edges <- dplyr::bind_rows(saved_queries()$dag$edges,
+                            edges)
+  } else {
+    edges <- saved_queries()$dag$edges
+  }
+
+  if (existing_query) {
+    edges <- edges %>%
+      dplyr::distinct()
+  }
+
   # determine DAG order - add to `nodes` df
   if (nrow(edges) > 0) {
-    edges$to <- query
-    edges <- dplyr::bind_rows(saved_queries()$dag$edges,
-                              edges)
-
-    if (existing_query) {
-      edges <- edges %>%
-        dplyr::distinct()
-    }
-
     dag_igraph <- igraph::graph_from_data_frame(d = edges,
                                                 directed = TRUE,
                                                 vertices = nodes)
@@ -1687,7 +1697,7 @@ update_saved_queries <- function(query,
       upstream_deps <- find_node_dependencies(
         graph = dag_igraph,
         node = query,
-        mode = "in",
+        mode = "out",
         node_rm = TRUE
       )
 
@@ -1698,9 +1708,10 @@ update_saved_queries <- function(query,
       for (x in upstream_deps) {
         updated_result <-
           withr::with_options(query_options_for_code_type,
-                              eval(get(
-                                x = x, envir = saved_queries()$results_meta
-                              )$query))
+                              eval(
+                                get(x = x, envir = saved_queries()$results_meta)$query,
+                                envir = new_saved_queries
+                              ))
 
         assign(x, updated_result, envir = new_saved_queries)
       }
