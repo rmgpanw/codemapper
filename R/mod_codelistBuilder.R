@@ -783,36 +783,13 @@ htmltools::browsable(
 
           new_saved_query_filter$operators <- list(input$code_type)
 
-          new_description_contains_filter <- description_contains_filter
-          new_description_contains_filter$operators <-
-            list(input$code_type)
-
-          new_codes_filter <- codes_filter
-          new_codes_filter$operators <- list(input$code_type)
-
-          new_map_codes_filter <- map_codes_filter
-          new_map_codes_filter$operators <-
-            get_available_map_from_code_types(available_maps = available_maps,
-                                              to = input$code_type)
-
-          new_map_children_filter <- map_children_filter
-          new_map_children_filter$operators <-
-            get_available_map_from_code_types(available_maps = available_maps,
-                                              to = input$code_type)
-
-          new_child_codes_filter <- child_codes_filter
-          new_child_codes_filter$operators <- list(input$code_type)
+          new_filters <- update_qbr_filters(input_code_type = input$code_type,
+                                            available_maps = available_maps)
 
           jqbr::updateQueryBuilder(
             inputId = "qb",
-            setFilters = list(
-              new_description_contains_filter,
-              new_codes_filter,
-              new_child_codes_filter,
-              new_map_codes_filter,
-              new_map_children_filter,
-              new_saved_query_filter
-            ),
+            setFilters = c(new_filters,
+                           list(new_saved_query_filter)),
             setRules = update_qb_operator_code_type(input$qb, input$code_type),
             destroy = TRUE
           )
@@ -970,26 +947,28 @@ htmltools::browsable(
         }
 
         # finally
+        code_type <- saved_queries()$dag$nodes %>%
+          dplyr::filter(.data[["id"]] == !!selected_saved_query) %>%
+          dplyr::pull(.data[["group"]])
+
         updateRadioButtons(
           inputId = "code_type",
-          selected = saved_queries()$dag$nodes %>%
-            dplyr::filter(.data[["id"]] == !!selected_saved_query) %>%
-            dplyr::pull(.data[["group"]])
+          selected = code_type
         )
 
         updateTabsetPanel(inputId = "tabs_select_code_type",
                           selected = "tab_select_code_type_hide")
 
+        new_saved_query_filter$operators <- list(input$code_type)
+
+        new_filters <- update_qbr_filters(input_code_type = code_type,
+                                          available_maps = available_maps)
+
+
         jqbr::updateQueryBuilder(
           inputId = "qb",
-          setFilters = list(
-            description_contains_filter,
-            codes_filter,
-            child_codes_filter,
-            map_codes_filter,
-            map_children_filter,
-            new_saved_query_filter
-          ),
+          setFilters = c(new_filters,
+                         list(new_saved_query_filter)),
           setRules = get(
             input$select_qb_load_saved_query,
             envir = saved_queries()$results_meta
@@ -1925,6 +1904,44 @@ get_available_map_from_code_types <- function(available_maps, to) {
     dplyr::filter(.data[["to"]] == !!to) %>%
     dplyr::pull(.data[["from"]]) %>%
     as.list()
+}
+
+#' Update jqbr filter code types
+#'
+#' @param input_code_type Character
+#' @param available_maps Character vector
+#'
+#' @return A list
+#' @noRd
+update_qbr_filters <- function(input_code_type,
+                               available_maps) {
+  new_description_contains_filter <- description_contains_filter
+  new_description_contains_filter$operators <-
+    list(input_code_type)
+
+  new_codes_filter <- codes_filter
+  new_codes_filter$operators <- list(input_code_type)
+
+  new_map_codes_filter <- map_codes_filter
+  new_map_codes_filter$operators <-
+    get_available_map_from_code_types(available_maps = available_maps,
+                                      to = input_code_type)
+
+  new_map_children_filter <- map_children_filter
+  new_map_children_filter$operators <-
+    get_available_map_from_code_types(available_maps = available_maps,
+                                      to = input_code_type)
+
+  new_child_codes_filter <- child_codes_filter
+  new_child_codes_filter$operators <- list(input_code_type)
+
+  list(
+    new_description_contains_filter,
+    new_codes_filter,
+    new_child_codes_filter,
+    new_map_codes_filter,
+    new_map_children_filter
+  )
 }
 
 ## jqbr filters and operators --------------------------------------------------------------------
