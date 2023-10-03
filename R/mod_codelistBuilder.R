@@ -1349,6 +1349,8 @@ lookupCodesServer <-
         eventReactive(input$look_up,
                       ignoreInit = TRUE,
                       valueExpr = {
+                        code_type <- input$code_type
+
                         recognised <- lookup_codes(
                           codes = codes_input_cleaned(),
                           code_type = input$code_type,
@@ -1366,6 +1368,8 @@ lookupCodesServer <-
                             reverse_mapping = "warning",
                             col_filters = col_filters()
                           )
+
+                          code_type <- input$map_to
                         }
 
                         unrecognised <- lookup_codes(
@@ -1380,7 +1384,7 @@ lookupCodesServer <-
                         list(
                           recognised = recognised,
                           unrecognised = unrecognised,
-                          code_type = input$code_type
+                          code_type = code_type
                         )
                       })
 
