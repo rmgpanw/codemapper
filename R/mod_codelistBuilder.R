@@ -405,11 +405,57 @@ codelistBuilderServer <-
       col_filters <-
         selectColFiltersServer("builder_advanced_settings", confirmation_modal = TRUE)
 
-      # TODO - update all saved queries when col_filters() updates
+      query_options <- reactive(rlang::expr(
+        list(
+          codemapper.code_type = !!input$code_type,
+          codemapper.map_to = !!input$code_type,
+          codemapper.reverse_mapping = "warning",
+          codemapper.unrecognised_codes_mapped = "warning",
+          codemapper.unrecognised_codes_lookup = "error",
+          codemapper.col_filters = !!col_filters()
+        )
+      ))
 
-      # observeEvent(col_filters(), {
-      #   saved_queries
-      # })
+      # Update all saved queries if col_filters() updates
+
+      # TODO - optimise
+      observeEvent(col_filters(), {
+        if (nrow(saved_queries()$dag$nodes) > 0) {
+          for (x in saved_queries()$dag$nodes$id) {
+            params <- saved_queries()$dag$nodes %>%
+              dplyr::filter(.data[["id"]] == !!x)
+
+            query <-
+              get(x = params$id, envir = saved_queries()$results_meta)$query
+
+            qb <- get(x = params$id, envir = saved_queries()$results_meta)$qb
+
+            query_result <- list(
+              query = query,
+              result = withr::with_options(
+                eval(query_options()),
+                eval(query, envir = saved_queries()$results)
+              ),
+              qb = qb,
+              code_type = params$code_type
+            )
+
+            update_saved_queries(
+              query = x,
+              query_result = reactive(query_result),
+              saved_queries = saved_queries,
+              code_type = params$group
+            )
+          }
+
+          updateTabsetPanel(inputId = "query_result_tabs", selected = "empty_query")
+
+          updateTabsetPanel(inputId = "tabs_save_or_update_query", selected = "tab_save_query_input_show")
+
+          updateTabsetPanel(inputId = "tabs_select_code_type",
+                            selected = "tab_select_code_type_show")
+        }
+      })
 
       ## Query -------------------------------------------------------------------
 
@@ -422,11 +468,6 @@ codelistBuilderServer <-
             cat()
         }
       })
-
-      # observe({
-      #   lobstr::tree(input$qb)
-      # })
-
 
       ## Reset query builder -----------------------------------------------------
 
@@ -454,24 +495,14 @@ codelistBuilderServer <-
         } else {
           query <- custom_qbr_translation(input$qb)
 
-          query_options <- rlang::expr(list(
-            codemapper.code_type = !!input$code_type,
-            codemapper.map_to = !!input$code_type,
-            codemapper.reverse_mapping = "warning",
-            codemapper.unrecognised_codes_mapped = "warning",
-            codemapper.unrecognised_codes_lookup = "error",
-            codemapper.col_filters = !!col_filters()
-          ))
-
           execute_query <-
             purrr::safely(\(x) withr::with_options(
-              eval(query_options),
+              eval(query_options()),
               eval(query, envir = saved_queries()$results)
             ))
 
           x <- list(
             query = query,
-            query_options = query_options,
             result = execute_query(),
             qb = input$qb,
             code_type = input$code_type
@@ -690,7 +721,7 @@ htmltools::browsable(
             stringr::str_glue(
               TITLE = "My codelist",
               SUBTITLE = "My codelist subtitle",
-              QUERY_OPTIONS = rlang::expr_text(query_result()$query_options),
+              QUERY_OPTIONS = rlang::expr_text(query_options()),
               QUERY_CODE = paste(query_result()$query_code, sep = "", collapse = "\n"),
               ONCLICK = "Reactable.downloadDataCSV('codelist-download', 'codelist.csv')"
             ) |>
@@ -1660,9 +1691,13 @@ update_saved_queries <- function(query,
         node_rm = TRUE
       )
 
+      query_options_for_code_type <- eval(query_options())
+      query_options_for_code_type$codemapper.code_type <- code_type
+      query_options_for_code_type$codemapper.map_to <- code_type
+
       for (x in upstream_deps) {
         updated_result <-
-          withr::with_options(list(codemapper.code_type = code_type),
+          withr::with_options(query_options_for_code_type,
                               eval(get(
                                 x = x, envir = saved_queries()$results_meta
                               )$query))
