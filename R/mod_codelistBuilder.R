@@ -1110,9 +1110,23 @@ htmltools::browsable(
       ### Render DAG -----------------------------------------------------------
 
       output$dag_visnetwork <-
-        visNetwork::renderVisNetwork(
+        visNetwork::renderVisNetwork({
+          req(nrow(saved_queries()$dag$nodes) > 0)
+
           visNetwork::visNetwork(
-            nodes = saved_queries()$dag$nodes,
+            nodes = saved_queries()$dag$nodes %>%
+              # relabel code types
+              dplyr::left_join(CODE_TYPE_TO_LKP_TABLE_MAP %>%
+                                 dplyr::select(tidyselect::all_of(c("code", "code_label"))),
+                               by = c("group" = "code")) %>%
+              dplyr::select(-tidyselect::all_of("group")) %>%
+              dplyr::rename("group" = "code_label") %>%
+              # show n codes for each saved query
+              dplyr::mutate("n" = paste0("\n(", prettyNum(.data[["n"]], big.mark = ","), ")")) %>%
+              tidyr::unite(col = "label",
+                           tidyselect::all_of(c("label", "n")),
+                           sep = " ",
+                           remove = TRUE),
             edges = saved_queries()$dag$edges,
             width = "100%"
           ) |>
@@ -1128,7 +1142,7 @@ htmltools::browsable(
             visNetwork::visGroups() |>
             visNetwork::visLegend() |>
             visNetwork::visOptions(selectedBy = list(variable = "group"))
-        )
+        })
 
       output$dag_nodes <- renderTable(saved_queries()$dag$nodes)
       output$dag_edges <- renderTable(saved_queries()$dag$edges)
@@ -1606,7 +1620,8 @@ update_saved_queries <- function(query,
   ## dependencies
   nodes <- data.frame(id = query,
                       label = query,
-                      group = code_type)
+                      group = code_type,
+                      n = nrow(query_result()$result))
   nodes <- dplyr::bind_rows(saved_queries()$dag$nodes,
                             nodes)
 
