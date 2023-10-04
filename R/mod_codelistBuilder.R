@@ -1956,7 +1956,7 @@ empty_saved_query_filter <- list(
   input = "select",
   values = list(""),
   operators = list("read2"),
-  description = "I'm a description"
+  description = "Previously saved queries will be listed here."
 )
 
 child_codes_filter <- list(
@@ -1964,7 +1964,7 @@ child_codes_filter <- list(
   label = "Children",
   type = "string",
   operators = list("read2"),
-  description = "I'm a description"
+  description = "Search for children codes. Multiple codes may be supplied separated by '|' e.g. 'E10 | E11' for ICD10. Comments may also be included between '<< >>' e.g. 'E10 << T1DM >> | E11 << T2DM >>'."
 )
 
 description_contains_filter <- list(
@@ -1972,7 +1972,7 @@ description_contains_filter <- list(
   label = "Description",
   type = "string",
   operators = list("read2"),
-  description = "I'm a description"
+  description = "Search for codes that match a regular expression (case insensitive). For example, '^a' will search for all codes starting with either 'A' or 'a'."
 )
 
 codes_filter <- list(
@@ -1980,7 +1980,7 @@ codes_filter <- list(
   label = "Codes",
   type = "string",
   operators = list("read2"),
-  description = "I'm a description"
+  description = "Search for one or more codes separated by '|' e.g. 'E10 | E101' for ICD10. Comments may also be included between '<< >>' e.g. 'E10 << T1DM >> | E101 << T1DM with coma >>'."
 )
 
 map_codes_filter <- list(
@@ -1988,7 +1988,7 @@ map_codes_filter <- list(
   label = "Map codes",
   type = "string",
   operators = list(),
-  description = "I'm a description"
+  description = "Map codes from one coding system to another. Multiple codes may be supplied separated by '|' e.g. 'E101 | E102' for ICD10. Comments may also be included between '<< >>' e.g. 'E101 << T1DM with coma >> | E102 << T1DM with renal complications >>'."
 )
 
 map_children_filter <- list(
@@ -1996,7 +1996,7 @@ map_children_filter <- list(
   label = "Map children",
   type = "string",
   operators = list(),
-  description = "I'm a description"
+  description = "Map child codes from one coding system to another. Multiple codes may be supplied separated by '|' e.g. 'E10 | E11' for ICD10. Comments may also be included between '<< >>' e.g. 'E10 << T1DM >> | E11 << T2DM >>'."
 )
 
 filters <- list(
