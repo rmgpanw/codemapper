@@ -219,13 +219,7 @@ codelistBuilderInput <-
                   radioButtons(
                     ns("code_type"),
                     "Code type",
-                    choices = CODE_TYPE_TO_LKP_TABLE_MAP %>%
-                      dplyr::filter(.data[["code"]] %in% !!available_code_types) %>%
-                      dplyr::select(tidyselect::all_of(c(
-                        "code_label", "code"
-                      ))) %>%
-                      tibble::deframe() %>%
-                      as.list()
+                    choices = get_code_type_labels(available_code_types = available_code_types)
                   )
                 ),
                 tabPanelBody(
@@ -244,7 +238,7 @@ codelistBuilderInput <-
                   ### Saved queries -----------------------------------------------------------
 
                   selectizeInput(
-                    ns("saved_queries_checkboxes"),
+                    ns("saved_queries_selectize"),
                     "Remove saved queries",
                     choices = list("None"),
                     multiple = TRUE
@@ -260,8 +254,6 @@ codelistBuilderInput <-
                   )
                 )
               )
-              # )
-              # )
             ),
 
             ## Main panel ------------------------------------
@@ -357,9 +349,7 @@ codelistBuilderInput <-
           tabsetPanel(
             id = ns("tabs_dag"),
             tabPanel(title = "DAG",
-                     visNetwork::visNetworkOutput(NS(
-                       id, "dag_visnetwork"
-                     ))),
+                     visNetwork::visNetworkOutput(ns("dag_visnetwork"))),
             tabPanel(title = "Nodes",
                      tableOutput(ns("dag_nodes"))),
             tabPanel(title = "Edges",
@@ -721,7 +711,7 @@ htmltools::browsable(
           report_template |>
             stringr::str_glue(
               TITLE = "My codelist",
-              SUBTITLE = "My codelist subtitle",
+              SUBTITLE = query_result()$code_type,
               QUERY_OPTIONS = rlang::expr_text(query_options()),
               QUERY_CODE = paste(query_result()$query_code, sep = "", collapse = "\n"),
               ONCLICK = "Reactable.downloadDataCSV('codelist-download', 'codelist.csv')"
@@ -839,10 +829,10 @@ htmltools::browsable(
 
       ### Show saved queries ------------------------------------------------------
 
-      observe(label = "update_saved_queries_checkboxes",
+      observe(label = "update_saved_queries_selectize",
               x = {
                 # update saved queries check boxes
-                updateSelectizeInput(inputId = "saved_queries_checkboxes",
+                updateSelectizeInput(inputId = "saved_queries_selectize",
                                      choices = saved_queries()$objects)
               })
 
@@ -1017,7 +1007,7 @@ htmltools::browsable(
       observe(label = "show_hide_tabs_remove_saved_queries",
               x = {
                 tab <- ifelse(
-                  shiny::isTruthy(input$saved_queries_checkboxes),
+                  shiny::isTruthy(input$saved_queries_selectize),
                   "tab_remove_saved_queries_show",
                   "tab_remove_saved_queries_hide"
                 )
@@ -1031,7 +1021,7 @@ htmltools::browsable(
                                      if (!is.null(dag_igraph())) {
                                        # ascertain dependencies using igraph package
                                        dependencies <-
-                                         input$saved_queries_checkboxes %>%
+                                         input$saved_queries_selectize %>%
                                          purrr::set_names() %>%
                                          purrr::map(~ find_node_dependencies(graph = dag_igraph(),
                                                                              node = .x)) %>%
@@ -1039,7 +1029,7 @@ htmltools::browsable(
 
                                        nodes_to_remove <-
                                          c(
-                                           input$saved_queries_checkboxes,
+                                           input$saved_queries_selectize,
                                            purrr::reduce(dependencies, c, .init = NULL)
                                          ) %>%
                                          unique()
@@ -1055,7 +1045,7 @@ htmltools::browsable(
                                            )
                                        )
                                      } else {
-                                       nodes_to_remove <- input$saved_queries_checkboxes
+                                       nodes_to_remove <- input$saved_queries_selectize
                                        new_dependencies <-
                                          list(
                                            nodes = saved_queries()$dag$nodes %>%
@@ -1083,7 +1073,7 @@ htmltools::browsable(
                            "The following saved queries will also be deleted: ",
                            paste(
                              subset(
-                               updated_dag()$nodes_to_remove,!updated_dag()$nodes_to_remove %in% input$saved_queries_checkboxes
+                               updated_dag()$nodes_to_remove,!updated_dag()$nodes_to_remove %in% input$saved_queries_selectize
                              ),
                              sep = "",
                              collapse = ", "
@@ -1181,20 +1171,15 @@ compareCodelistsServer <-
       ns <- session$ns
 
       observe({
-        available_code_types <- unique(c(names(saved_queries()$objects)), names(saved_lookups()))
+        available_code_types <- unique(c(names(saved_queries()$objects), names(saved_lookups())))
 
         selected <- input$code_type
 
-        updateSelectInput(inputId = "code_type",
-                          choices = CODE_TYPE_TO_LKP_TABLE_MAP %>%
-                            dplyr::filter(.data[["code"]] %in% !!available_code_types) %>%
-                            dplyr::select(tidyselect::all_of(c(
-                              "code_label", "code"
-                            ))) %>%
-                            tibble::deframe() %>%
-                            as.list(),
-                          selected = selected
-                          )
+        updateSelectInput(
+          inputId = "code_type",
+          choices = get_code_type_labels(available_code_types = available_code_types),
+          selected = selected
+        )
       })
 
       observe({
@@ -1289,13 +1274,7 @@ lookupCodesInput <- function(id, available_code_types) {
               selectInput(
                 ns("code_type"),
                 "Code type",
-                choices = CODE_TYPE_TO_LKP_TABLE_MAP %>%
-                  dplyr::filter(.data[["code"]] %in% !!available_code_types) %>%
-                  dplyr::select(tidyselect::all_of(c(
-                    "code_label", "code"
-                  ))) %>%
-                  tibble::deframe() %>%
-                  as.list()
+                choices = get_code_type_labels(available_code_types = available_code_types)
               ),
               textAreaInput(ns("codes_input"), "Input", resize = "vertical"),
               radioButtons(ns("map_to"),
@@ -1371,9 +1350,10 @@ lookupCodesServer <-
         updateRadioButtons(
           inputId = "map_to",
           choices = c(
-            "(Don't map)",
+            list("(Don't map)"),
             get_available_map_from_code_types(available_maps = available_maps,
-                                              to = input$code_type)
+                                              to = input$code_type) %>%
+              get_code_type_labels()
           )
         )
       })
@@ -1452,10 +1432,11 @@ lookupCodesServer <-
 
       # view saved lookups tab
       observe({
-        choices <- names(saved_lookups())
+        choices <- names(saved_lookups()) %>%
+          get_code_type_labels()
 
         if (is.null(choices)) {
-          choices <- ""
+          choices <- list("")
         }
 
         updateSelectInput(inputId = "select_saved_lookup_code_type",
@@ -1762,10 +1743,6 @@ remove_saved_queries <- function(updated_dag,
       dag = updated_dag()$new_dependencies
     )
   )
-
-  # update saved queries check boxes
-  updateCheckboxGroupInput(inputId = "saved_queries_checkboxes",
-                           choices = ls(new_saved_queries))
 }
 
 # return vector of saved query names from a qbr input
@@ -1942,6 +1919,16 @@ update_qbr_filters <- function(input_code_type,
     new_map_codes_filter,
     new_map_children_filter
   )
+}
+
+get_code_type_labels <- function(available_code_types) {
+  CODE_TYPE_TO_LKP_TABLE_MAP %>%
+    dplyr::filter(.data[["code"]] %in% !!available_code_types) %>%
+    dplyr::select(tidyselect::all_of(c(
+      "code_label", "code"
+    ))) %>%
+    tibble::deframe() %>%
+    as.list()
 }
 
 ## jqbr filters and operators --------------------------------------------------------------------
