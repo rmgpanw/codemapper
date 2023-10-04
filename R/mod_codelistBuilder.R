@@ -2036,7 +2036,7 @@ operators <- c(code_type_operators,
 
 csvDownloadButton <-
   function(id,
-           filename = paste0(Sys.date(), "_", "codelist.csv"),
+           filename = paste0(Sys.Date(), "_", "codelist.csv"),
            label = "Download as CSV") {
     tags$button(
       tagList(icon("download"), label),
