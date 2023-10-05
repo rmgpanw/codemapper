@@ -411,33 +411,41 @@ codelistBuilderServer <-
       # TODO - optimise
       observeEvent(col_filters(), {
         if (nrow(saved_queries()$dag$nodes) > 0) {
-          for (x in saved_queries()$dag$nodes$id) {
-            params <- saved_queries()$dag$nodes %>%
-              dplyr::filter(.data[["id"]] == !!x)
+          # progress bar
+          withProgress(message = "Updating saved queries...", {
+            step <- 1
+            for (x in saved_queries()$dag$nodes$id) {
+              params <- saved_queries()$dag$nodes %>%
+                dplyr::filter(.data[["id"]] == !!x)
 
-            query <-
-              get(x = params$id, envir = saved_queries()$results_meta)$query
+              query <-
+                get(x = params$id, envir = saved_queries()$results_meta)$query
 
-            qb <- get(x = params$id, envir = saved_queries()$results_meta)$qb
+              qb <-
+                get(x = params$id, envir = saved_queries()$results_meta)$qb
 
-            query_result <- list(
-              query = query,
-              result = withr::with_options(
-                eval(query_options()),
-                eval(query, envir = saved_queries()$results)
-              ),
-              qb = qb,
-              code_type = params$code_type
-            )
+              query_result <- list(
+                query = query,
+                result = withr::with_options(
+                  eval(query_options()),
+                  eval(query, envir = saved_queries()$results)
+                ),
+                qb = qb,
+                code_type = params$code_type
+              )
 
-            update_saved_queries(
-              query = x,
-              query_result = reactive(query_result),
-              saved_queries = saved_queries,
-              code_type = params$group,
-              query_options = query_options
-            )
-          }
+              update_saved_queries(
+                query = x,
+                query_result = reactive(query_result),
+                saved_queries = saved_queries,
+                code_type = params$group,
+                query_options = query_options
+              )
+
+              incProgress(1 / length(step))
+              step <- step + 1
+            }
+          })
 
           updateTabsetPanel(inputId = "query_result_tabs", selected = "empty_query")
 
