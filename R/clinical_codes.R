@@ -618,8 +618,8 @@ get_children_sct <- function(codes,
 #' Low level function for querying related SNOMED codes.
 #'
 #' @param codes Character vector of SNOMED codes
-#' @param relationship SNOMED code defining the type of relationship. By default
-#'   this is 'Is a (attribute)'.
+#' @param relationship Character vector of SNOMED codes defining the types of
+#'   relationship. If `NULL` (default), returns all types of relationship.
 #' @param relationship_direction Either 'child' (default) or 'parent'.
 #' @param recursive If `TRUE` (default), will recursively search for related
 #'   codes e.g. find all descendants code instead of just the immediate child
@@ -633,6 +633,7 @@ get_children_sct <- function(codes,
 #' @return A data frame
 #'
 #' @examples
+#' \dontrun{
 #' # get children codes for "269823000" ("Hemoglobin A1C - ...")
 #' get_relatives_sct(
 #'   codes = "269823000",
@@ -663,10 +664,11 @@ get_children_sct <- function(codes,
 #' get_relatives_sct(
 #'   codes = "386868003",
 #'   relationship = NULL,
-#'   recursive = FALSE,
+#'   recursive = TRUE,
 #'   relationship_direction = "child"
 #'   ) %>%
 #'   lookup_codes("sct")
+#' }
 get_relatives_sct <- function(codes,
                               relationship = NULL,
                               relationship_direction = "child",
@@ -681,7 +683,7 @@ get_relatives_sct <- function(codes,
   check_codes(codes)
 
   if (!is.null(relationship)) {
-    stopifnot(rlang::is_string(relationship))
+    stopifnot(is.character(relationship))
   }
 
   match.arg(relationship_direction,
@@ -738,7 +740,7 @@ get_relatives_sct <- function(codes,
 
   if (!is.null(relationship)) {
     related_codes <- related_codes %>%
-      dplyr::filter(.data[["typeId"]] == !!relationship)
+      dplyr::filter(.data[["typeId"]] %in% !!relationship)
   }
 
   if (active_only) {
