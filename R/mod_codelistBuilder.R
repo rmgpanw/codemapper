@@ -636,7 +636,7 @@ codelistBuilderServer <-
           purrr::walk(print)
       })
 
-      # Download query ----------------------------------------------------------
+      # Download query Quarto report -------------------------------------------
 
       output$download <- downloadHandler(
         filename = function() {
@@ -645,6 +645,16 @@ codelistBuilderServer <-
         content = function(file) {
 
           # See also https://stackoverflow.com/a/74948301
+
+          # Notifcation
+          id <-
+            showNotification(
+              "Rendering report...",
+              type = "message",
+              duration = NULL,
+              closeButton = FALSE
+            )
+          on.exit(removeNotification(id), add = TRUE)
 
           # setup
           TEMPFILE_NAME <- tempfile()
