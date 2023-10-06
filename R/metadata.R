@@ -57,21 +57,21 @@ ALL_LKPS_MAPS_TABLE_NAMES <- c(
 
 CODE_TYPE_TO_LKP_TABLE_MAP <- tibble::tribble(
   ~code, ~code_label, ~lkp_table, ~code_col, ~description_col, ~preferred_synonym_col, ~preferred_code, ~grouping_col, ~filter_cols,
+  "icd10", "ICD-10", "icd10_lkp", "ALT_CODE", "DESCRIPTION", NA, NA, "category", NA,
+  "icd9", "ICD-9", "icd9_lkp", "ICD9", "DESCRIPTION_ICD9", NA, NA, "category", NA,
+  "read3", "Read 3", "read_ctv3_lkp", "read_code", "term_description", "description_type", "P", NA, NA,
+  "read2", "Read 2", "read_v2_lkp", "read_code", "term_description", "term_code", "00", NA, NA,
+  "sct", "SNOMED CT", "sct_description", "conceptId", "term", "typeId", "900000000000003001", NA, list(list(active = "*1*")),
+  "opcs4", "OPCS4", "opcs4_lkp", "opcs4_code", "description", NA, NA, "category", NA,
+  "phecode", "Phecode", "phecode_lkp", "phecode", "phenotype", NA, NA, "category", NA,
+  "read2_drugs", "Read 2, drugs", "read_v2_drugs_lkp", "read_code", "term_description", NA, NA, NA, NA,
   "bnf", "BNF", "bnf_lkp", "BNF_Code", "Description", NA, NA, "BNF_Chemical_Substance", NA,
   # "dmd", "dmd_lkp", "concept_id", "term", NA, NA,
   "dmd", "DMD", "bnf_dmd", "snomed_code", "dm_d_product_description", NA, NA, "dm_d_product_description", NA,
-  "icd9", "ICD-9", "icd9_lkp", "ICD9", "DESCRIPTION_ICD9", NA, NA, "category", NA,
-  "icd10", "ICD-10", "icd10_lkp", "ALT_CODE", "DESCRIPTION", NA, NA, "category", NA,
-  "read2", "Read 2", "read_v2_lkp", "read_code", "term_description", "term_code", "00", NA, NA,
-  "read2_drugs", "Read 2, drugs", "read_v2_drugs_lkp", "read_code", "term_description", NA, NA, NA, NA,
-  "read3", "Read 3", "read_ctv3_lkp", "read_code", "term_description", "description_type", "P", NA, NA,
-  "opcs4", "OPCS4", "opcs4_lkp", "opcs4_code", "description", NA, NA, "category", NA,
   "data_coding_3", "Self-reported cancer (dc-3)", "self_report_cancer", "data_coding_3", "description", NA, NA, "category", NA,
   "data_coding_4", "Self-reported medications (dc-4)", "self_report_medication", "data_coding_4", "description", NA, NA, "category", NA,
   "data_coding_5", "Self-reported operations (dc-5)", "self_report_operation", "data_coding_5", "description", NA, NA, "category", NA,
   "data_coding_6", "Self-reported non-cancer (dc-6)", "self_report_non_cancer", "data_coding_6", "description", NA, NA, "category", NA,
-  "sct", "SNOMED CT", "sct_description", "conceptId", "term", "typeId", "900000000000003001", NA, list(list(active = "*1*")),
-  "phecode", "Phecode", "phecode_lkp", "phecode", "phenotype", NA, NA, "category", NA
 )
 
 # CLINICAL_CODE_MAPPINGS_MAP ----------------------------------------------
