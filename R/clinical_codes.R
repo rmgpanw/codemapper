@@ -682,6 +682,10 @@ get_relatives_sct <- function(codes,
   # validate args
   check_codes(codes)
 
+  if (length(codes) == 1) {
+    codes <- codes_string_to_vector(codes)
+  }
+
   if (!is.null(relationship)) {
     stopifnot(is.character(relationship))
   }
