@@ -779,142 +779,6 @@ get_attributes_sct <- function(codes,
   )
 }
 
-#' Get data frame of relatives and attributes for a set of SNOMED codes
-#'
-#' Low level function
-#'
-#' @inheritparams get_relatives_sct
-#'
-#' @return A data frame with column names 'code' and 'typeId'
-#' @noRd
-#'
-#' @examples
-#' # get children codes for "269823000" ("Hemoglobin A1C - ...")
-#' get_relatives_sct(
-#'   codes = "269823000",
-#'   relationship = "116680003",
-#'   relationship_direction = "child"
-#'   )
-get_relatives_attributes_sct <- function(codes,
-                                         relationship = NULL,
-                                         relationship_direction = "child",
-                                         recursive = TRUE,
-                                         active_only = FALSE,
-                                         all_lkps_maps = NULL) {
-
-  # Note: does not check whether `codes` or `relationship` exist or not
-
-  # Note: returns self and relatives
-
-  # validate args
-  match.arg(relationship_direction,
-            choices = c("child", "parent"))
-
-  ## determine relationship direction
-  filter_col <- switch(relationship_direction,
-                       child = "destinationId",
-                       parent = "sourceId")
-
-  return_col <- switch(relationship_direction,
-                       child = "sourceId",
-                       parent = "destinationId")
-
-  # codes - can be character vector or data frame
-  if (is.character(codes)) {
-    check_codes(codes)
-
-    if (length(codes) == 1) {
-      codes <- codes_string_to_vector(codes)
-    }
-
-    codes <- tibble::tibble(code = codes,
-                            typeId = NA_character_)
-  }
-
-  if (!is.null(relationship)) {
-    stopifnot(is.character(relationship))
-  }
-
-  # connect to database file path if `all_lkps_maps` is a string, or `NULL`
-  if (is.character(all_lkps_maps)) {
-    con <- check_all_lkps_maps_path(all_lkps_maps)
-    all_lkps_maps <- ukbwranglr::db_tables_to_list(con)
-    on.exit(DBI::dbDisconnect(con, shutdown = TRUE))
-  } else if (is.null(all_lkps_maps)) {
-    if (Sys.getenv("ALL_LKPS_MAPS_DB") != "") {
-      # message(paste0("Attempting to connect to ", Sys.getenv("ALL_LKPS_MAPS_DB")))
-      con <-
-        check_all_lkps_maps_path(Sys.getenv("ALL_LKPS_MAPS_DB"))
-      all_lkps_maps <- ukbwranglr::db_tables_to_list(con)
-      on.exit(DBI::dbDisconnect(con, shutdown = TRUE))
-    } else if (file.exists("all_lkps_maps.db")) {
-      # message("Attempting to connect to all_lkps_maps.db in current working directory")
-      con <- check_all_lkps_maps_path("all_lkps_maps.db")
-      all_lkps_maps <- ukbwranglr::db_tables_to_list(con)
-      on.exit(DBI::dbDisconnect(con, shutdown = TRUE))
-    } else {
-      stop(
-        "No/invalid path supplied to `all_lkps_maps` and no file called 'all_lkps_maps.db' found in current working directory. See `?all_lkps_maps_to_db()`"
-      )
-    }
-  }
-
-  # TO DELETE - too slow (maybe)
-
-  # # validate relationship
-  # assertthat::assert_that(relationship %in% dplyr::pull(all_lkps_maps$sct_relationship, .data[["typeId"]]),
-  #                         msg = paste0("Unrecognised relationship: '",
-  #                                      relationship,
-  #                                      "'"))
-
-  check_table_exists_in_all_lkps_maps(all_lkps_maps = all_lkps_maps,
-                                      table_name = "sct_relationship")
-
-  # get related codes
-  related_codes <-
-    all_lkps_maps$sct_relationship %>%
-    dplyr::filter(.data[[filter_col]] %in% !!codes$code)
-
-  if (!is.null(relationship)) {
-    related_codes <- related_codes %>%
-      dplyr::filter(.data[["typeId"]] %in% !!relationship)
-  }
-
-  if (active_only) {
-    related_codes <- related_codes %>%
-      dplyr::filter(.data[["active"]] == "1")
-  }
-
-  related_codes <- related_codes %>%
-    dplyr::select(tidyselect::all_of(c(return_col, "typeId"))) %>%
-    dplyr::collect()
-
-  names(related_codes)[which(names(related_codes) == return_col)] <- "code"
-
-  result <- dplyr::bind_rows(codes,
-                             related_codes) %>%
-    dplyr::distinct()
-
-  if (recursive) {
-    if (nrow(result) > nrow(codes)) {
-      return(
-        get_relatives_attributes_sct(
-          codes = result,
-          relationship = relationship,
-          relationship_direction = relationship_direction,
-          recursive = recursive,
-          active_only = active_only,
-          all_lkps_maps = all_lkps_maps
-        )
-      )
-    } else {
-      return(result)
-    }
-  } else {
-    return(result)
-  }
-}
-
 #' @rdname get_relatives_sct
 #' @export
 RELATIVES <- get_relatives_sct
@@ -1458,6 +1322,191 @@ default_col_filters <- function() {
 
 
 # PRIVATE FUNCTIONS -------------------------------------------------------
+
+#' Get all available SNOMED CT relationship types
+#'
+#' @inheritParams lookup_codes
+#'
+#' @return A data frame
+#' @noRd
+get_all_sct_relation_types <- function(all_lkps_maps = NULL) {
+  # connect to database file path if `all_lkps_maps` is a string, or `NULL`
+  if (is.character(all_lkps_maps)) {
+    con <- check_all_lkps_maps_path(all_lkps_maps)
+    all_lkps_maps <- ukbwranglr::db_tables_to_list(con)
+    on.exit(DBI::dbDisconnect(con, shutdown = TRUE))
+  } else if (is.null(all_lkps_maps)) {
+    if (Sys.getenv("ALL_LKPS_MAPS_DB") != "") {
+      # message(paste0("Attempting to connect to ", Sys.getenv("ALL_LKPS_MAPS_DB")))
+      con <-
+        check_all_lkps_maps_path(Sys.getenv("ALL_LKPS_MAPS_DB"))
+      all_lkps_maps <- ukbwranglr::db_tables_to_list(con)
+      on.exit(DBI::dbDisconnect(con, shutdown = TRUE))
+    } else if (file.exists("all_lkps_maps.db")) {
+      # message("Attempting to connect to all_lkps_maps.db in current working directory")
+      con <- check_all_lkps_maps_path("all_lkps_maps.db")
+      all_lkps_maps <- ukbwranglr::db_tables_to_list(con)
+      on.exit(DBI::dbDisconnect(con, shutdown = TRUE))
+    } else {
+      stop(
+        "No/invalid path supplied to `all_lkps_maps` and no file called 'all_lkps_maps.db' found in current working directory. See `?all_lkps_maps_to_db()`"
+      )
+    }
+  }
+
+  all_lkps_maps$sct_relationship %>%
+    dplyr::select(typeId) %>%
+    dplyr::distinct() %>%
+    dplyr::collect() %>%
+    dplyr::pull(.data[["typeId"]]) %>%
+    lookup_codes(code_type = "sct",
+                 all_lkps_maps = all_lkps_maps,
+                 preferred_description_only = TRUE,
+                 standardise_output = TRUE,
+                 unrecognised_codes = "error",
+                 col_filters = NULL,
+                 .return_unrecognised_codes = FALSE)
+}
+
+#' Get data frame of relatives and attributes for a set of SNOMED codes
+#'
+#' Low level function
+#'
+#' @inheritparams get_relatives_sct
+#'
+#' @return A data frame with column names 'code' and 'typeId'
+#' @noRd
+#'
+#' @examples
+#' # get children codes for "269823000" ("Hemoglobin A1C - ...")
+#' get_relatives_sct(
+#'   codes = "269823000",
+#'   relationship = "116680003",
+#'   relationship_direction = "child"
+#'   )
+get_relatives_attributes_sct <- function(codes,
+                                         relationship = NULL,
+                                         relationship_direction = "child",
+                                         recursive = TRUE,
+                                         active_only = FALSE,
+                                         all_lkps_maps = NULL) {
+
+  # Note: does not check whether `codes` or `relationship` exist or not
+
+  # Note: returns self and relatives
+
+  # validate args
+  match.arg(relationship_direction,
+            choices = c("child", "parent"))
+
+  ## determine relationship direction
+  filter_col <- switch(relationship_direction,
+                       child = "destinationId",
+                       parent = "sourceId")
+
+  return_col <- switch(relationship_direction,
+                       child = "sourceId",
+                       parent = "destinationId")
+
+  # codes - can be character vector or data frame
+  if (is.character(codes)) {
+    check_codes(codes)
+
+    if (length(codes) == 1) {
+      codes <- codes_string_to_vector(codes)
+    }
+
+    codes <- tibble::tibble(code = codes,
+                            typeId = NA_character_)
+  }
+
+  if (!is.null(relationship)) {
+    check_codes(relationship)
+
+    if (length(relationship) == 1) {
+      relationship <- codes_string_to_vector(relationship)
+    }
+  }
+
+  # connect to database file path if `all_lkps_maps` is a string, or `NULL`
+  if (is.character(all_lkps_maps)) {
+    con <- check_all_lkps_maps_path(all_lkps_maps)
+    all_lkps_maps <- ukbwranglr::db_tables_to_list(con)
+    on.exit(DBI::dbDisconnect(con, shutdown = TRUE))
+  } else if (is.null(all_lkps_maps)) {
+    if (Sys.getenv("ALL_LKPS_MAPS_DB") != "") {
+      # message(paste0("Attempting to connect to ", Sys.getenv("ALL_LKPS_MAPS_DB")))
+      con <-
+        check_all_lkps_maps_path(Sys.getenv("ALL_LKPS_MAPS_DB"))
+      all_lkps_maps <- ukbwranglr::db_tables_to_list(con)
+      on.exit(DBI::dbDisconnect(con, shutdown = TRUE))
+    } else if (file.exists("all_lkps_maps.db")) {
+      # message("Attempting to connect to all_lkps_maps.db in current working directory")
+      con <- check_all_lkps_maps_path("all_lkps_maps.db")
+      all_lkps_maps <- ukbwranglr::db_tables_to_list(con)
+      on.exit(DBI::dbDisconnect(con, shutdown = TRUE))
+    } else {
+      stop(
+        "No/invalid path supplied to `all_lkps_maps` and no file called 'all_lkps_maps.db' found in current working directory. See `?all_lkps_maps_to_db()`"
+      )
+    }
+  }
+
+  # TO DELETE - too slow (maybe)
+
+  # # validate relationship
+  # assertthat::assert_that(relationship %in% dplyr::pull(all_lkps_maps$sct_relationship, .data[["typeId"]]),
+  #                         msg = paste0("Unrecognised relationship: '",
+  #                                      relationship,
+  #                                      "'"))
+
+  check_table_exists_in_all_lkps_maps(all_lkps_maps = all_lkps_maps,
+                                      table_name = "sct_relationship")
+
+  # get related codes
+  related_codes <-
+    all_lkps_maps$sct_relationship %>%
+    dplyr::filter(.data[[filter_col]] %in% !!codes$code)
+
+  if (!is.null(relationship)) {
+    related_codes <- related_codes %>%
+      dplyr::filter(.data[["typeId"]] %in% !!relationship)
+  }
+
+  if (active_only) {
+    related_codes <- related_codes %>%
+      dplyr::filter(.data[["active"]] == "1")
+  }
+
+  related_codes <- related_codes %>%
+    dplyr::select(tidyselect::all_of(c(return_col, "typeId"))) %>%
+    dplyr::collect()
+
+  names(related_codes)[which(names(related_codes) == return_col)] <- "code"
+
+  result <- dplyr::bind_rows(codes,
+                             related_codes) %>%
+    dplyr::distinct()
+
+  if (recursive) {
+    if (nrow(result) > nrow(codes)) {
+      return(
+        get_relatives_attributes_sct(
+          codes = result,
+          relationship = relationship,
+          relationship_direction = relationship_direction,
+          recursive = recursive,
+          active_only = active_only,
+          all_lkps_maps = all_lkps_maps
+        )
+      )
+    } else {
+      return(result)
+    }
+  } else {
+    return(result)
+  }
+}
 
 #' Extract column filters from metadata tables
 #'
@@ -2293,6 +2342,7 @@ expand_icd10_ranges <- function(read_v2_icd10,
 codes_string_to_vector <- function(codes) {
   codes %>%
     stringr::str_split_1(pattern = "\\|") %>%
+    stringr::str_remove_all(pattern = "\\n") %>%
     stringr::str_remove(pattern = "<<.*>>") %>%
     stringr::str_trim(side = "both")
 }
