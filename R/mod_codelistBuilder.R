@@ -1792,6 +1792,7 @@ get_qbr_saved_queries <- function(x) {
         "saved_query" = x$value,
         "map_children" = NULL,
         "map_codes" = NULL,
+        "sct_relatives" = NULL,
         stop("Unrecognised filter!")
       )
 
@@ -1810,6 +1811,18 @@ convert_rules_to_expr <- function(x) {
   if (is.list(x) &
       identical(names(x),
                 c("id", "field", "type", "input", "operator", "value"))) {
+
+    if (x$id == "sct_relatives") {
+      if (x$operator == "ALL") {
+        sct_relatives_expr <- rlang::call2(.fn = "RELATIVES",
+                                           x$value)
+      } else {
+        sct_relatives_expr <- rlang::call2(.fn = "RELATIVES",
+                     x$value,
+                     relationship = x$operator)
+      }
+    }
+
     switch(
       x$id,
       "description" = rlang::call2(.fn = "DESCRIPTION",
@@ -1828,6 +1841,7 @@ convert_rules_to_expr <- function(x) {
                      x$value,
                      code_type = x$operator)
       ),
+      "sct_relatives" = sct_relatives_expr,
       stop("Unrecognised filter!")
     )
 
@@ -1945,13 +1959,20 @@ update_qbr_filters <- function(input_code_type,
   new_child_codes_filter <- child_codes_filter
   new_child_codes_filter$operators <- list(input_code_type)
 
-  list(
+  new_filters <- list(
     new_description_contains_filter,
     new_codes_filter,
     new_child_codes_filter,
     new_map_codes_filter,
     new_map_children_filter
   )
+
+  if (input_code_type == "sct") {
+    new_filters <- c(new_filters,
+                     list(sct_relatives_filter))
+  }
+
+  new_filters
 }
 
 get_code_type_labels <- function(available_code_types) {
@@ -2017,13 +2038,22 @@ map_children_filter <- list(
   description = "Map child codes from one coding system to another. Multiple codes may be supplied separated by '|' e.g. 'E10 | E11' for ICD10. Comments may also be included between '<< >>' e.g. 'E10 << T1DM >> | E11 << T2DM >>'."
 )
 
+sct_relatives_filter <- list(
+  id = "sct_relatives",
+  label = "Relatives",
+  type = "string",
+  operators = list("ALL"),
+  description = "Retrieve related SNOMED codes."
+)
+
 filters <- list(
   description_contains_filter,
   codes_filter,
   map_codes_filter,
   map_children_filter,
   child_codes_filter,
-  empty_saved_query_filter
+  empty_saved_query_filter,
+  sct_relatives_filter
 )
 
 code_type_operators <- CODE_TYPE_TO_LKP_TABLE_MAP %>%
@@ -2046,6 +2076,12 @@ operators <- c(code_type_operators,
                  list(
                    type = "from ICD-10",
                    optgroup = "Map",
+                   nb_inputs = 1,
+                   multiple = FALSE,
+                   apply_to = "string"
+                 ),
+                 list(
+                   type = "ALL",
                    nb_inputs = 1,
                    multiple = FALSE,
                    apply_to = "string"
