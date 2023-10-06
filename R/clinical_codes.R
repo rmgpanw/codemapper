@@ -628,6 +628,7 @@ get_children_sct <- function(codes,
 #'   currently inactive.
 #' @inheritParams lookup_codes
 #' @family Clinical code lookups and mappings
+#' @name get_relatives_sct
 #' @export
 #'
 #' @return A data frame
@@ -777,6 +778,10 @@ get_relatives_sct <- function(codes,
     return(result)
   }
 }
+
+#' @rdname get_relatives_sct
+#' @export
+RELATIVES <- get_relatives_sct
 
 #' Map clinical codes from one coding system to another
 #'
