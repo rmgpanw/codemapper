@@ -520,6 +520,8 @@ get_children_sct <- function(codes,
     all_lkps_maps = all_lkps_maps
   )
 
+  out_codes <- out_codes$code
+
   # connect to database file path if `all_lkps_maps` is a string, or `NULL`
   if (is.character(all_lkps_maps)) {
     con <- check_all_lkps_maps_path(all_lkps_maps)
@@ -640,16 +642,14 @@ get_children_sct <- function(codes,
 #'   codes = "269823000",
 #'   relationship = "116680003",
 #'   relationship_direction = "child"
-#'   ) %>%
-#'   lookup_codes("sct")
+#'   )
 #'
 #' # get parent codes
 #' get_relatives_sct(
 #'   codes = "269823000",
 #'   relationship = "116680003",
 #'   relationship_direction = "parent"
-#'   ) %>%
-#'   lookup_codes("sct")
+#'   )
 #'
 #' # get all codes for which "386868003" ("Bisoprolol (substance)") is an attribute.
 #' # Note, includes "293967003" ("Allergy to bisoprolol (finding)")
@@ -658,8 +658,7 @@ get_children_sct <- function(codes,
 #'   relationship = NULL,
 #'   recursive = FALSE,
 #'   relationship_direction = "child"
-#'   ) %>%
-#'   lookup_codes("sct")
+#'   )
 #'
 #' # more results (i.e. bisoprolol-containing medications) are returned with `recursive = TRUE`
 #' get_relatives_sct(
@@ -667,30 +666,147 @@ get_children_sct <- function(codes,
 #'   relationship = NULL,
 #'   recursive = TRUE,
 #'   relationship_direction = "child"
-#'   ) %>%
-#'   lookup_codes("sct")
+#'   )
 #' }
 get_relatives_sct <- function(codes,
                               relationship = NULL,
                               relationship_direction = "child",
                               recursive = TRUE,
                               active_only = FALSE,
+                              col_filters = getOption("codemapper.col_filters"),
                               all_lkps_maps = NULL) {
+
+  result <- get_relatives_attributes_sct(codes = codes,
+                               relationship = relationship,
+                               relationship_direction = relationship_direction,
+                               recursive = recursive,
+                               active_only = active_only,
+                               all_lkps_maps = all_lkps_maps)
+
+  lookup_codes(
+    codes = result$code,
+    code_type = "sct",
+    all_lkps_maps = all_lkps_maps,
+    preferred_description_only = TRUE,
+    standardise_output = TRUE,
+    unrecognised_codes = "error",
+    col_filters = col_filters,
+    .return_unrecognised_codes = FALSE
+  )
+}
+
+#' Get attributes for related SNOMED codes
+#'
+#' Low level function for querying related SNOMED codes, returning attributes
+#' types.
+#'
+#' @param codes Character vector of SNOMED codes
+#' @param relationship Character vector of SNOMED codes defining the types of
+#'   relationship. If `NULL` (default), returns all types of relationship.
+#' @param relationship_direction Either 'child' (default) or 'parent'.
+#' @param recursive If `TRUE` (default), will recursively search for related
+#'   codes e.g. find all descendants code instead of just the immediate child
+#'   codes.
+#' @param active_only If `FALSE` (default), return all relationships, even if
+#'   currently inactive.
+#' @inheritParams lookup_codes
+#' @family Clinical code lookups and mappings
+#' @name get_attributes_sct
+#' @export
+#'
+#' @return A data frame
+#'
+#' @examples
+#' \dontrun{
+#' # get children codes for "269823000" ("Hemoglobin A1C - ...")
+#' get_attributes_sct(
+#'   codes = "269823000",
+#'   relationship = "116680003",
+#'   relationship_direction = "child"
+#'   )
+#'
+#' # get parent codes
+#' get_attributes_sct(
+#'   codes = "269823000",
+#'   relationship = "116680003",
+#'   relationship_direction = "parent"
+#'   )
+#'
+#' # get all codes for which "386868003" ("Bisoprolol (substance)") is an attribute.
+#' # Note, includes "293967003" ("Allergy to bisoprolol (finding)")
+#' get_attributes_sct(
+#'   codes = "386868003",
+#'   relationship = NULL,
+#'   recursive = FALSE,
+#'   relationship_direction = "child"
+#'   )
+#'
+#' # more results (i.e. bisoprolol-containing medications) are returned with `recursive = TRUE`
+#' get_attributes_sct(
+#'   codes = "386868003",
+#'   relationship = NULL,
+#'   recursive = TRUE,
+#'   relationship_direction = "child"
+#'   )
+#' }
+get_attributes_sct <- function(codes,
+                              relationship = NULL,
+                              relationship_direction = "child",
+                              recursive = TRUE,
+                              active_only = FALSE,
+                              col_filters = getOption("codemapper.col_filters"),
+                              all_lkps_maps = NULL) {
+
+  result <- get_relatives_attributes_sct(codes = codes,
+                                         relationship = relationship,
+                                         relationship_direction = relationship_direction,
+                                         recursive = recursive,
+                                         active_only = active_only,
+                                         all_lkps_maps = all_lkps_maps)
+
+  result <- result %>%
+    dplyr::filter(!is.na(.data[["typeId"]]))
+
+  lookup_codes(
+    codes = result$typeId,
+    code_type = "sct",
+    all_lkps_maps = all_lkps_maps,
+    preferred_description_only = TRUE,
+    standardise_output = TRUE,
+    unrecognised_codes = "error",
+    col_filters = col_filters,
+    .return_unrecognised_codes = FALSE
+  )
+}
+
+#' Get data frame of relatives and attributes for a set of SNOMED codes
+#'
+#' Low level function
+#'
+#' @inheritparams get_relatives_sct
+#'
+#' @return A data frame with column names 'code' and 'typeId'
+#' @noRd
+#'
+#' @examples
+#' # get children codes for "269823000" ("Hemoglobin A1C - ...")
+#' get_relatives_sct(
+#'   codes = "269823000",
+#'   relationship = "116680003",
+#'   relationship_direction = "child"
+#'   )
+get_relatives_attributes_sct <- function(codes,
+                                         relationship = NULL,
+                                         relationship_direction = "child",
+                                         recursive = TRUE,
+                                         active_only = FALSE,
+                                         all_lkps_maps = NULL) {
+
   # Note: does not check whether `codes` or `relationship` exist or not
 
   # Note: returns self and relatives
 
   # validate args
-  check_codes(codes)
-
-  if (length(codes) == 1) {
-    codes <- codes_string_to_vector(codes)
-  }
-
-  if (!is.null(relationship)) {
-    stopifnot(is.character(relationship))
-  }
-
   match.arg(relationship_direction,
             choices = c("child", "parent"))
 
@@ -702,6 +818,22 @@ get_relatives_sct <- function(codes,
   return_col <- switch(relationship_direction,
                        child = "sourceId",
                        parent = "destinationId")
+
+  # codes - can be character vector or data frame
+  if (is.character(codes)) {
+    check_codes(codes)
+
+    if (length(codes) == 1) {
+      codes <- codes_string_to_vector(codes)
+    }
+
+    codes <- tibble::tibble(code = codes,
+                            typeId = NA_character_)
+  }
+
+  if (!is.null(relationship)) {
+    stopifnot(is.character(relationship))
+  }
 
   # connect to database file path if `all_lkps_maps` is a string, or `NULL`
   if (is.character(all_lkps_maps)) {
@@ -741,7 +873,7 @@ get_relatives_sct <- function(codes,
   # get related codes
   related_codes <-
     all_lkps_maps$sct_relationship %>%
-    dplyr::filter(.data[[filter_col]] %in% !!codes)
+    dplyr::filter(.data[[filter_col]] %in% !!codes$code)
 
   if (!is.null(relationship)) {
     related_codes <- related_codes %>%
@@ -754,15 +886,19 @@ get_relatives_sct <- function(codes,
   }
 
   related_codes <- related_codes %>%
-    dplyr::pull(.data[[return_col]])
+    dplyr::select(tidyselect::all_of(c(return_col, "typeId"))) %>%
+    dplyr::collect()
 
-  result <- unique(c(codes,
-                     related_codes))
+  names(related_codes)[which(names(related_codes) == return_col)] <- "code"
+
+  result <- dplyr::bind_rows(codes,
+                             related_codes) %>%
+    dplyr::distinct()
 
   if (recursive) {
-    if (length(result) > length(codes)) {
+    if (nrow(result) > nrow(codes)) {
       return(
-        get_relatives_sct(
+        get_relatives_attributes_sct(
           codes = result,
           relationship = relationship,
           relationship_direction = relationship_direction,
