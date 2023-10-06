@@ -80,6 +80,35 @@ RunCodelistBuilder <- function(all_lkps_maps = NULL,
   # reactive value to store saved look ups - to be shared between modules
   saved_lookups <- reactiveVal(list())
 
+  # add sct relation operators, if sct available
+  sct_relatives_operators <- NULL
+
+  if ("sct" %in% available_code_types) {
+    # jqbr appears to only accept operators starting with a letter, and no
+    # special characters (e.g. no spaces). Also does not work if there are too
+    # many operators
+    all_sct_attributes <- get_all_sct_relation_types(all_lkps_maps = all_lkps_maps) %>%
+      # dplyr::arrange(.data[["description"]]) %>%
+      # dplyr::mutate(relation = stringr::str_glue("{code} << {description} >>")) %>%
+      # dplyr::pull(.data[["relation"]]) %>%
+      # as.character()
+      dplyr::mutate(code = stringr::str_glue("x{code}")) %>%
+      dplyr::pull(.data[["code"]]) %>%
+      as.character() %>%
+      .[1:10]
+
+
+    sct_relatives_operators <- all_sct_attributes %>%
+      purrr::map(\(x) {
+        result <- sct_relatives_operator_all
+        result$type <- x
+        result
+      })
+  }
+
+
+  # UI ----------------------------------------------------------------------
+
   ui <- shinydashboard::dashboardPage(
     skin = "purple",
     shinydashboard::dashboardHeader(title = "CODEMINER"),
@@ -112,7 +141,9 @@ RunCodelistBuilder <- function(all_lkps_maps = NULL,
                                   codelistBuilderInput(
                                     "builder",
                                     available_code_types = available_code_types,
-                                    available_maps = available_maps
+                                    available_maps = available_maps,
+                                    operators = c(operators,
+                                                  sct_relatives_operators)
                                   )
                                 )),
         shinydashboard::tabItem(
@@ -139,9 +170,13 @@ RunCodelistBuilder <- function(all_lkps_maps = NULL,
     )
   )
 
+
+  # Server ------------------------------------------------------------------
+
   server <- function(input, output, sesion) {
     codelistBuilderServer("builder",
                           available_maps = available_maps,
+                          sct_relatives_operators = sct_relatives_operators,
                           saved_queries = saved_queries)
 
     compareCodelistsServer("compare_codelists",
@@ -190,7 +225,7 @@ RunCodelistBuilder <- function(all_lkps_maps = NULL,
 #' @noRd
 #' @import shiny
 codelistBuilderInput <-
-  function(id, available_code_types, available_maps) {
+  function(id, available_code_types, available_maps, operators) {
     stopifnot(all(available_code_types %in% CODE_TYPE_TO_LKP_TABLE_MAP$code))
 
     ns <- NS(id)
@@ -381,6 +416,7 @@ codelistBuilderInput <-
 codelistBuilderServer <-
   function(id,
            available_maps,
+           sct_relatives_operators = NULL,
            saved_queries = reactiveVal(list(
              objects = list(),
              results = new.env(),
@@ -388,8 +424,10 @@ codelistBuilderServer <-
              dag = list(nodes = data.frame(),
                         edges = data.frame())
            ))) {
+
     moduleServer(id, function(input, output, session) {
       ns <- session$ns
+
       ## Advanced settings -------------------------------------------------------
 
       col_filters <-
@@ -792,7 +830,8 @@ htmltools::browsable(
           new_saved_query_filter$operators <- list(input$code_type)
 
           new_filters <- update_qbr_filters(input_code_type = input$code_type,
-                                            available_maps = available_maps)
+                                            available_maps = available_maps,
+                                            sct_relatives_operators = sct_relatives_operators)
 
           jqbr::updateQueryBuilder(
             inputId = "qb",
@@ -970,7 +1009,8 @@ htmltools::browsable(
         new_saved_query_filter$operators <- list(input$code_type)
 
         new_filters <- update_qbr_filters(input_code_type = code_type,
-                                          available_maps = available_maps)
+                                          available_maps = available_maps,
+                                          sct_relatives_operators = sct_relatives_operators)
 
 
         jqbr::updateQueryBuilder(
@@ -1938,7 +1978,8 @@ get_available_map_from_code_types <- function(available_maps, to) {
 #' @return A list
 #' @noRd
 update_qbr_filters <- function(input_code_type,
-                               available_maps) {
+                               available_maps,
+                               sct_relatives_operators = NULL) {
   new_description_contains_filter <- description_contains_filter
   new_description_contains_filter$operators <-
     list(input_code_type)
@@ -1968,10 +2009,17 @@ update_qbr_filters <- function(input_code_type,
   )
 
   if (input_code_type == "sct") {
+    new_sct_relatives_filter <- sct_relatives_filter
+
+    new_sct_relatives_filter$operators <- c(list(sct_relatives_operator_all),
+                                            sct_relatives_operators) %>%
+      purrr::map(\(x) x$type)
+
     new_filters <- c(new_filters,
-                     list(sct_relatives_filter))
+                     list(new_sct_relatives_filter))
   }
 
+  lobstr::tree(new_filters)
   new_filters
 }
 
@@ -2065,6 +2113,13 @@ code_type_operators <- CODE_TYPE_TO_LKP_TABLE_MAP %>%
     apply_to = "string"
   ))
 
+sct_relatives_operator_all <- list(
+  type = "ALL",
+  nb_inputs = 1,
+  multiple = FALSE,
+  apply_to = "string"
+)
+
 operators <- c(code_type_operators,
                list(
                  list(
@@ -2080,12 +2135,7 @@ operators <- c(code_type_operators,
                    multiple = FALSE,
                    apply_to = "string"
                  ),
-                 list(
-                   type = "ALL",
-                   nb_inputs = 1,
-                   multiple = FALSE,
-                   apply_to = "string"
-                 )
+                 sct_relatives_operator_all
                ))
 
 ## reactable ---------------------------------------------------------------
