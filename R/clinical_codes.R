@@ -560,7 +560,7 @@ get_parents_sct <- function(codes,
 
 # TODO - make get parent/child codes functions. Get
 # attributes function. HAS_ATTRIBUTE() and HAS_ATTRIBUTE_TYPE() functions
-get_relatives_sct <- function(codes,
+get_relatives_sct <- function(codes = NULL,
                               filter_col = "destinationId",
                               return_col = "sourceId",
                               typeId = "116680003",
@@ -572,17 +572,19 @@ get_relatives_sct <- function(codes,
                               col_filters = getOption("codemapper.col_filters")) {
 
 
-  # TODO - create df and string methods; validate codes df
-  if (is.data.frame(codes)) {
-    code_type <- unique(codes$code_type)
-    codes <- codes$code
-  }
+  if (!is.null(codes)) {
+    # TODO - create df and string methods; validate codes df
+    if (is.data.frame(codes)) {
+      code_type <- unique(codes$code_type)
+      codes <- codes$code
+    }
 
-  # validate args
-  check_codes(codes)
+    # validate args
+    check_codes(codes)
 
-  if (length(codes) == 1) {
-    codes <- codes_string_to_vector(codes)
+    if (length(codes) == 1) {
+      codes <- codes_string_to_vector(codes)
+    }
   }
 
   match.arg(filter_col,
@@ -735,6 +737,7 @@ has_attribute <- function(codes,
 }
 
 
+# WOULD NOT WORK
 # try to replicate
 # https://snomedizer.web.app/articles/snomedizer.html#find-all-diseases-caused-by-a-type-of-bacterium:
 # has_attribute_type("246075003") %AND%
