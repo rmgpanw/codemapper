@@ -652,6 +652,7 @@ get_relatives_sct <- function(codes = NULL,
   )
 }
 
+# to delete?
 has_attribute_type <- function(codes,
                                standardise_output = TRUE,
                                all_lkps_maps = NULL,
@@ -694,6 +695,7 @@ has_attribute_type <- function(codes,
   )
 }
 
+# to delete?
 has_attribute <- function(codes,
                           standardise_output = TRUE,
                           all_lkps_maps = NULL,
@@ -743,6 +745,74 @@ has_attribute <- function(codes,
 # has_attribute_type("246075003") %AND%
 # has_attribute(get_children_sct("106544002")) %AND%
 # get_children_sct("40733004")
+
+summarise_attributes_sct <- function(codes,
+                                     all_lkps_maps = NULL,
+                                     col_filters = getOption("codemapper.col_filters")) {
+  # TODO - create df and string methods; validate codes df
+  if (is.data.frame(codes)) {
+    code_type <- unique(codes$code_type)
+    codes <- codes$code
+  }
+
+  # validate args
+  check_codes(codes)
+
+  if (length(codes) == 1) {
+    codes <- codes_string_to_vector(codes)
+  }
+
+  output_codes <- filter_sct_relationship(codes = NULL,
+                                          sourceId_filter = codes,
+                                          destinationId_filter = NULL,
+                                          typeId_filter = NULL,
+                                          active_only = TRUE,
+                                          recursive = FALSE,
+                                          all_lkps_maps = all_lkps_maps)
+
+  typeID_descriptions <- lookup_codes(
+    codes = output_codes$typeId,
+    code_type = "sct",
+    all_lkps_maps = all_lkps_maps,
+    preferred_description_only = TRUE,
+    standardise_output = TRUE,
+    col_filters = col_filters,
+    unrecognised_codes = "error",
+    .return_unrecognised_codes = FALSE
+  )
+
+  output_descriptions <- output_codes %>%
+    as.list() %>%
+    purrr::map(\(x) lookup_codes(
+      codes = x,
+      code_type = "sct",
+      all_lkps_maps = all_lkps_maps,
+      preferred_description_only = TRUE,
+      standardise_output = TRUE,
+      col_filters = col_filters,
+      unrecognised_codes = "error",
+      .return_unrecognised_codes = FALSE
+    ) %>%
+      dplyr::select(-tidyselect::all_of("code_type"))) %>%
+    purrr::imap(\(x, idx) x %>%
+                  dplyr::rename_with(~ paste0(idx, "_description"),
+                                     tidyselect::all_of("description")) %>%
+                  dplyr::rename_with(~ idx,
+                                     tidyselect::all_of("code")))
+
+  result <- output_codes
+
+  for (x in names(output_descriptions)) {
+    result <- result %>%
+      dplyr::full_join(output_descriptions[[x]],
+                       by = x)
+  }
+
+  result %>%
+    dplyr::select(tidyselect::starts_with("sourceId"),
+                  tidyselect::starts_with("typeId"),
+                  tidyselect::starts_with("destinationId"))
+}
 
 get_attributes_sct <- function(codes,
                                standardise_output = TRUE,
