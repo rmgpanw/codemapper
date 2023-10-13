@@ -426,12 +426,21 @@ update_qbr_filters <- function(input_code_type,
   new_filters
 }
 
-get_code_type_labels <- function(available_code_types) {
+get_code_type_labels <- function(available_code_types,
+                                 direction = "label_id") {
+
+  match.arg(direction,
+            c("label_id", "id_label"))
+
+  cols <- switch(
+    direction,
+    label_id = c("code_label", "code"),
+    id_label = c("code", "code_label")
+  )
+
   CODE_TYPE_TO_LKP_TABLE_MAP %>%
     dplyr::filter(.data[["code"]] %in% !!available_code_types) %>%
-    dplyr::select(tidyselect::all_of(c(
-      "code_label", "code"
-    ))) %>%
+    dplyr::select(tidyselect::all_of(cols)) %>%
     tibble::deframe() %>%
     as.list()
 }

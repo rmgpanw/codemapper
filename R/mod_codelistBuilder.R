@@ -128,7 +128,7 @@ codelistBuilderInput <-
                 tabPanelBody(
                   value = "query_result",
                   verbatimTextOutput(ns("result_query")),
-                  downloadButton(ns("download"), label = "Download report"),
+                  actionButton(ns("download_report"), "Download report", class = "btn-success"),
                   tabsetPanel(
                     id = ns("tabs_save_or_update_query"),
                     type = "hidden",
@@ -466,9 +466,27 @@ codelistBuilderServer <-
 
       # Download query Quarto report -------------------------------------------
 
-      output$download <- downloadHandler(
+      observeEvent(input$download_report,
+        ignoreInit = TRUE,
+        handlerExpr = {
+          showModal(
+            modalDialog(
+              textInput(ns("qmd_title"), label = "Title", placeholder = "My codelist"),
+              textInput(ns("qmd_author"), label = "Author", placeholder = "My name"),
+              textAreaInput(ns("qmd_description"), label = "Description", placeholder = "A brief description"),
+              textInput(ns("qmd_filename"), label = "File name", placeholder = "codelist"),
+              title = "Download codelist report",
+              footer = tagList(
+                actionButton(ns("cancel_download_qmd"), "Cancel"),
+                downloadButton(ns("download_qmd"), label = "Download")
+              )
+            )
+          )
+      })
+
+      output$download_qmd <- downloadHandler(
         filename = function() {
-          paste0(Sys.Date(), "_", "codelist.html")
+          paste0(Sys.Date(), "_", input$qmd_filename, ".html")
         },
         content = function(file) {
 
@@ -484,6 +502,9 @@ codelistBuilderServer <-
             )
           on.exit(removeNotification(id), add = TRUE)
 
+          # reset user input and remove modal dialog
+          removeModal()
+
           # setup
           TEMPFILE_NAME <- tempfile()
           TEMPFILE_QMD <- paste0(TEMPFILE_NAME, ".qmd")
@@ -493,8 +514,8 @@ codelistBuilderServer <-
           report_template <-
             '---
 title: "{TITLE}"
-subtitle: "{SUBTITLE}"
-author: Me
+subtitle: "{SUBTITLE_CODE_TYPE}"
+author: {AUTHOR}
 date: today
 date-format: medium
 format:
@@ -514,6 +535,8 @@ library(htmltools)
 options({QUERY_OPTIONS})
 ```
 # Query
+
+{DESCRIPTION}
 
 ```{{r}}
 #| code-fold: false
@@ -548,9 +571,12 @@ htmltools::browsable(
 
       report_template |>
         stringr::str_glue(
-          TITLE = "My codelist",
-          SUBTITLE = query_result()$code_type,
+          TITLE = stringr::str_remove_all(input$qmd_title, "`"),
+          SUBTITLE_CODE_TYPE = get_code_type_labels(query_result()$code_type,
+                                                    direction = "id_label")[[1]],
+          AUTHOR = str_remove_all(input$qmd_author, "`"),
           QUERY_OPTIONS = rlang::expr_text(query_options()),
+          DESCRIPTION = str_remove_all(input$qmd_description, "`"),
           QUERY_CODE = paste(query_result()$query_code, sep = "", collapse = "\n"),
           ONCLICK = "Reactable.downloadDataCSV('codelist-download', 'codelist.csv')"
         ) |>
@@ -563,6 +589,10 @@ htmltools::browsable(
       file.copy(TEMPFILE_HTML, file)
         }
       )
+
+    observeEvent(input$cancel_download_qmd, {
+      removeModal()
+    })
 
 
     # Code type ---------------------------------------------------------------
