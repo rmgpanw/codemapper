@@ -574,9 +574,9 @@ htmltools::browsable(
           TITLE = stringr::str_remove_all(input$qmd_title, "`"),
           SUBTITLE_CODE_TYPE = get_code_type_labels(query_result()$code_type,
                                                     direction = "id_label")[[1]],
-          AUTHOR = str_remove_all(input$qmd_author, "`"),
+          AUTHOR = stringr::str_remove_all(input$qmd_author, "`"),
           QUERY_OPTIONS = rlang::expr_text(query_options()),
-          DESCRIPTION = str_remove_all(input$qmd_description, "`"),
+          DESCRIPTION = stringr::str_remove_all(input$qmd_description, "`"),
           QUERY_CODE = paste(query_result()$query_code, sep = "", collapse = "\n"),
           ONCLICK = "Reactable.downloadDataCSV('codelist-download', 'codelist.csv')"
         ) |>
