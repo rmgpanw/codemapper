@@ -71,9 +71,10 @@ get_mapping_df(
 \seealso{
 Other Clinical code lookups and mappings: 
 \code{\link{default_col_filters}()},
+\code{\link{get_attributes_sct}()},
 \code{\link{get_child_codes}()},
 \code{\link{get_children_sct}()},
-\code{\link{get_relatives_sct}()},
+\code{\link{get_parents_sct}()},
 \code{\link{lookup_codes}()},
 \code{\link{map_codes}()},
 \code{\link{reformat_icd10_codes}()}
