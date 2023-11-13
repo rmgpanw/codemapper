@@ -486,8 +486,6 @@ CHILDREN <- get_child_codes
 #' @param codes Character vector of SNOMED codes.
 #' @param standardise_output If `TRUE` (default) return a data frame with columns
 #'   'code', 'description' and 'code_type'.
-#' @param active_only If `FALSE` (default) return all codes including those
-#'   which are currently inactive.
 #' @param include_self If `TRUE` (default) include input codes in the result.
 #' @param include_descendants If `TRUE` (default) return all descendant codes,
 #'   as well as immediate children.
@@ -495,7 +493,7 @@ CHILDREN <- get_child_codes
 #' @inheritParams get_child_codes
 #'
 #' @return A dataframe
-#' @seealso [get_child_codes()], [get_relatives_sct()], [get_parents_sct()]
+#' @seealso [get_child_codes()], [get_parents_sct()]
 #' @family Clinical code lookups and mappings
 #' @export
 get_children_sct <- function(codes,
@@ -525,8 +523,6 @@ get_children_sct <- function(codes,
 #' @param codes Character vector of SNOMED codes.
 #' @param standardise_output If `TRUE` (default) return a data frame with columns
 #'   'code', 'description' and 'code_type'.
-#' @param active_only If `FALSE` (default) return all codes including those
-#'   which are currently inactive.
 #' @param include_self If `TRUE` (default) include input codes in the result.
 #' @param include_ancestors If `TRUE` (default) return all ancestor codes,
 #'   as well as immediate parents.
@@ -534,7 +530,7 @@ get_children_sct <- function(codes,
 #' @inheritParams get_child_codes
 #'
 #' @return A dataframe
-#' @seealso [get_child_codes()], [get_relatives_sct()], [get_children_sct()]
+#' @seealso [get_child_codes()], [get_children_sct()]
 #' @family Clinical code lookups and mappings
 #' @export
 get_parents_sct <- function(codes,
@@ -1135,9 +1131,9 @@ get_attributes_sct_old <- function(codes,
   )
 }
 
-#' @rdname get_relatives_sct
-#' @export
-RELATIVES <- get_relatives_sct_old
+# #' @rdname get_relatives_sct
+# #' @export
+# RELATIVES <- get_relatives_sct_old
 
 #' Map clinical codes from one coding system to another
 #'
@@ -1711,7 +1707,7 @@ get_all_sct_relation_types <- function(all_lkps_maps = NULL) {
   }
 
   all_lkps_maps$sct_relationship %>%
-    dplyr::select(typeId) %>%
+    dplyr::select(tidyselect::all_of("typeId")) %>%
     dplyr::distinct() %>%
     dplyr::collect() %>%
     dplyr::pull(.data[["typeId"]]) %>%
@@ -1927,7 +1923,7 @@ filter_sct_relationship_new <- function(codes = NULL,
 #'
 #' Low level function
 #'
-#' @inheritparams get_relatives_sct
+#' @inheritParams get_relatives_sct
 #'
 #' @return A data frame with column names 'code' and 'typeId'
 #' @noRd

@@ -418,10 +418,10 @@ update_qbr_filters <- function(input_code_type,
     new_map_children_filter
   )
 
-  if (input_code_type == "sct") {
-    new_filters <- c(new_filters,
-                     list(sct_relatives_filter))
-  }
+  # if (input_code_type == "sct") {
+  #   new_filters <- c(new_filters,
+  #                    list(sct_relatives_filter))
+  # }
 
   new_filters
 }
@@ -498,13 +498,13 @@ map_children_filter <- list(
   description = "Map child codes from one coding system to another. Multiple codes may be supplied separated by '|' e.g. 'E10 | E11' for ICD10. Comments may also be included between '<< >>' e.g. 'E10 << T1DM >> | E11 << T2DM >>'."
 )
 
-sct_relatives_filter <- list(
-  id = "sct_relatives",
-  label = "Relatives",
-  type = "string",
-  operators = list("ALL"),
-  description = "Retrieve related SNOMED codes."
-)
+# sct_relatives_filter <- list(
+#   id = "sct_relatives",
+#   label = "Relatives",
+#   type = "string",
+#   operators = list("ALL"),
+#   description = "Retrieve related SNOMED codes."
+# )
 
 filters <- list(
   description_contains_filter,
@@ -512,8 +512,8 @@ filters <- list(
   map_codes_filter,
   map_children_filter,
   child_codes_filter,
-  empty_saved_query_filter,
-  sct_relatives_filter
+  empty_saved_query_filter
+  # sct_relatives_filter
 )
 
 code_type_operators <- CODE_TYPE_TO_LKP_TABLE_MAP %>%
