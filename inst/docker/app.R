@@ -6,6 +6,10 @@ ALL_LKPS_MAPS_DB <- "./all_lkps_maps.db"
 USER_SUPPLIED_DB_PATH <- "/all_lkps_maps/all_lkps_maps.db"
 if (file.exists(USER_SUPPLIED_DB_PATH)) {
   ALL_LKPS_MAPS_DB <- USER_SUPPLIED_DB_PATH
+
+  # TODO - running app with environmental variables. See
+  # https://www.r-bloggers.com/2019/06/shinyapp-runapp-shinyappdir-and-a-fourth-option/
+  Sys.setenv(ALL_LKPS_MAPS_DB = ALL_LKPS_MAPS_DB)
 }
 
 # Run app
