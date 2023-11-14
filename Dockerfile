@@ -19,7 +19,8 @@ COPY inst/docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 RUN apt-get update && apt-get install -y supervisor
 
 # Install/set up shiny apps for shiny server e.g.
-RUN Rscript -e 'devtools::install_local(path = ".", dependencies = TRUE)'
+COPY . /codemapper
+RUN pwd && ls && Rscript -e 'devtools::install_local(path = ".", dependencies = TRUE)'
 RUN cd /srv/shiny-server && mkdir codeminer && cd codeminer && Rscript -e 'codemapper::all_lkps_maps_to_db()'
 COPY inst/docker/app.R /srv/shiny-server/app.R
 
