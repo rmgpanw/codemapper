@@ -61,7 +61,7 @@ CODE_TYPE_TO_LKP_TABLE_MAP <- tibble::tribble(
   "icd9", "ICD-9", "icd9_lkp", "ICD9", "DESCRIPTION_ICD9", NA, NA, "category", NA,
   "read3", "Read 3", "read_ctv3_lkp", "read_code", "term_description", "description_type", "P", NA, NA,
   "read2", "Read 2", "read_v2_lkp", "read_code", "term_description", "term_code", "00", NA, NA,
-  "sct", "SNOMED CT", "sct_description", "conceptId", "term", "typeId", "900000000000003001", NA, list(list(active = "*0*, *1*")),
+  "sct", "SNOMED CT", "sct_description", "conceptId", "term", "typeId", "900000000000003001", NA, list(list(active = c("*0*", "*1*"))),
   "opcs4", "OPCS4", "opcs4_lkp", "opcs4_code", "description", NA, NA, "category", NA,
   "phecode", "Phecode", "phecode_lkp", "phecode", "phenotype", NA, NA, "category", NA,
   "read2_drugs", "Read 2, drugs", "read_v2_drugs_lkp", "read_code", "term_description", NA, NA, NA, NA,
