@@ -9,3 +9,4 @@ docs/*
 inst/doc
 *.pptx
 .vscode/*
+all_lkps_maps.db

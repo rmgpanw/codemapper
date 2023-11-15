@@ -510,6 +510,19 @@ codelistBuilderServer <-
           TEMPFILE_QMD <- paste0(TEMPFILE_NAME, ".qmd")
           TEMPFILE_HTML <- paste0(TEMPFILE_NAME, ".html")
 
+          # code to include indicator columns in final codelist table
+          interim_strategies <- query_result()$query_code |>
+            purrr::map_chr(\(x) as.character(x)[2])
+
+          interim_strategies <- interim_strategies[1:(length(interim_strategies) - 1)]
+
+          append_indicators_case_when_statements <- interim_strategies |>
+            purrr::map_chr(\(x) stringr::str_glue("  mutate({x} = case_when(code %in% {x}$code ~ 1))"))
+
+          APPEND_INDICATORS_CODE <- c("RESULT <- RESULT",
+                                      append_indicators_case_when_statements) |>
+            paste(sep = "", collapse = " |>\n")
+
           # write qmd report
           report_template <-
             '---
@@ -521,6 +534,7 @@ date-format: medium
 format:
   html:
     code-fold: true
+    code-link: true
     embed-resources: true
     code-tools:
       source: true
@@ -529,7 +543,9 @@ format:
 ---
 
 ```{{r}}
+#| message: false
 library(codemapper)
+library(dplyr)
 library(htmltools)
 
 options({QUERY_OPTIONS})
@@ -546,7 +562,10 @@ options({QUERY_OPTIONS})
 # Codelist
 
 ```{{r}}
+# append indicator columns
+{APPEND_INDICATORS_CODE}
 
+# display interactive table with button to download as a csv file
 htmltools::browsable(
   tagList(
     tags$button(
@@ -578,6 +597,7 @@ htmltools::browsable(
           QUERY_OPTIONS = rlang::expr_text(query_options()),
           DESCRIPTION = stringr::str_remove_all(input$qmd_description, "`"),
           QUERY_CODE = paste(query_result()$query_code, sep = "", collapse = "\n"),
+          APPEND_INDICATORS_CODE = APPEND_INDICATORS_CODE,
           ONCLICK = "Reactable.downloadDataCSV('codelist-download', 'codelist.csv')"
         ) |>
         print() |>
