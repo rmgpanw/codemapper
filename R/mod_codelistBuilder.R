@@ -819,7 +819,6 @@ sessioninfo::session_info()
     observeEvent(input$btn_update_query, {
       selected_saved_query <- input$select_qb_load_saved_query
 
-
       available_saved_queries <-
         as.list(saved_queries()$objects[[input$code_type]]) %>%
         purrr::discard(\(x) x == selected_saved_query) %>%
@@ -828,11 +827,11 @@ sessioninfo::session_info()
       # ensure saved query filter only shows upstream dependencies for selected
       # query
       if (!is.null(dag_igraph())) {
-        dependencies <- find_node_dependencies(graph = dag_igraph(),
+        downstream_dependencies <- find_node_dependencies(graph = dag_igraph(),
                                                node = selected_saved_query,
-                                               mode = "in")
+                                               mode = "out")
 
-        available_saved_queries <- subset(available_saved_queries,!available_saved_queries %in% dependencies)
+        available_saved_queries <- subset(available_saved_queries,!available_saved_queries %in% downstream_dependencies)
       }
 
       # new filter
