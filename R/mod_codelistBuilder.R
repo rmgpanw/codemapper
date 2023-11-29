@@ -473,6 +473,7 @@ codelistBuilderServer <-
             modalDialog(
               textInput(ns("qmd_title"), label = "Title", placeholder = "My codelist"),
               textInput(ns("qmd_author"), label = "Author", placeholder = "My name"),
+              dateInput(ns("qmd_date"), label = "Date"),
               textAreaInput(ns("qmd_description"), label = "Description", placeholder = "A brief description"),
               textInput(ns("qmd_filename"), label = "File name", placeholder = "codelist"),
               title = "Download codelist report",
@@ -529,7 +530,7 @@ codelistBuilderServer <-
 title: "{TITLE}"
 subtitle: "{SUBTITLE_CODE_TYPE}"
 author: {AUTHOR}
-date: today
+date: {DATE}
 date-format: medium
 format:
   html:
@@ -554,13 +555,16 @@ options({QUERY_OPTIONS})
 
 {DESCRIPTION}
 
+::: {{.column-screen-inset}}
 ```{{r}}
 #| code-fold: false
 {QUERY_CODE}
 ```
+:::
 
 # Codelist
 
+::: {{.column-screen-inset}}
 ```{{r}}
 # append indicator columns
 {APPEND_INDICATORS_CODE}
@@ -586,6 +590,20 @@ htmltools::browsable(
   )
 )
 ```
+:::
+
+::: {{.callout-note appearance="simple" collapse=true}}
+
+## Session info
+
+Quarto version: `r quarto::quarto_version()`
+
+```{{r}}
+sessioninfo::session_info()
+```
+
+:::
+
 '
 
       report_template |>
@@ -594,11 +612,12 @@ htmltools::browsable(
           SUBTITLE_CODE_TYPE = get_code_type_labels(query_result()$code_type,
                                                     direction = "id_label")[[1]],
           AUTHOR = stringr::str_remove_all(input$qmd_author, "`"),
+          DATE = input$qmd_date,
           QUERY_OPTIONS = rlang::expr_text(query_options()),
           DESCRIPTION = stringr::str_remove_all(input$qmd_description, "`"),
           QUERY_CODE = paste(query_result()$query_code, sep = "", collapse = "\n"),
           APPEND_INDICATORS_CODE = APPEND_INDICATORS_CODE,
-          ONCLICK = "Reactable.downloadDataCSV('codelist-download', 'codelist.csv')"
+          ONCLICK = stringr::str_glue("Reactable.downloadDataCSV('codelist-download', '{input$qmd_filename}.csv')")
         ) |>
         print() |>
         writeLines(con = TEMPFILE_QMD)
