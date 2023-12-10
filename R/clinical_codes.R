@@ -554,8 +554,89 @@ get_parents_sct <- function(codes,
   )
 }
 
-# TODO - make get parent/child codes functions. Get
-# attributes function. HAS_ATTRIBUTE() and HAS_ATTRIBUTE_TYPE() functions
+#' Get SNOMED codes with a specific set of one or more attributes
+#'
+#' Optionally filtered for specific relationship types. See examples (credit to
+#' [snomedizer](https://snomedizer.web.app/articles/snomedizer.html)).
+#'
+#' @param attribute_codes Character vector of SNOMED codes.
+#' @inheritParams lookup_codes
+#' @inheritParams get_child_codes
+#'
+#' @return A dataframe
+#' @family Clinical code lookups and mappings
+#' @export
+#'
+#' @examples
+#' # Conditions associated with multiple sclerosis
+#' HAS_ATTRIBUTES("24700007", relationship_type = "42752001")
+#'
+#' # Medicines with active ingredient timolol maleate
+#' HAS_ATTRIBUTES("75359005", relationship_type = "10362801000001104")
+#'
+#' # Medicines with active ingredient beta blocker
+#' HAS_ATTRIBUTES(CHILDREN("373254001", code_type = "sct"), relationship_type = "10362801000001104")
+#'
+#' # Conditions that are caused by bacteria belonging to Enterobacteriaceae
+#' HAS_ATTRIBUTES(CHILDREN("106544002", code_type = "sct"), relationship_type = "246075003")
+#'
+#' # Infectious conditions that are caused by bacteria belonging to Enterobacteriaceae
+#' HAS_ATTRIBUTES(CHILDREN("106544002", code_type = "sct"), relationship_type = "246075003") %AND% CHILDREN("40733004", code_type = "sct")
+HAS_ATTRIBUTES <- function(attribute_codes,
+                          relationship_type = NULL,
+                          standardise_output = TRUE,
+                          all_lkps_maps = NULL,
+                          preferred_description_only = TRUE,
+                          col_filters = getOption("codemapper.col_filters")) {
+  get_relatives_sct(
+    codes = attribute_codes,
+    filter_col = "destinationId",
+    return_col = "sourceId",
+    typeId = relationship_type,
+    standardise_output = standardise_output,
+    include_self = FALSE,
+    recursive = FALSE,
+    all_lkps_maps = all_lkps_maps,
+    preferred_description_only = preferred_description_only,
+    col_filters = col_filters
+  )
+}
+
+#' Get attributes for a set of SNOMED codes
+#'
+#' See examples (credit to
+#' [snomedizer](https://snomedizer.web.app/articles/snomedizer.html)).
+#'
+#' @inheritParams HAS_ATTRIBUTES
+#'
+#' @return A data frame
+#' @family Clinical code lookups and mappings
+#' @export
+#'
+#' @examples
+#' # Body sites that can be affected by Enterobacteriaceae infections
+#' enterobacteriaceae_infections <- HAS_ATTRIBUTES(CHILDREN("106544002", code_type = "sct"), relationship_type = "246075003") %AND% CHILDREN("40733004", code_type = "sct")
+#' GET_ATTRIBUTES(enterobacteriaceae_infections, relationship_type = "363698007")
+GET_ATTRIBUTES <- function(attribute_codes,
+                          relationship_type = NULL,
+                          standardise_output = TRUE,
+                          all_lkps_maps = NULL,
+                          preferred_description_only = TRUE,
+                          col_filters = getOption("codemapper.col_filters")) {
+  get_relatives_sct(
+    codes = attribute_codes,
+    filter_col = "sourceId",
+    return_col = "destinationId",
+    typeId = relationship_type,
+    standardise_output = standardise_output,
+    include_self = FALSE,
+    recursive = FALSE,
+    all_lkps_maps = all_lkps_maps,
+    preferred_description_only = preferred_description_only,
+    col_filters = col_filters
+  )
+}
+
 get_relatives_sct <- function(codes = NULL,
                               filter_col = "destinationId",
                               return_col = "sourceId",

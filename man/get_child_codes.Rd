@@ -80,6 +80,8 @@ codes for certain clinical coding systems, such as Read 3.
 \code{\link[=get_children_sct]{get_children_sct()}}
 
 Other Clinical code lookups and mappings: 
+\code{\link{GET_ATTRIBUTES}()},
+\code{\link{HAS_ATTRIBUTES}()},
 \code{\link{default_col_filters}()},
 \code{\link{get_attributes_sct}()},
 \code{\link{get_children_sct}()},

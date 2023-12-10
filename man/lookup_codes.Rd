@@ -83,6 +83,8 @@ lookup_codes(
 }
 \seealso{
 Other Clinical code lookups and mappings: 
+\code{\link{GET_ATTRIBUTES}()},
+\code{\link{HAS_ATTRIBUTES}()},
 \code{\link{default_col_filters}()},
 \code{\link{get_attributes_sct}()},
 \code{\link{get_child_codes}()},

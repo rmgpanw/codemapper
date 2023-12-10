@@ -90,6 +90,8 @@ get_attributes_sct(
 }
 \seealso{
 Other Clinical code lookups and mappings: 
+\code{\link{GET_ATTRIBUTES}()},
+\code{\link{HAS_ATTRIBUTES}()},
 \code{\link{default_col_filters}()},
 \code{\link{get_child_codes}()},
 \code{\link{get_children_sct}()},
