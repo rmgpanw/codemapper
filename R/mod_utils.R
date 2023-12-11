@@ -392,8 +392,7 @@ get_available_map_from_code_types <- function(available_maps, to) {
 #' @noRd
 update_qbr_filters <- function(input_code_type,
                                available_maps,
-                               available_saved_queries,
-                               sct_attributes_filters) {
+                               available_saved_queries) {
   new_description_contains_filter <- description_contains_filter
   new_description_contains_filter$operators <-
     list(input_code_type)
@@ -414,29 +413,18 @@ update_qbr_filters <- function(input_code_type,
   new_child_codes_filter <- child_codes_filter
   new_child_codes_filter$operators <- list(input_code_type)
 
+  new_saved_query_filter <- empty_saved_query_filter
+  new_saved_query_filter$values <- available_saved_queries
+  new_saved_query_filter$operators <- list(input_code_type)
+
   new_filters <- list(
+    new_saved_query_filter,
     new_description_contains_filter,
     new_codes_filter,
     new_child_codes_filter,
     new_map_codes_filter,
     new_map_children_filter
   )
-
-  if ((input_code_type == "sct") &
-      !is.null(sct_attributes_filters) &
-      (length(available_saved_queries) > 0)
-  ) {
-    new_sct_attributes_filters <- sct_attributes_filters
-
-    new_sct_attributes_filters <- new_sct_attributes_filters %>%
-      purrr::map(\(x) {
-        x$values <- available_saved_queries
-        x
-      })
-
-    new_filters <- c(new_filters,
-                     new_sct_attributes_filters)
-  }
 
   new_filters
 }
@@ -458,16 +446,6 @@ get_code_type_labels <- function(available_code_types,
     dplyr::select(tidyselect::all_of(cols)) %>%
     tibble::deframe() %>%
     as.list()
-}
-
-append_sct_attributes_filters <- function(filters,
-                                          sct_attributes_filters) {
-  if (!is.null(sct_attributes_filters)) {
-    filters <- c(filters,
-                 sct_attributes_filters)
-  }
-
-  filters
 }
 
 ## jqbr filters and operators --------------------------------------------------------------------
@@ -647,8 +625,8 @@ operators <- c(code_type_operators,
                    apply_to = "string"
                  ),
                  list(
-                   type = "has",
-                   nb_inputs = 1,
+                   type = "sct_relationship",
+                   nb_inputs = 2,
                    multiple = FALSE,
                    input = "select",
                    values = list(""),

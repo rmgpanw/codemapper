@@ -68,26 +68,6 @@ RunCodelistBuilder <- function(all_lkps_maps = NULL,
       )
   )
 
-  # filters for sct attributes, if sct code type is available
-  if ("sct" %in% available_code_types) {
-    sct_attributes_filters <- get_all_sct_relation_types(all_lkps_maps = all_lkps_maps) %>%
-      head(90) %>%
-      dplyr::select(tidyselect::all_of(c("code", "description"))) %>%
-      tibble::deframe() %>%
-      purrr::imap(\(x, idx) list(
-        id = paste0("sct_attributes_", idx),
-        label = x,
-        type = "string",
-        operators = list("has"),
-        values = list(""),
-        description = "Retrieve SNOMED CT codes based on attributes."
-      ))
-
-    names(sct_attributes_filters) <- NULL
-  } else {
-    sct_attributes_filters <- NULL
-  }
-
   # reactive value to store saved queries - to be shared between modules
   saved_queries <- reactiveVal(list(
     objects = list(),
@@ -132,8 +112,7 @@ RunCodelistBuilder <- function(all_lkps_maps = NULL,
                                   codelistBuilderInput(
                                     "builder",
                                     available_code_types = available_code_types,
-                                    available_maps = available_maps,
-                                    sct_attributes_filters = sct_attributes_filters
+                                    available_maps = available_maps
                                   )
                                 )),
         shinydashboard::tabItem(
@@ -163,8 +142,7 @@ RunCodelistBuilder <- function(all_lkps_maps = NULL,
   server <- function(input, output, sesion) {
     codelistBuilderServer("builder",
                           available_maps = available_maps,
-                          saved_queries = saved_queries,
-                          sct_attributes_filters = sct_attributes_filters)
+                          saved_queries = saved_queries)
 
     compareCodelistsServer("compare_codelists",
                            saved_queries = saved_queries,
