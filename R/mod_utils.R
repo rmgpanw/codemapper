@@ -235,6 +235,7 @@ get_qbr_saved_queries <- function(x) {
     if (is.list(x) &
         identical(names(x),
                   c("id", "field", "type", "input", "operator", "value"))) {
+
       switch(
         x$id,
         "description" = NULL,
@@ -243,7 +244,7 @@ get_qbr_saved_queries <- function(x) {
         "saved_query" = x$value,
         "map_children" = NULL,
         "map_codes" = NULL,
-        "sct_relatives" = NULL,
+        "sct_has_attributes" = x$value,
         stop("Unrecognised filter!")
       )
 
@@ -263,17 +264,6 @@ convert_rules_to_expr <- function(x) {
       identical(names(x),
                 c("id", "field", "type", "input", "operator", "value"))) {
 
-    if (x$id == "sct_relatives") {
-      if (x$operator == "ALL") {
-        sct_relatives_expr <- rlang::call2(.fn = "RELATIVES",
-                                           x$value)
-      } else {
-        sct_relatives_expr <- rlang::call2(.fn = "RELATIVES",
-                                           x$value,
-                                           relationship = x$operator)
-      }
-    }
-
     switch(
       x$id,
       "description" = rlang::call2(.fn = "DESCRIPTION",
@@ -292,7 +282,9 @@ convert_rules_to_expr <- function(x) {
                      x$value,
                      code_type = x$operator)
       ),
-      "sct_relatives" = sct_relatives_expr,
+      "sct_has_attributes" = rlang::call2(.fn = "HAS_ATTRIBUTES",
+                                          as.symbol(x$value[[1]]),
+                                          relationship = as.symbol(x$value[[2]])),
       stop("Unrecognised filter!")
     )
 
@@ -426,6 +418,14 @@ update_qbr_filters <- function(input_code_type,
     new_map_children_filter
   )
 
+  if (input_code_type == "sct") {
+    new_sct_has_attributes_filter <- sct_has_attributes_filter
+    new_sct_has_attributes_filter$values <- available_saved_queries
+
+    new_filters <- c(new_filters,
+                     list(new_sct_has_attributes_filter))
+  }
+
   new_filters
 }
 
@@ -501,19 +501,21 @@ map_children_filter <- list(
   description = "Map child codes from one coding system to another. Multiple codes may be supplied separated by '|' e.g. 'E10 | E11' for ICD10. Comments may also be included between '<< >>' e.g. 'E10 << T1DM >> | E11 << T2DM >>'."
 )
 
+sct_has_attributes_filter <- list(
+  id = "sct_has_attributes",
+  label = "Has attributes",
+  type = "string",
+  input = "select",
+  values = list(""),
+  operators = list("sct_relationship"),
+  description = "Retrieve SNOMED CT codes based on attributes. Accepts saved queries as inputs only: the first saved query should be a set of attributes (e.g. '106544002 << Family Enterobacteriaceae (organism) >>'), while the second should be one or more relationship types (e.g. '246075003 << Causative agent (attribute) >>')."
+)
+
 # sct_attributes_filter_template <- list(
 #   id = "sct_attributes",
 #   label = "Attributes 246075003 Causative agent (attribute)",
 #   type = "string",
 #   operators = list("has"),
-#   description = "Retrieve SNOMED CT codes based on attributes."
-# )
-
-# sct_attributes_filter <- list(
-#   id = "sct_attributes",
-#   label = "Attributes",
-#   type = "string",
-#   operators = list(),
 #   description = "Retrieve SNOMED CT codes based on attributes."
 # )
 
@@ -589,7 +591,8 @@ filters <- list(
   map_codes_filter,
   map_children_filter,
   child_codes_filter,
-  empty_saved_query_filter
+  empty_saved_query_filter,
+  sct_has_attributes_filter
 )
 
 ### Operators -----------------------------------------------------------------

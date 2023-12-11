@@ -664,6 +664,21 @@ get_relatives_sct <- function(codes = NULL,
     }
   }
 
+  if (!is.null(typeId)) {
+    # TODO - create df and string methods; validate typeId df
+    if (is.data.frame(typeId)) {
+      code_type <- unique(typeId$code_type)
+      typeId <- typeId$code
+    }
+
+    # validate args
+    check_codes(typeId)
+
+    if (length(typeId) == 1) {
+      typeId <- codes_string_to_vector(typeId)
+    }
+  }
+
   match.arg(filter_col,
             choices = c("sourceId", "destinationId"))
 
