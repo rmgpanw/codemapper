@@ -385,11 +385,15 @@ get_available_map_from_code_types <- function(available_maps, to) {
 #'
 #' @param input_code_type Character
 #' @param available_maps Character vector
+#' @param available_saved_queries Character vector
+#' @param sct_attributes_filters List of filters
 #'
 #' @return A list
 #' @noRd
 update_qbr_filters <- function(input_code_type,
-                               available_maps) {
+                               available_maps,
+                               available_saved_queries,
+                               sct_attributes_filters) {
   new_description_contains_filter <- description_contains_filter
   new_description_contains_filter$operators <-
     list(input_code_type)
@@ -418,10 +422,21 @@ update_qbr_filters <- function(input_code_type,
     new_map_children_filter
   )
 
-  # if (input_code_type == "sct") {
-  #   new_filters <- c(new_filters,
-  #                    list(sct_relatives_filter))
-  # }
+  if ((input_code_type == "sct") &
+      !is.null(sct_attributes_filters) &
+      (length(available_saved_queries) > 0)
+  ) {
+    new_sct_attributes_filters <- sct_attributes_filters
+
+    new_sct_attributes_filters <- new_sct_attributes_filters %>%
+      purrr::map(\(x) {
+        x$values <- available_saved_queries
+        x
+      })
+
+    new_filters <- c(new_filters,
+                     new_sct_attributes_filters)
+  }
 
   new_filters
 }
@@ -445,9 +460,19 @@ get_code_type_labels <- function(available_code_types,
     as.list()
 }
 
+append_sct_attributes_filters <- function(filters,
+                                          sct_attributes_filters) {
+  if (!is.null(sct_attributes_filters)) {
+    filters <- c(filters,
+                 sct_attributes_filters)
+  }
+
+  filters
+}
+
 ## jqbr filters and operators --------------------------------------------------------------------
 
-# qbr filters
+### Filters ---------------------------------------------------------
 empty_saved_query_filter <- list(
   id = "saved_query",
   label = "Saved query",
@@ -498,13 +523,87 @@ map_children_filter <- list(
   description = "Map child codes from one coding system to another. Multiple codes may be supplied separated by '|' e.g. 'E10 | E11' for ICD10. Comments may also be included between '<< >>' e.g. 'E10 << T1DM >> | E11 << T2DM >>'."
 )
 
-# sct_relatives_filter <- list(
-#   id = "sct_relatives",
-#   label = "Relatives",
+# sct_attributes_filter_template <- list(
+#   id = "sct_attributes",
+#   label = "Attributes 246075003 Causative agent (attribute)",
 #   type = "string",
-#   operators = list("ALL"),
-#   description = "Retrieve related SNOMED codes."
+#   operators = list("has"),
+#   description = "Retrieve SNOMED CT codes based on attributes."
 # )
+
+# sct_attributes_filter <- list(
+#   id = "sct_attributes",
+#   label = "Attributes",
+#   type = "string",
+#   operators = list(),
+#   description = "Retrieve SNOMED CT codes based on attributes."
+# )
+
+# TO DELETE
+
+# get_sct_attributes_filter_options <- function(sct_saved_queries = NULL) {
+#   sct_attributes_filter_saved_query_options <-
+#     stringr::str_glue('<option value=\"{sct_saved_queries}\">{sct_saved_queries}</option>')
+#
+#   result <- c('<option value=\"-1\">-</option>',
+#               sct_attributes_filter_saved_query_options) %>%
+#     paste(sep = "", collapse = " ")
+#
+#   result
+# }
+#
+# sct_attributes_filter <- list(
+#     id = "sct_attributes",
+#     label = "Attributes",
+#     type = "string",
+#     operators = list("has"),
+#     input = "
+#       function(rule, name) {
+#       var $container = rule.$el.find('.rule-value-container');
+#
+#       $container.on('change', '[name='+ name +'_1]', function(){
+#         var h = '';
+#
+#         switch ($(this).val()) {
+#           case 'A':
+#             h = '<option value=\"-1\">-</option> <option value=\"1\">1</option> <option value=\"2\">2</option>';
+#             break;
+#           case 'B':
+#             h = '<option value=\"-1\">-</option> <option value=\"3\">3</option> <option value=\"4\">4</option>';
+#             break;
+#           case 'C':
+#             h = '<option value=\"-1\">-</option> <option value=\"5\">5</option> <option value=\"6\">6</option>';
+#             break;
+#         }
+#
+#         $container.find('[name$=_2]')
+#           .html(h).toggle(!!h)
+#           .val('-1').trigger('change');
+#       });
+#
+#       return '\\
+#       <select name=\"'+ name +'_1\"> \\
+#         <option value=\"-1\">-</option> \\
+#         <option value=\"A\">A</option> \\
+#         <option value=\"B\">B</option> \\
+#         <option value=\"C\">C</option> \\
+#       </select> \\
+#       <select name=\"'+ name +'_2\" style=\"display:none;\"></select>';
+#     }
+#                               ",
+#     valueGetter = "function(rule) {
+#       return rule.$el.find('.rule-value-container [name$=_1]').val()
+#         +'.'+ rule.$el.find('.rule-value-container [name$=_2]').val();
+#     }",
+#     valueSetter = "function(rule, value) {
+#       if (rule.operator.nb_inputs > 0) {
+#         var val = value.split('.');
+#
+#         rule.$el.find('.rule-value-container [name$=_1]').val(val[0]).trigger('change');
+#         rule.$el.find('.rule-value-container [name$=_2]').val(val[1]).trigger('change');
+#       }
+#     }"
+#   )
 
 filters <- list(
   description_contains_filter,
@@ -513,8 +612,9 @@ filters <- list(
   map_children_filter,
   child_codes_filter,
   empty_saved_query_filter
-  # sct_relatives_filter
 )
+
+### Operators -----------------------------------------------------------------
 
 code_type_operators <- CODE_TYPE_TO_LKP_TABLE_MAP %>%
   dplyr::pull(.data[["code"]]) %>%
@@ -544,6 +644,14 @@ operators <- c(code_type_operators,
                    type = "ALL",
                    nb_inputs = 1,
                    multiple = FALSE,
+                   apply_to = "string"
+                 ),
+                 list(
+                   type = "has",
+                   nb_inputs = 1,
+                   multiple = FALSE,
+                   input = "select",
+                   values = list(""),
                    apply_to = "string"
                  )
                ))

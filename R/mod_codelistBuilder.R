@@ -5,13 +5,17 @@
 #'   types in `CODE_TYPE_TO_LKP_TABLE_MAP$code`)
 #' @param available_maps Data frame with columns 'from' and 'to' (must match
 #'   'from-to' and 'to-from' combinations in `CLINICAL_CODE_MAPPINGS_MAP`)
+#' @param sct_attributes_filters List of filters for sct attributes
 #'
 #' @return UI (html)
 #' @noRd
 #' @import shiny
 codelistBuilderInput <-
-  function(id, available_code_types, available_maps) {
+  function(id, available_code_types, available_maps, sct_attributes_filters) {
     stopifnot(all(available_code_types %in% CODE_TYPE_TO_LKP_TABLE_MAP$code))
+
+    filters <- append_sct_attributes_filters(filters,
+                                             sct_attributes_filters)
 
     ns <- NS(id)
 
@@ -194,6 +198,7 @@ codelistBuilderInput <-
 #'
 #' @param id character
 #' @param available_code_types Character vector of code types (must match code types in `CODE_TYPE_TO_LKP_TABLE_MAP$code`)
+#' @param sct_attributes_filters List of filters for sct attributes
 #'
 #' @return UI (html)
 #' @noRd
@@ -201,6 +206,7 @@ codelistBuilderInput <-
 codelistBuilderServer <-
   function(id,
            available_maps,
+           sct_attributes_filters,
            saved_queries = reactiveVal(list(
              objects = list(),
              results = new.env(),
@@ -208,6 +214,10 @@ codelistBuilderServer <-
              dag = list(nodes = data.frame(),
                         edges = data.frame())
            ))) {
+
+    filters <- append_sct_attributes_filters(filters,
+                                             sct_attributes_filters)
+
     moduleServer(id, function(input, output, session) {
       ns <- session$ns
       ## Advanced settings -------------------------------------------------------
@@ -675,18 +685,22 @@ sessioninfo::session_info()
         # update qbr saved query filter
         new_saved_query_filter <- empty_saved_query_filter
 
+        available_saved_queries <- saved_queries()$objects[[input$code_type]]
+
         new_saved_query_filter$values <-
-          as.list(saved_queries()$objects[[input$code_type]])
+          as.list(available_saved_queries)
 
         new_saved_query_filter$operators <- list(input$code_type)
 
         new_filters <- update_qbr_filters(input_code_type = input$code_type,
-                                          available_maps = available_maps)
+                                          available_maps = available_maps,
+                                          available_saved_queries = new_saved_query_filter$values,
+                                          sct_attributes_filters = sct_attributes_filters)
 
         jqbr::updateQueryBuilder(
           inputId = "qb",
-          setFilters = c(new_filters,
-                         list(new_saved_query_filter)),
+          setFilters = c(list(new_saved_query_filter),
+                         new_filters),
           setRules = update_qb_operator_code_type(input$qb, input$code_type),
           destroy = TRUE
         )
@@ -858,13 +872,15 @@ sessioninfo::session_info()
       new_saved_query_filter$operators <- list(input$code_type)
 
       new_filters <- update_qbr_filters(input_code_type = code_type,
-                                        available_maps = available_maps)
+                                        available_maps = available_maps,
+                                        available_saved_queries = available_saved_queries,
+                                        sct_attributes_filters = sct_attributes_filters)
 
 
       jqbr::updateQueryBuilder(
         inputId = "qb",
-        setFilters = c(new_filters,
-                       list(new_saved_query_filter)),
+        setFilters = c(list(new_saved_query_filter),
+                       new_filters),
         setRules = get(
           input$select_qb_load_saved_query,
           envir = saved_queries()$results_meta
