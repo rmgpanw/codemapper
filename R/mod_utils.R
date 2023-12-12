@@ -337,6 +337,8 @@ update_qb_operator_code_type <- function(x, code_type) {
                 c("id", "field", "type", "input", "operator", "value"))) {
     if (x$id %in% c("map_codes", "map_children")) {
       x$operator <- NULL
+    } else if (x$id == "sct_has_attributes") {
+      x$operator <- "sct_relationship"
     } else {
       x$operator <- code_type
     }
