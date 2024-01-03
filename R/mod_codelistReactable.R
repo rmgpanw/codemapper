@@ -1,0 +1,57 @@
+codelistReactableInput <- function(id) {
+  ns <- NS(id)
+
+  # UI
+  tagList(
+    csvDownloadButton(ns("codelist"), filename = paste0(Sys.Date(), "_", "codelist.csv")),
+    reactable::reactableOutput(ns("codelist")),
+    verbatimTextOutput(ns("selected_codes"))
+  )
+}
+
+codelistReactableServer <-
+  function(id, df_reactable, extract_fn) {
+
+    moduleServer(id, function(input, output, session) {
+
+      ns <- session$ns
+
+      df <- reactive({
+        stopifnot(is.reactive(df_reactable))
+        extract_fn(df_reactable())
+        })
+
+      output$codelist <- reactable::renderReactable({
+        req(is.data.frame(df()))
+        app_reactable(df())
+        })
+
+      selected <-
+        reactive({
+          rowids <- reactable::getReactableState("codelist", "selected")
+
+          req(isTruthy(rowids))
+
+          df_selected <- df()[rowids, 1:2]
+
+          stringr::str_glue("{df_selected[[1]]} << {df_selected[[2]]} >>") %>%
+            paste(sep = "", collapse = " | ")
+          })
+
+      output$selected_codes <- renderPrint(cat(selected()))
+
+      # returns reactive
+      selected
+    })
+  }
+
+# for testing
+codelistReactablesApp <- function(df) {
+  ui <- fluidPage(codelistReactableInput("codelist_reactable"))
+
+  server <- function(input, output, session) {
+    codelistReactableServer("codelist_reactable", df)
+  }
+
+  shinyApp(ui, server)
+}

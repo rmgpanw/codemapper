@@ -678,6 +678,8 @@ app_reactable <- function(df) {
     resizable = TRUE,
     paginationType = "jump",
     showPageSizeOptions = TRUE,
-    pageSizeOptions = c(10, 25, 50, 100, 200)
+    pageSizeOptions = c(10, 25, 50, 100, 200),
+    onClick = "select",
+    selection = "multiple"
   )
 }

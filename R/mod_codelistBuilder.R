@@ -154,8 +154,7 @@ codelistBuilderInput <-
                     )
                   ),
                   textOutput(ns("result_summary")),
-                  csvDownloadButton(ns("result"), filename = paste0(Sys.Date(), "_", "codelist.csv")),
-                  reactable::reactableOutput(ns("result"))
+                  codelistReactableInput(ns("result"))
                 )
               )
             )
@@ -452,11 +451,7 @@ codelistBuilderServer <-
         print(result)
       })
 
-      output$result <- reactable::renderReactable({
-        req(query_result_type() == "query_result")
-
-        app_reactable(query_result()$result)
-      })
+      codelistReactableServer("result", query_result, function(x) x$result)
 
       output$result_query <- renderPrint({
         req(query_result_type() == "query_result")

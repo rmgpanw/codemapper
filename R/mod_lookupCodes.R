@@ -27,15 +27,9 @@ lookupCodesInput <- function(id, available_code_types) {
                                    tabsetPanel(
                                      id = ns("codelist_tabs"),
                                      tabPanel("Recognised",
-                                              csvDownloadButton(ns("recognised_codes"), filename = paste0(Sys.Date(), "_", "recognised_codes.csv")),
-                                              reactable::reactableOutput(ns(
-                                                "recognised_codes"
-                                              ))),
+                                              codelistReactableInput(ns("recognised_codes"))),
                                      tabPanel("Unrecognised",
-                                              csvDownloadButton(ns("unrecognised_codes"), filename = paste0(Sys.Date(), "_", "unrecognised_codes.csv")),
-                                              reactable::reactableOutput(ns(
-                                                "unrecognised_codes"
-                                              )))
+                                              codelistReactableInput(ns("unrecognised_codes")))
                                    )
                                  )
                                )),
@@ -46,8 +40,7 @@ lookupCodesInput <- function(id, available_code_types) {
                         selectInput(ns("select_saved_lookup"), "Saved lookup", choices = NULL),
                         actionButton(ns("select_saved_lookup_button"), "Select"),
                         actionButton(ns("remove_lookup"), "Remove"),
-                        csvDownloadButton(ns("saved_lookup_reactable"), filename = paste0(Sys.Date(), "_", "codelist.csv")),
-                        reactable::reactableOutput(ns("saved_lookup_reactable"))
+                        codelistReactableInput(ns("saved_lookup_reactable"))
                       ),
                       tabPanel(
                         "Advanced settings",
@@ -147,15 +140,9 @@ lookupCodesServer <-
         )
       })
 
-      output$recognised_codes <-
-        reactable::renderReactable(
-          app_reactable(codelist()$recognised)
-        )
+      codelistReactableServer("recognised_codes", codelist, function(x) x$recognised)
 
-      output$unrecognised_codes <-
-        reactable::renderReactable(
-          app_reactable(data.frame(Input = codelist()$unrecognised))
-        )
+      codelistReactableServer("unrecognised_codes", codelist, function(x) x$unrecognised)
 
       observeEvent(input$save_recognised, {
         new_saved_lookups <- saved_lookups()
@@ -227,11 +214,12 @@ lookupCodesServer <-
         )
       })
 
-      output$saved_lookup_reactable <- reactable::renderReactable({
-        req(isTruthy(selected_lookup()))
-
-        app_reactable(selected_lookup()$codelist)
-      })
+      codelistReactableServer("saved_lookup_reactable", selected_lookup, function(x) x$codelist)
+      # output$saved_lookup_reactable <- reactable::renderReactable({
+      #   req(isTruthy(selected_lookup()))
+      #
+      #   app_reactable(selected_lookup()$codelist)
+      # })
 
       # remove saved lookup
       observeEvent(input$remove_lookup, {
