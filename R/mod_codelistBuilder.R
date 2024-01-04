@@ -483,7 +483,7 @@ codelistBuilderServer <-
 
       output$download_qmd <- downloadHandler(
         filename = function() {
-          paste0(Sys.Date(), "_", input$qmd_filename, ".html")
+          paste0(input$qmd_date, "_", input$qmd_filename, ".html")
         },
         content = function(file) {
 
