@@ -615,8 +615,8 @@ HAS_ATTRIBUTES <- function(attribute_codes,
 #'
 #' @examples
 #' # Body sites that can be affected by Enterobacteriaceae infections
-#' enterobacteriaceae_infections <- HAS_ATTRIBUTES(CHILDREN("106544002", code_type = "sct"), relationship_type = "246075003") %AND% CHILDREN("40733004", code_type = "sct")
-#' GET_ATTRIBUTES(enterobacteriaceae_infections, relationship_type = "363698007")
+#' enterobacteriaceae_infections <- HAS_ATTRIBUTES(CHILDREN("106544002 << Family Enterobacteriaceae (organism) >>", code_type = "sct"), relationship_type = "246075003 << Causative agent (attribute) >>") %AND% CHILDREN("40733004 << Infectious disease (disorder) >>", code_type = "sct")
+#' GET_ATTRIBUTES(enterobacteriaceae_infections, relationship_type = "363698007 << Finding site (attribute) >>")
 GET_ATTRIBUTES <- function(attribute_codes,
                           relationship_type = NULL,
                           standardise_output = TRUE,
@@ -628,6 +628,91 @@ GET_ATTRIBUTES <- function(attribute_codes,
     filter_col = "sourceId",
     return_col = "destinationId",
     typeId = relationship_type,
+    standardise_output = standardise_output,
+    include_self = FALSE,
+    recursive = FALSE,
+    all_lkps_maps = all_lkps_maps,
+    preferred_description_only = preferred_description_only,
+    col_filters = col_filters
+  )
+}
+
+#' Find attribute types that point from a set of codes
+#'
+#' Find attribute types that point from a set of codes
+#'
+#' @param codes Codes to get attribute types for
+#' @inheritParams HAS_ATTRIBUTES
+#'
+#' @return Data frame
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' # sct for acute iritis
+#' acute_iritis <- CODES("29050005", "sct")
+#'
+#' # all attributes for this code
+#' summarise_attributes_sct(acute_iritis)
+#'
+#' # attribute types pointing to this code
+#' attribute_types <- ATTRIBUTE_TYPES_FROM(acute_iritis)
+#' print(attribute_types)
+#'
+#' # codes with acute iritis as an attribute, with one of these attribute types specifically
+#' GET_ATTRIBUTES(acute_iritis, attribute_types[1, ])
+#' }
+ATTRIBUTE_TYPES_FROM <- function(codes,
+                                 standardise_output = TRUE,
+                                 all_lkps_maps = NULL,
+                                 preferred_description_only = TRUE,
+                                 col_filters = getOption("codemapper.col_filters")) {
+  get_relatives_sct(
+    codes = codes,
+    filter_col = "sourceId",
+    return_col = "typeId",
+    typeId = NULL,
+    standardise_output = standardise_output,
+    include_self = FALSE,
+    recursive = FALSE,
+    all_lkps_maps = all_lkps_maps,
+    preferred_description_only = preferred_description_only,
+    col_filters = col_filters
+  )
+}
+
+#' Find attribute types that point to a set of codes
+#'
+#' Find attribute types that point to a set of codes
+#'
+#' @param codes Codes to get attribute types for
+#' @inheritParams HAS_ATTRIBUTES
+#'
+#' @return Data frame
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' # sct for acute iritis
+#' acute_iritis <- CODES("29050005", "sct")
+#'
+#' # attribute types pointing to this code
+#' attribute_types <- ATTRIBUTE_TYPES_TO(acute_iritis)
+#' print(attribute_types)
+#'
+#' # codes with acute iritis as an attribute, with these attributes type(s)
+#' HAS_ATTRIBUTES(acute_iritis, attribute_types)
+#' }
+ATTRIBUTE_TYPES_TO <- function(codes,
+                                 standardise_output = TRUE,
+                                 all_lkps_maps = NULL,
+                                 preferred_description_only = TRUE,
+                                 col_filters = getOption("codemapper.col_filters")) {
+  get_relatives_sct(
+    codes = codes,
+    filter_col = "destinationId",
+    return_col = "typeId",
+    typeId = NULL,
     standardise_output = standardise_output,
     include_self = FALSE,
     recursive = FALSE,
