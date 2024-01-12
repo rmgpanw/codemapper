@@ -129,7 +129,7 @@ update_saved_queries <- function(query,
       as.character()
 
     dep_order <- data.frame(id = dep_order)
-    dep_order$order <- rownames(dep_order)
+    dep_order$order <- as.integer(rownames(dep_order))
 
     nodes <- nodes %>%
       dplyr::select(-tidyselect::any_of("order")) %>%
@@ -162,7 +162,7 @@ update_saved_queries <- function(query,
     }
 
   } else {
-    nodes$order <- rownames(nodes)
+    nodes$order <- as.integer(rownames(nodes))
     edges <- saved_queries()$dag$edges
   }
 
