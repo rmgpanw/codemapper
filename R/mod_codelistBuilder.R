@@ -407,7 +407,26 @@ codelistBuilderServer <-
               for (dep in dependencies) {
                 print(dep)
                 x$result[[dep]] <-
-                  dplyr::case_when(x$result$code %in% saved_queries()$results[[dep]]$code ~ 1)
+                  dplyr::case_when(x$result$code %in% saved_queries()$results[[dep]]$code ~ "1",
+                                   TRUE ~ ".")
+              }
+
+              # add indicator column for inactive snomed codes
+              if (input$code_type == "sct") {
+                inactive_codes <- CODES(
+                  x$result$code,
+                  code_type = "sct",
+                  preferred_description_only = TRUE,
+                  standardise_output = TRUE,
+                  unrecognised_codes = "warning",
+                  col_filters = list(sct_description = list(active = "0"))
+                ) %>%
+                  .$code %>%
+                  suppressWarnings()
+
+                x$result <- x$result %>%
+                  dplyr::mutate("inactive_sct" = dplyr::case_when(.data[["code"]] %in% inactive_codes ~ "1",
+                                                                  TRUE ~ "."))
               }
             }
 
