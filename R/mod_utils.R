@@ -246,6 +246,8 @@ get_qbr_saved_queries <- function(x) {
         "map_codes" = NULL,
         "sct_has_attributes" = x$value,
         "sct_get_attributes" = x$value,
+        "sct_attribute_types_to" = x$value,
+        "sct_attribute_types_from" = x$value,
         stop("Unrecognised filter!")
       )
 
@@ -289,6 +291,10 @@ convert_rules_to_expr <- function(x) {
       "sct_get_attributes" = rlang::call2(.fn = "GET_ATTRIBUTES",
                                           as.symbol(x$value[[1]]),
                                           relationship = as.symbol(x$value[[2]])),
+      "sct_attribute_types_to" = rlang::call2(.fn = "ATTRIBUTE_TYPES_TO",
+                                          as.symbol(x$value)),
+      "sct_attribute_types_from" = rlang::call2(.fn = "ATTRIBUTE_TYPES_FROM",
+                                          as.symbol(x$value)),
       stop("Unrecognised filter!")
     )
 
@@ -431,9 +437,17 @@ update_qbr_filters <- function(input_code_type,
     new_sct_get_attributes_filter <- sct_get_attributes_filter
     new_sct_get_attributes_filter$values <- available_saved_queries
 
+    new_sct_attribute_types_from_filter <- sct_attribute_types_from_filter
+    new_sct_attribute_types_from_filter$values <- available_saved_queries
+
+    new_sct_attribute_types_to_filter <- sct_attribute_types_to_filter
+    new_sct_attribute_types_to_filter$values <- available_saved_queries
+
     new_filters <- c(new_filters,
                      list(new_sct_has_attributes_filter,
-                          new_sct_get_attributes_filter))
+                          new_sct_get_attributes_filter,
+                          new_sct_attribute_types_from_filter,
+                          new_sct_attribute_types_to_filter))
   }
 
   new_filters
@@ -531,6 +545,26 @@ sct_get_attributes_filter <- list(
   description = "Retrieve attributes for a set of SNOMED CT codes. Accepts saved queries as inputs only: the first saved query should be a set of attributes (e.g. '106544002 << Family Enterobacteriaceae (organism) >>'), while the second should be one or more relationship types (e.g. '246075003 << Causative agent (attribute) >>')."
 )
 
+sct_attribute_types_to_filter <- list(
+  id = "sct_attribute_types_to",
+  label = "Attribute types to",
+  type = "string",
+  input = "select",
+  values = list(""),
+  operators = list("sct_attribute_types"),
+  description = "Retrieve attribute types that point to a set of SNOMED CT codes. Accepts saved queries as inputs only."
+)
+
+sct_attribute_types_from_filter <- list(
+  id = "sct_attribute_types_from",
+  label = "Attribute types from",
+  type = "string",
+  input = "select",
+  values = list(""),
+  operators = list("sct_attribute_types"),
+  description = "Retrieve attribute types that point from a set of SNOMED CT codes. Accepts saved queries as inputs only."
+)
+
 # sct_attributes_filter_template <- list(
 #   id = "sct_attributes",
 #   label = "Attributes 246075003 Causative agent (attribute)",
@@ -613,7 +647,9 @@ filters <- list(
   child_codes_filter,
   empty_saved_query_filter,
   sct_has_attributes_filter,
-  sct_get_attributes_filter
+  sct_get_attributes_filter,
+  sct_attribute_types_to_filter,
+  sct_attribute_types_from_filter
 )
 
 ### Operators -----------------------------------------------------------------
@@ -651,6 +687,14 @@ operators <- c(code_type_operators,
                  list(
                    type = "sct_relationship",
                    nb_inputs = 2,
+                   multiple = FALSE,
+                   input = "select",
+                   values = list(""),
+                   apply_to = "string"
+                 ),
+                 list(
+                   type = "sct_attribute_types",
+                   nb_inputs = 1,
                    multiple = FALSE,
                    input = "select",
                    values = list(""),
