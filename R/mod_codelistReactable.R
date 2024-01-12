@@ -5,7 +5,8 @@ codelistReactableInput <- function(id) {
   tagList(
     csvDownloadButton(ns("codelist"), filename = paste0(Sys.Date(), "_", "codelist.csv")),
     reactable::reactableOutput(ns("codelist")),
-    verbatimTextOutput(ns("selected_codes"))
+    verbatimTextOutput(ns("selected_codes")),
+    verbatimTextOutput(ns("selected_codes_no_description"))
   )
 }
 
@@ -34,11 +35,16 @@ codelistReactableServer <-
 
           df_selected <- df()[rowids, 1:2]
 
-          stringr::str_glue("{df_selected[[1]]} << {df_selected[[2]]} >>") %>%
-            paste(sep = "", collapse = " | ")
+          list(
+            with_description = stringr::str_glue("{df_selected[[1]]} << {df_selected[[2]]} >>") %>%
+              paste(sep = "", collapse = " | "),
+            no_description = stringr::str_glue("{df_selected[[1]]}") %>%
+              paste(sep = "", collapse = "|")
+          )
           })
 
-      output$selected_codes <- renderPrint(cat(selected()))
+      output$selected_codes <- renderPrint(cat(selected()$with_description))
+      output$selected_codes_no_description <- renderPrint(cat(selected()$no_description))
 
       # returns reactive
       selected
