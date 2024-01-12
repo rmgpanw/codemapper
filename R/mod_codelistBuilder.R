@@ -425,7 +425,7 @@ codelistBuilderServer <-
                   suppressWarnings()
 
                 x$result <- x$result %>%
-                  dplyr::mutate("inactive_sct" = dplyr::case_when(.data[["code"]] %in% inactive_codes ~ "1",
+                  dplyr::mutate("...inactive_sct" = dplyr::case_when(.data[["code"]] %in% inactive_codes ~ "1",
                                                                   TRUE ~ "."))
               }
             }
@@ -538,11 +538,32 @@ codelistBuilderServer <-
           interim_strategies <- interim_strategies[1:(length(interim_strategies) - 1)]
 
           append_indicators_case_when_statements <- interim_strategies |>
-            purrr::map_chr(\(x) stringr::str_glue("  mutate({x} = case_when(code %in% {x}$code ~ 1))"))
+            purrr::map_chr(\(x) stringr::str_glue("  mutate({x} = case_when(code %in% {x}$code ~ '1', TRUE ~ '.'))"))
 
           APPEND_INDICATORS_CODE <- c("RESULT <- RESULT",
                                       append_indicators_case_when_statements) |>
             paste(sep = "", collapse = " |>\n")
+
+          APPEND_INACTIVE_SCT_CODE <- ""
+
+          if (input$code_type == "sct") {
+            APPEND_INACTIVE_SCT_CODE <- "
+inactive_codes <- CODES(
+  RESULT$code,
+  code_type = 'sct',
+  preferred_description_only = TRUE,
+  standardise_output = TRUE,
+  unrecognised_codes = 'warning',
+  col_filters = list(sct_description = list(active = '0'))
+  ) %>%
+  .$code %>%
+  suppressWarnings()
+
+RESULT <- RESULT %>%
+  dplyr::mutate('...inactive_sct' = dplyr::case_when(.data[['code']] %in% inactive_codes ~ '1',
+                TRUE ~ '.'))
+"
+          }
 
           # write qmd report
           report_template <-
@@ -588,6 +609,7 @@ options({QUERY_OPTIONS})
 ```{{r}}
 # append indicator columns
 {APPEND_INDICATORS_CODE}
+{APPEND_INACTIVE_SCT_CODE}
 
 # display interactive table with button to download as a csv file
 htmltools::browsable(
