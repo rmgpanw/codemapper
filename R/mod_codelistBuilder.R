@@ -359,6 +359,11 @@ codelistBuilderServer <-
 
                 dependencies <- saved_queries()$dag$nodes %>%
                   dplyr::filter(.data[["id"]] %in% !!dependencies) %>%
+
+                  # TODO - remove this, temp fix for previously saved codelist
+                  # bookmarks
+                  dplyr::mutate("order" = as.integer(.data[["order"]])) %>%
+
                   dplyr::arrange(.data[["order"]]) %>%
                   dplyr::pull(tidyselect::all_of("id"))
               }
