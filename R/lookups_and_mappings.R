@@ -421,7 +421,16 @@ build_all_lkps_maps <-
       all_lkps_maps <- c(
         all_lkps_maps,
         list(
-          sct_description = snomed_monolith_terminology$`sct2_Description_MONOSnapshot-en.txt`,
+          # merge description and concept tables - these indicate whether the
+          # description and code respectively are currently active
+          sct_description = snomed_monolith_terminology$`sct2_Description_MONOSnapshot-en.txt` %>%
+            dplyr::rename_with(\(x) paste0(x, "_description")) %>%
+            dplyr::full_join(
+              snomed_monolith_terminology$sct2_Concept_MONOSnapshot.txt %>%
+                dplyr::rename_with(\(x) paste0(x, "_concept")),
+              by = c("conceptId_description" = "id_concept")
+            ) %>%
+            dplyr::rename("conceptId" = "conceptId_description"),
           sct_relationship = snomed_monolith_terminology$sct2_Relationship_MONOSnapshot.txt,
           sct_icd10 = snomed_monolith_refset_Map$der2_iisssciRefset_ExtendedMapMONOSnapshot.txt %>%
             dplyr::filter(.data[["refsetId"]] == "999002271000000101") %>%
