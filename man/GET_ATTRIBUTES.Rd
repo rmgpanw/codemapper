@@ -16,6 +16,8 @@ GET_ATTRIBUTES(
 \arguments{
 \item{attribute_codes}{Character vector of SNOMED codes.}
 
+\item{relationship_type}{Character vector of SNOMED codes.}
+
 \item{standardise_output}{bool. If \code{TRUE} (default), outputs a data
 frame with columns named 'code', 'description' and 'code_type'. Otherwise
 returns a data frame with all columns from the relevant look up table.}
@@ -49,9 +51,17 @@ See examples (credit to
 \href{https://snomedizer.web.app/articles/snomedizer.html}{snomedizer}).
 }
 \examples{
+\dontrun{
 # Body sites that can be affected by Enterobacteriaceae infections
-enterobacteriaceae_infections <- HAS_ATTRIBUTES(CHILDREN("106544002", code_type = "sct"), relationship_type = "246075003") \%AND\% CHILDREN("40733004", code_type = "sct")
-GET_ATTRIBUTES(enterobacteriaceae_infections, relationship_type = "363698007")
+enterobacteriaceae_infections <- HAS_ATTRIBUTES(
+    CHILDREN("106544002 << Family Enterobacteriaceae (organism) >>",
+             code_type = "sct"),
+    relationship_type = "246075003 << Causative agent (attribute) >>") \%AND\%
+  CHILDREN("40733004 << Infectious disease (disorder) >>", code_type = "sct")
+
+GET_ATTRIBUTES(enterobacteriaceae_infections,
+               relationship_type = "363698007 << Finding site (attribute) >>")
+}
 }
 \seealso{
 Other Clinical code lookups and mappings: 
