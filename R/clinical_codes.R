@@ -560,6 +560,7 @@ get_parents_sct <- function(codes,
 #' [snomedizer](https://snomedizer.web.app/articles/snomedizer.html)).
 #'
 #' @param attribute_codes Character vector of SNOMED codes.
+#' @param relationship_type Character vector of SNOMED codes.
 #' @inheritParams lookup_codes
 #' @inheritParams get_child_codes
 #'
@@ -568,6 +569,7 @@ get_parents_sct <- function(codes,
 #' @export
 #'
 #' @examples
+#' \dontrun{
 #' # Conditions associated with multiple sclerosis
 #' HAS_ATTRIBUTES("24700007", relationship_type = "42752001")
 #'
@@ -581,7 +583,9 @@ get_parents_sct <- function(codes,
 #' HAS_ATTRIBUTES(CHILDREN("106544002", code_type = "sct"), relationship_type = "246075003")
 #'
 #' # Infectious conditions that are caused by bacteria belonging to Enterobacteriaceae
-#' HAS_ATTRIBUTES(CHILDREN("106544002", code_type = "sct"), relationship_type = "246075003") %AND% CHILDREN("40733004", code_type = "sct")
+#' HAS_ATTRIBUTES(CHILDREN("106544002", code_type = "sct"), relationship_type = "246075003") %AND%
+#'   CHILDREN("40733004", code_type = "sct")
+#' }
 HAS_ATTRIBUTES <- function(attribute_codes,
                           relationship_type = NULL,
                           standardise_output = TRUE,
@@ -614,9 +618,17 @@ HAS_ATTRIBUTES <- function(attribute_codes,
 #' @export
 #'
 #' @examples
+#' \dontrun{
 #' # Body sites that can be affected by Enterobacteriaceae infections
-#' enterobacteriaceae_infections <- HAS_ATTRIBUTES(CHILDREN("106544002 << Family Enterobacteriaceae (organism) >>", code_type = "sct"), relationship_type = "246075003 << Causative agent (attribute) >>") %AND% CHILDREN("40733004 << Infectious disease (disorder) >>", code_type = "sct")
-#' GET_ATTRIBUTES(enterobacteriaceae_infections, relationship_type = "363698007 << Finding site (attribute) >>")
+#' enterobacteriaceae_infections <- HAS_ATTRIBUTES(
+#'     CHILDREN("106544002 << Family Enterobacteriaceae (organism) >>",
+#'              code_type = "sct"),
+#'     relationship_type = "246075003 << Causative agent (attribute) >>") %AND%
+#'   CHILDREN("40733004 << Infectious disease (disorder) >>", code_type = "sct")
+#'
+#' GET_ATTRIBUTES(enterobacteriaceae_infections,
+#'                relationship_type = "363698007 << Finding site (attribute) >>")
+#' }
 GET_ATTRIBUTES <- function(attribute_codes,
                           relationship_type = NULL,
                           standardise_output = TRUE,
