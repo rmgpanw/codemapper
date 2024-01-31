@@ -183,14 +183,6 @@ build_all_lkps_maps <-
            snomed_ct_nhs_data_migration = NULL) {
     # ukb resource 592 ----------------
 
-    ## remove metadata footer rows and add row index column -------------------
-    all_lkps_maps <- all_lkps_maps %>%
-      purrr::map(rm_footer_rows_all_lkps_maps_df) %>%
-      purrr::map(~ tibble::rowid_to_column(
-        .data = .x,
-        var = ".rowid"
-      ))
-
     ## reformat tables individually ---------------
 
     ### icd10 ------------------------
@@ -616,12 +608,41 @@ get_ukb_self_report_med_to_atc_map <- function(path = file.path(
 #' @examples
 #' read_all_lkps_maps(dummy_all_lkps_maps_path())
 read_all_lkps_maps <- function(path = get_ukb_all_lkps_maps()) {
-  read_excel_to_named_list(
+  tables <- read_excel_to_named_list(
     path = path,
     to_include = NULL,
     to_exclude = c("Description", "Contents"),
     col_types = "text"
-  )
+  ) %>%
+    purrr::map(rm_footer_rows_all_lkps_maps_df) %>%
+    purrr::map(~ tibble::rowid_to_column(
+      .data = .x,
+      var = ".rowid"
+    ))
+
+  description_contents <- suppressMessages(read_excel_to_named_list(
+    path = path,
+    to_include = c("Description", "Contents"),
+    to_exclude = NULL,
+    col_types = "text"
+  ))
+
+  metadata <- description_contents$Contents[, 1] %>%
+    na.omit()
+
+  names(metadata) <- "metadata"
+
+  metadata <- dplyr::bind_rows(metadata,
+                               data.frame(metadata = subset(
+                                 names(description_contents$Description),
+                                 stringr::str_detect(names(description_contents$Description), "Version")
+                               ) %>%
+                                 stringr::str_extract("Version.*$")))
+
+  result <- c(list(metadata_all_lkps_maps = metadata),
+              tables)
+
+  return(result)
 }
 
 #' Download the Phecode 1.2 definitions file
