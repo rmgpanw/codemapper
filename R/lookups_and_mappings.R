@@ -442,12 +442,13 @@ build_all_lkps_maps <-
             ) %>%
             dplyr::mutate("mapTarget" = stringr::str_trim(
               stringr::str_remove(.data[["mapTarget"]], stringr::regex("[A|D]$"))
-            )) ,
+            )),
           sct_opcs4 = snomed_monolith_refset_Map$der2_iisssciRefset_ExtendedMapMONOSnapshot.txt %>%
             dplyr::filter(.data[["refsetId"]] == "1126441000000105") %>%
             dplyr::filter(stringr::str_detect(.data[["mapTarget"]],
                                               "#",
-                                              negate = TRUE))
+                                              negate = TRUE)),
+          metadata_snomed_ct_uk_monolith = data.frame(metadata = fs::path_file(snomed_ct_uk_monolith))
         )
       )
     }
@@ -457,7 +458,8 @@ build_all_lkps_maps <-
         all_lkps_maps,
         list(
           ctv3sctmap2 = nhs_data_migration_mapping_tables$clinically_assured$ctv3sctmap2_uk_20200401000001.txt,
-          rcsctmap2 = nhs_data_migration_mapping_tables$clinically_assured$rcsctmap2_uk_20200401000001.txt
+          rcsctmap2 = nhs_data_migration_mapping_tables$clinically_assured$rcsctmap2_uk_20200401000001.txt,
+          metadata_snomed_ct_nhs_data_migration = data.frame(metadata = fs::path_file(snomed_ct_nhs_data_migration))
         )
       )
     }
@@ -482,6 +484,21 @@ build_all_lkps_maps <-
         list(icd9_phecode = icd9_phecode)
       )
     }
+
+    # add metadata for codemapper version
+    all_lkps_maps <- c(
+      all_lkps_maps,
+      list(
+        metadata_codemapper = tibble::as_tibble(utils::installed.packages()) %>%
+          dplyr::filter(.data[["Package"]] == "codemapper") %>%
+          tidyr::unite(col = "metadata",
+                       tidyselect::all_of(c(
+                         "Package", "Version", "Built"
+                       )),
+                       sep = "|") %>%
+          dplyr::select(tidyselect::all_of("metadata"))
+      )
+    )
 
     # convert all to tibbles (avoids potential problems when writing to Duckdb
     # database)
@@ -628,7 +645,7 @@ read_all_lkps_maps <- function(path = get_ukb_all_lkps_maps()) {
   ))
 
   metadata <- description_contents$Contents[, 1] %>%
-    na.omit()
+    stats::na.omit()
 
   names(metadata) <- "metadata"
 
