@@ -391,11 +391,9 @@ codelistBuilderServer <-
               } else {
                 query_code_deps <- dependencies %>%
                   purrr::map(~ {
-                    rlang::call2(
-                      .fn = "=",
-                      rlang::sym(.x),
-                      saved_queries()$results_meta[[.x]]$query
-                    )
+                    rlang::call2(.fn = "=",
+                                 rlang::sym(.x),
+                                 saved_queries()$results_meta[[.x]]$query)
                   })
               }
 
@@ -410,24 +408,28 @@ codelistBuilderServer <-
                   dplyr::case_when(x$result$code %in% saved_queries()$results[[dep]]$code ~ "1",
                                    TRUE ~ ".")
               }
+            }
+            # add indicator column for inactive snomed codes
+            if (input$code_type == "sct") {
+              inactive_codes <- CODES(
+                x$result$code,
+                code_type = "sct",
+                preferred_description_only = TRUE,
+                standardise_output = TRUE,
+                unrecognised_codes = "warning",
+                col_filters = list(
+                  sct_description = list(
+                    active_concept = '0',
+                    active_description = '1'
+                  )
+                )
+              ) %>%
+                .$code %>%
+                suppressWarnings()
 
-              # add indicator column for inactive snomed codes
-              if (input$code_type == "sct") {
-                inactive_codes <- CODES(
-                  x$result$code,
-                  code_type = "sct",
-                  preferred_description_only = TRUE,
-                  standardise_output = TRUE,
-                  unrecognised_codes = "warning",
-                  col_filters = list(sct_description = list(active = "0"))
-                ) %>%
-                  .$code %>%
-                  suppressWarnings()
-
-                x$result <- x$result %>%
-                  dplyr::mutate("...inactive_sct" = dplyr::case_when(.data[["code"]] %in% inactive_codes ~ "1",
-                                                                  TRUE ~ "."))
-              }
+              x$result <- x$result %>%
+                dplyr::mutate("...inactive_sct" = dplyr::case_when(.data[["code"]] %in% inactive_codes ~ "1",
+                                                                   TRUE ~ "."))
             }
 
             x$query_code <- query_code
@@ -554,7 +556,7 @@ inactive_codes <- CODES(
   preferred_description_only = TRUE,
   standardise_output = TRUE,
   unrecognised_codes = 'warning',
-  col_filters = list(sct_description = list(active = '0'))
+  col_filters = list(sct_description = list(active_concept = '0', active_description = '1'))
   ) %>%
   .$code %>%
   suppressWarnings()
